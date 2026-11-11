@@ -4,16 +4,16 @@ import { deepMerge } from './helpers';
  * Default theme object used as the base for all themes.
  * 
  * This empty object serves as a starting point that can be extended
- * with theme values via setTheme(). The type system ensures that
+ * with theme values via updateTheme(). The type system ensures that
  * any theme values conform to the EngineTheme interface.
  */
-const defaultTheme: EngineTheme = {};
+const defaultTheme = {} as EngineTheme;
 
 /**
  * Internal reference to the current global theme state.
  * 
  * This variable holds the active theme that is accessible throughout
- * the application. It should only be modified through the setTheme function
+ * the application. It should only be modified through the updateTheme function
  * to ensure proper reactivity and subscriber notifications.
  */
 let _currentTheme: EngineTheme = defaultTheme;
@@ -100,10 +100,10 @@ export const themeStore = {
  *
  * @example Basic Usage
  * ```tsx
- * import { setTheme } from 'react-native-stylish';
+ * import { updateTheme } from 'react-native-stylish';
  * 
  * // Update theme colors
- * setTheme({
+ * updateTheme({
  *   colors: {
  *     primary: '#007AFF',
  *     secondary: '#5856D6',
@@ -112,7 +112,7 @@ export const themeStore = {
  * });
  * 
  * // Update spacing
- * setTheme({
+ * updateTheme({
  *   spacing: {
  *     sm: 8,
  *     md: 16,
@@ -124,7 +124,7 @@ export const themeStore = {
  * @example Functional Updates
  * ```tsx
  * // Toggle between light and dark themes
- * setTheme((prevTheme) => ({
+ * updateTheme((prevTheme) => ({
  *   colors: {
  *     primary: prevTheme.colors.primary === '#007AFF' ? '#FF3B30' : '#007AFF',
  *     background: prevTheme.colors.background === '#FFFFFF' ? '#000000' : '#FFFFFF',
@@ -132,7 +132,7 @@ export const themeStore = {
  * }));
  * 
  * // Increment spacing values
- * setTheme((prevTheme) => ({
+ * updateTheme((prevTheme) => ({
  *   spacing: {
  *     md: prevTheme.spacing.md + 2,
  *   }
@@ -142,13 +142,13 @@ export const themeStore = {
  * @example Deep Merging
  * ```tsx
  * // Initial theme
- * setTheme({
+ * updateTheme({
  *   colors: { primary: 'blue', secondary: 'gray' },
  *   spacing: { sm: 4, md: 8 }
  * });
  * 
  * // Later update - preserves existing values
- * setTheme({
+ * updateTheme({
  *   colors: { primary: 'red' }, // secondary: 'gray' is preserved
  *   spacing: { lg: 16 }       // sm: 4, md: 8 are preserved
  * });
@@ -166,7 +166,7 @@ export const themeStore = {
  * - Notifies all subscribers efficiently
  * - Returns the final merged theme for convenience
  */
-export const setTheme = <T extends Partial<EngineTheme>>(
+export const updateTheme = <T extends Partial<EngineTheme>>(
   input: T | ((prev: EngineTheme) => T),
 ) => {
   // Store previous theme for functional updates
@@ -224,10 +224,10 @@ export const setTheme = <T extends Partial<EngineTheme>>(
  * @example Server-Side Rendering
  * ```tsx
  * // In SSR context, you might want to set a theme and get it immediately
- * import { setTheme, getTheme } from 'react-native-stylish';
+ * import { updateTheme, getTheme } from 'react-native-stylish';
  * 
  * // Set initial theme based on user preferences
- * setTheme({ colors: { primary: userPrefersDark ? '#fff' : '#000' } });
+ * updateTheme({ colors: { primary: userPrefersDark ? '#fff' : '#000' } });
  * 
  * // Get the theme for rendering
  * const theme = getTheme();

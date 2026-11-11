@@ -13,7 +13,8 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "omnistyle": ["./src/index.ts"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
@@ -22,5 +23,18 @@
     "lib": ["esnext", "dom"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "example", "**/__tests__/*", "**/__mocks__/*"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "example",
+    "example-web",
+    "examples",
+    "**/__tests__/*",
+    "**/__mocks__/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.bench.ts",
+    "src/testing",
+    "src/core/testing"
+  ]
 }

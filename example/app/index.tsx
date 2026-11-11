@@ -1,308 +1,409 @@
-import { useState } from 'react';
-import { Text, ScrollView, StatusBar, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { engine, useTheme, setTheme } from 'stylized/react-native';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator as RNActivity,
+  Platform,
+  ScrollView,
+  StatusBar,
+  TextInput,
+  View,
+} from 'react-native';
+import { router } from 'expo-router';
+import { engine, getTheme, useTheme } from 'omnistyle';
+import { Benchmark } from '../components/Benchmark';
+import { SelfTests } from '../components/SelfTests';
+import {
+  Badge,
+  BadgeText,
+  Bar,
+  Body,
+  Btn,
+  Caption,
+  Card,
+  Divider,
+  Heading,
+  Input,
+  Pill,
+  PillLabel,
+  Row,
+  Screen,
+  Title,
+  Track,
+} from '../components/ui';
+import {
+  ACCENTS,
+  AccentName,
+  Density,
+  Mode,
+  applyTheme,
+  palette,
+} from '../theme/presets';
 
-const Container = engine('View', ({ theme }) => ({
-  flex: 1,
-  backgroundColor: theme.color.background,
-  padding: theme.spacing.lg,
-}));
+// ───────────── componentes específicos desta tela ─────────────
 
-const SafeArea = engine(SafeAreaView, ({ theme }) => ({
-  flex: 1,
-  backgroundColor: theme.color.background,
-}));
-
-const Card = engine(View, ({ theme }) => ({
-  backgroundColor: theme.color.background === '#ffffff' ? '#f8f9fa' : '#2d3748',
-  padding: theme.spacing.md,
-  marginBottom: theme.spacing.md,
-  borderRadius: 8,
-  shadowColor: '#131111',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
-  elevation: 3,
-}));
-
-const Title = engine('Text', ({ theme }) => ({
-  fontSize: 24,
-  fontWeight: '900',
-  color: theme.color.text,
-  marginBottom: theme.spacing.md,
-  textAlign: 'center',
-}));
-
-const Subtitle = engine('Text', ({ theme }) => ({
-  fontSize: 18,
-  fontWeight: '800',
-  color: theme.color.text,
-  marginBottom: theme.spacing.sm,
-}));
-
-Subtitle.when('ios', {
-  children: '🎨 Paleta de Cores',
-});
-
-const BodyText = engine('Text', ({ theme }) => ({
-  fontSize: 16,
-  color: theme.color.text,
-  lineHeight: 24,
-  marginBottom: theme.spacing.sm,
-}));
-
-const Button = engine<
-  'Pressable',
-  { variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' }
->('Pressable', ({ theme, props: { variant = 'primary' } }) => ({
-  backgroundColor:
-    variant === 'primary'
-      ? theme.color.primary
-      : variant === 'secondary'
-        ? theme.color.secondary
-        : variant === 'success'
-          ? theme.color.success
-          : variant === 'warning'
-            ? theme.color.warning
-            : variant === 'error'
-              ? theme.color.error
-              : theme.color.primary,
-  paddingVertical: theme.spacing.md,
-  paddingHorizontal: theme.spacing.lg,
-  borderRadius: 6,
-  alignItems: 'center',
-  marginBottom: theme.spacing.sm,
-}));
-
-Button.when('variant:primary', {
-  children: <Text>Botão Primário</Text>,
-});
-
-const ButtonText = engine('Text', ({ theme }) => ({
-  color: theme.color.text,
-  fontSize: 16,
-  fontWeight: '900',
-}));
-
-const Section = engine('View', ({ theme }) => ({
-  marginBottom: theme.spacing.xl,
-}));
-
-const ColorPalette = engine('View', ({ theme }) => ({
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  justifyContent: 'space-between',
-  marginBottom: theme.spacing.md,
-}));
-
-const ColorBox = engine('View', ({ theme }) => ({
-  width: 60,
-  height: 60,
-  borderRadius: 8,
-  marginBottom: theme.spacing.sm,
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
-
-const ColorLabel = engine('Text', ({ theme }) => ({
-  fontSize: 10,
-  color: '#ffffff',
-  textAlign: 'center',
-  fontWeight: 'bold',
-}));
-
-const SpacingDemo = engine('View', ({ theme }) => ({
-  marginBottom: theme.spacing.md,
-}));
-
-const SpacingBox = engine<'View', { size: number; disabled?: boolean }>(
-  'View',
-  ({ theme, props: { size, disabled } }) => ({
-    width: size,
-    height: size,
-    backgroundColor: theme.color.primary,
-    marginBottom: theme.spacing.sm,
-    borderRadius: 4,
+const Swatch = engine<'TouchableOpacity', { selected?: boolean; color: string }>(
+  'TouchableOpacity',
+  ({ theme, props }) => ({
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: props.color,
+    borderWidth: 3,
+    borderColor: 'transparent',
   }),
 );
+Swatch.when('selected', ({ theme }: any) => ({
+  style: { borderColor: theme.color.text },
+}));
 
-SpacingBox.when(context => context.props.size === 32, {
-  disabled: true,
+/** `when(true, fn)` — attrs dependentes do tema (props não-style). */
+const Toggle = engine('Switch');
+Toggle.when(true, ({ theme }: any) => ({
+  trackColor: { false: palette(theme).border, true: theme.color.primary },
+  thumbColor: '#ffffff',
+}));
+
+const Spinner = engine(RNActivity);
+Spinner.when(true, ({ theme }: any) => ({ color: theme.color.primary }));
+
+const Chip = engine('View', ({ theme }) => ({
+  paddingVertical: theme.spacing.sm,
+  paddingHorizontal: theme.spacing.md,
+  borderRadius: theme.borderRadius?.md ?? 14,
+  backgroundColor: palette(theme).background,
+  borderWidth: 1,
+  borderColor: palette(theme).border,
+  marginRight: theme.spacing.sm,
+}));
+
+const Hscroll = engine(ScrollView);
+Hscroll.attrs({ horizontal: true, showsHorizontalScrollIndicator: false });
+
+/** Status: demonstra match EXATO ('status:active' ≠ 'inactive'). */
+const StatusDot = engine<'View', { status: 'active' | 'inactive' | 'pending' }>(
+  'View',
+  { width: 12, height: 12, borderRadius: 6 },
+);
+StatusDot.when('status:active', ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.success },
+}));
+StatusDot.when('status:inactive', ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.error },
+}));
+StatusDot.when('status:pending', ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.warning },
+}));
+
+/** Condição por função sobre props. */
+const Meter = engine<'View', { level: number }>('View', {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 12,
 });
+Meter.when(({ props }: any) => props.level >= 7, ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.error + '33' },
+}));
+Meter.when(({ props }: any) => props.level >= 4 && props.level < 7, ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.warning + '33' },
+}));
+Meter.when(({ props }: any) => props.level < 4, ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.success + '33' },
+}));
 
-SpacingBox.style(({ props }) => {
-  return {
-    opacity: props.disabled ? 0.5 : 1,
-  };
-});
+/** extend(): herda e especializa sem mexer na base. */
+const BaseTag = engine<'View', {}>('View', ({ theme }) => ({
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  borderRadius: 8,
+  backgroundColor: palette(theme).border,
+}));
+const DangerTag: any = (BaseTag as any)
+  .extend()
+  .style(({ theme }: any) => ({ backgroundColor: theme.color.error + '33' }));
 
-export const TestComponent = () => {
-  const [currentTheme, setCurrentTheme] = useState('light');
+/** Composição: engine(componenteEngine, estilo extra). */
+const BigCard = engine(Card as any, ({ theme }: any) => ({
+  padding: theme.spacing.lg,
+  borderRadius: 28,
+}));
+
+const Tab = engine<'TouchableOpacity', { active?: boolean }>('TouchableOpacity', ({ theme }) => ({
+  flex: 1,
+  paddingVertical: theme.spacing.sm + 2,
+  alignItems: 'center',
+  borderRadius: theme.borderRadius?.md ?? 14,
+}));
+Tab.when('active', ({ theme }: any) => ({
+  style: { backgroundColor: theme.color.primary },
+}));
+
+const Section = ({ n, title, hint, children }: any) => (
+  <View style={{ gap: 10 }}>
+    <Row>
+      <Badge>
+        <BadgeText>{n}</BadgeText>
+      </Badge>
+      <Heading>{title}</Heading>
+    </Row>
+    {hint ? <Body muted>{hint}</Body> : null}
+    {children}
+  </View>
+);
+
+// ───────────── abas ─────────────
+
+function VisualTab() {
   const theme = useTheme();
+  const [count, setCount] = useState(3);
+  const [invalid, setInvalid] = useState(false);
+  const [notif, setNotif] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState('');
+  const [outlined, setOutlined] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [stress, setStress] = useState(0);
+  const [ms, setMs] = useState<number | null>(null);
+  const inputRef = useRef<TextInput>(null);
 
-  const toggleTheme = () => {
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    setCurrentTheme(newTheme);
-
-    setTheme({
-      color: {
-        background: newTheme === 'light' ? '#ffffff' : '#1a202c',
-        text: newTheme === 'light' ? '#2d3748' : '#e2e8f0',
-        secondary: newTheme === 'light' ? '#805ad5' : '#b794f4',
-        success: newTheme === 'light' ? '#38a169' : '#68d391',
-        warning: newTheme === 'light' ? '#d69e2e' : '#fbd38d',
-        error: newTheme === 'light' ? '#e53e3e' : '#fc8181',
-      },
-      spacing: {
-        xs: 4,
-        sm: 8,
-        md: 16,
-        lg: 24,
-        xl: 32,
-      },
-    });
-  };
-
-  const updatePrimaryColor = () => {
-    const colors = ['#3182ce', '#805ad5', '#38a169', '#d69e2e', '#e53e3e'];
-    const currentIndex = colors.indexOf(theme.color.primary || '#3182ce');
-    const nextIndex = (currentIndex + 1) % colors.length;
-
-    setTheme(prev => ({
-      ...prev,
-      color: {
-        ...prev.color,
-        primary: colors[nextIndex],
-      },
-    }));
+  const stressItems = useMemo(() => Array.from({ length: stress }, (_, i) => i), [stress]);
+  const runStress = () => {
+    const t0 = Date.now();
+    setStress(n => (n ? 0 : 300));
+    requestAnimationFrame(() => setMs(Date.now() - t0));
   };
 
   return (
-    <Container>
-      <SafeArea style={{ flex: 1 }}>
-        <StatusBar
-          barStyle={currentTheme === 'light' ? 'dark-content' : 'light-content'}
-          backgroundColor={theme.color.background}
-        />
+    <View style={{ gap: theme.spacing.xl as number }}>
+      <Section n="1" title="Botões e variantes" hint="style por função + when por prop (variant, size, outlined, pill, disabled) + plataforma.">
+        <Card>
+          <Row wrap>
+            {(['primary', 'secondary', 'success', 'warning', 'error'] as const).map(v => (
+              <Btn key={v} label={v} variant={v} size="sm" outlined={outlined} disabled={disabled} onPress={() => {}} />
+            ))}
+          </Row>
+          <Row wrap>
+            <Btn label="Small" size="sm" pill onPress={() => {}} />
+            <Btn label="Medium" size="md" pill onPress={() => {}} />
+            <Btn label="Large" size="lg" variant="secondary" onPress={() => {}} />
+          </Row>
+          <Divider />
+          <Row between>
+            <Body>outlined</Body>
+            <Toggle value={outlined} onValueChange={setOutlined} />
+          </Row>
+          <Row between>
+            <Body>disabled</Body>
+            <Toggle value={disabled} onValueChange={setDisabled} />
+          </Row>
+        </Card>
+      </Section>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <>
-            {/* Header */}
-            <Title>🎨 Stylized Theme Test Suite</Title>
-            <BodyText>Teste completo do sistema de temas Stylized</BodyText>
+      <Section n="2" title="Match exato por valor" hint="when('status:active') não pode casar com 'inactive' (antes era substring).">
+        <Card>
+          {(['active', 'inactive', 'pending'] as const).map(s => (
+            <Row key={s}>
+              <StatusDot status={s} />
+              <Body style={{ flex: 1 }}>{s}</Body>
+              <Badge tone={s === 'active' ? 'success' : s === 'inactive' ? 'error' : 'warning'}>
+                <BadgeText tone={s === 'active' ? 'success' : s === 'inactive' ? 'error' : 'warning'}>
+                  {s === 'active' ? 'verde' : s === 'inactive' ? 'vermelho' : 'amarelo'} esperado
+                </BadgeText>
+              </Badge>
+            </Row>
+          ))}
+        </Card>
+      </Section>
 
-            {/* Theme Controls */}
-            <Section>
-              <Subtitle>🎛️ Controles de Tema</Subtitle>
-              <Card>
-                <Button onPress={toggleTheme}>
-                  <ButtonText>🌓 Alternar Tema ({currentTheme})</ButtonText>
-                </Button>
-                <Button onPress={updatePrimaryColor}>
-                  <ButtonText>🎨 Mudar Cor Primária</ButtonText>
-                </Button>
-              </Card>
-            </Section>
+      <Section n="3" title="Condição por função" hint="when(({ props }) => ...) com faixas — mude o nível.">
+        <Card>
+          <Row between>
+            <Btn label="−" size="sm" variant="secondary" onPress={() => setCount(c => Math.max(0, c - 1))} />
+            <Heading>Nível {count}</Heading>
+            <Btn label="+" size="sm" variant="secondary" onPress={() => setCount(c => Math.min(10, c + 1))} />
+          </Row>
+          <Meter level={count}>
+            <Body>
+              {count >= 7 ? 'Crítico (vermelho)' : count >= 4 ? 'Atenção (amarelo)' : 'Saudável (verde)'}
+            </Body>
+          </Meter>
+          <Track>
+            <Bar value={count * 10} />
+          </Track>
+        </Card>
+      </Section>
 
-            {/* Color Palette */}
-            <Section>
-              <Subtitle></Subtitle>
-              <Card>
-                <ColorPalette>
-                  <ColorBox style={{ backgroundColor: theme.color.primary }}>
-                    <ColorLabel>Primary</ColorLabel>
-                  </ColorBox>
-                  <ColorBox style={{ backgroundColor: theme.color.secondary }}>
-                    <ColorLabel>Secondary</ColorLabel>
-                  </ColorBox>
-                  <ColorBox style={{ backgroundColor: theme.color.success }}>
-                    <ColorLabel>Success</ColorLabel>
-                  </ColorBox>
-                  <ColorBox style={{ backgroundColor: theme.color.warning }}>
-                    <ColorLabel>Warning</ColorLabel>
-                  </ColorBox>
-                  <ColorBox style={{ backgroundColor: theme.color.error }}>
-                    <ColorLabel>Error</ColorLabel>
-                  </ColorBox>
-                </ColorPalette>
-              </Card>
-            </Section>
+      <Section n="4" title="Inputs, ref e attrs" hint="attrs() fixos (autoCapitalize), when('invalid'), ref encaminhado.">
+        <Card>
+          <Input
+            ref={inputRef as any}
+            value={text}
+            onChangeText={setText}
+            placeholder="Digite algo…"
+            placeholderTextColor={palette(theme).muted}
+            invalid={invalid}
+          />
+          <Row wrap>
+            <Btn label="Focar via ref" size="sm" variant="secondary" onPress={() => inputRef.current?.focus()} />
+            <Btn label={invalid ? 'Remover erro' : 'Marcar inválido'} size="sm" variant="error" outlined onPress={() => setInvalid(v => !v)} />
+          </Row>
+          <Row between>
+            <Body>Notificações (Switch)</Body>
+            <Toggle value={notif} onValueChange={setNotif} />
+          </Row>
+          <Row between>
+            <Body>Carregando (ActivityIndicator)</Body>
+            <Row>
+              {loading ? <Spinner /> : null}
+              <Toggle value={loading} onValueChange={setLoading} />
+            </Row>
+          </Row>
+        </Card>
+      </Section>
 
-            {/* Button Variants */}
-            <Section>
-              <Subtitle>🔘 Variações de Botões</Subtitle>
-              <Card>
-                <Button variant="primary">
-                  {/* <ButtonText>Botão Primário</ButtonText> */}
-                </Button>
-                <Button variant="secondary">
-                  <ButtonText>Botão Secundário</ButtonText>
-                </Button>
-                <Button variant="success">
-                  <ButtonText>Botão Sucesso</ButtonText>
-                </Button>
-                <Button variant="warning">
-                  <ButtonText>Botão Alerta</ButtonText>
-                </Button>
-                <Button variant="error">
-                  <ButtonText>Botão Erro</ButtonText>
-                </Button>
-              </Card>
-            </Section>
+      <Section n="5" title="Cards: when com style" hint="Variantes por prop booleana: padrão, flat e accent.">
+        <Card><Body>Card padrão (sombra do tema)</Body></Card>
+        <Card flat><Body>Card flat (sem sombra)</Body></Card>
+        <Card accent><Body>Card accent (borda com a cor primária)</Body></Card>
+      </Section>
 
-            {/* Typography */}
-            <Section>
-              <Subtitle>📝 Tipografia</Subtitle>
-            </Section>
+      <Section n="6" title="extend() e composição" hint="extend herda regras sem alterar a base; engine(engineComp) empilha estilos.">
+        <Card>
+          <Row wrap>
+            <BaseTag><Body>Base</Body></BaseTag>
+            <DangerTag><Body>Extendido</Body></DangerTag>
+            <BaseTag><Body>Base de novo (intacta)</Body></BaseTag>
+          </Row>
+        </Card>
+        <BigCard>
+          <Body>engine(Card, …): padding 24 e raio 28 por cima do Card.</Body>
+        </BigCard>
+      </Section>
 
-            {/* Spacing Demo */}
-            <Section>
-              <Subtitle>📏 Sistema de Espaçamento</Subtitle>
-              <Card>
-                <BodyText>XS (4px)</BodyText>
-                <SpacingDemo>
-                  <SpacingBox size={4} />
-                </SpacingDemo>
+      <Section n="7" title="Style do usuário e ScrollView" hint="A prop style é mesclada por cima; ScrollView horizontal vem de attrs().">
+        <Card>
+          <Btn label="Com style={{ transform: rotate }}" size="sm" style={{ transform: [{ rotate: '-2deg' }], alignSelf: 'flex-start' }} onPress={() => {}} />
+          <Hscroll>
+            {['Design', 'Código', 'Teste', 'Deploy', 'Monitorar', 'Iterar'].map(c => (
+              <Chip key={c}><Body>{c}</Body></Chip>
+            ))}
+          </Hscroll>
+        </Card>
+      </Section>
 
-                <BodyText>SM (8px)</BodyText>
-                <SpacingDemo>
-                  <SpacingBox size={8} />
-                </SpacingDemo>
+      <Section n="8" title="Plataforma" hint="when('ios' | 'android' | 'web') — só a regra da plataforma atual deve valer.">
+        <Card accent>
+          <Row between>
+            <Body>Rodando em</Body>
+            <Badge tone="success"><BadgeText tone="success">{Platform.OS}</BadgeText></Badge>
+          </Row>
+          <Btn label={`Sombra ${Platform.OS === 'ios' ? 'iOS (shadow*)' : Platform.OS === 'android' ? 'Android (elevation)' : 'padrão'}`} onPress={() => {}} />
+        </Card>
+      </Section>
 
-                <BodyText>MD (16px)</BodyText>
-                <SpacingDemo>
-                  <SpacingBox size={16} />
-                </SpacingDemo>
-
-                <BodyText>LG (24px)</BodyText>
-                <SpacingDemo>
-                  <SpacingBox size={24} />
-                </SpacingDemo>
-
-                <BodyText>XL (32px)</BodyText>
-                <SpacingDemo>
-                  <SpacingBox size={32} />
-                </SpacingDemo>
-              </Card>
-            </Section>
-
-            {/* Interactive Demo */}
-            <Section>
-              <Subtitle>🎮 Demo Interativa</Subtitle>
-              <Card>
-                <BodyText>
-                  Theme atual: {JSON.stringify(theme.color, null, 2)}
-                </BodyText>
-              </Card>
-            </Section>
-          </>
-        </ScrollView>
-      </SafeArea>
-    </Container>
+      <Section n="9" title="Stress / cache" hint="300 componentes com props iguais devem reaproveitar o cache de estilo.">
+        <Card>
+          <Row between>
+            <Btn label={stress ? 'Limpar' : 'Renderizar 300'} size="sm" onPress={runStress} />
+            {ms != null && <Badge><BadgeText>{ms} ms</BadgeText></Badge>}
+          </Row>
+          <Row wrap>
+            {stressItems.map(i => (
+              <Swatch key={i} color={Object.values(ACCENTS)[i % 5]} selected={i % 7 === 0} style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2 }} />
+            ))}
+          </Row>
+        </Card>
+      </Section>
+    </View>
   );
-};
+}
+
+function TestsTab() {
+  const theme = useTheme();
+  return (
+    <View style={{ gap: theme.spacing.lg as number }}>
+      <SelfTests />
+      <Card>
+        <Heading>Inspetor do tema</Heading>
+        <Body muted>Valor de getTheme() — atualiza em tempo real com useTheme().</Body>
+        <Body mono>{JSON.stringify({ color: theme.color, spacing: theme.spacing }, null, 2)}</Body>
+        <Caption>identidade: {String(getTheme() === theme)}</Caption>
+      </Card>
+    </View>
+  );
+}
+
+// ───────────── tela ─────────────
 
 export default function HomeScreen() {
-  return <TestComponent />;
+  const theme = useTheme();
+  const [tab, setTab] = useState<'visual' | 'tests' | 'bench'>('visual');
+  const [mode, setMode] = useState<Mode>('light');
+  const [accent, setAccent] = useState<AccentName>('indigo');
+  const [density, setDensity] = useState<Density>('comfortable');
+
+  const apply = (m: Mode, a: AccentName, d: Density) => {
+    setMode(m);
+    setAccent(a);
+    setDensity(d);
+    applyTheme(m, a, d);
+  };
+
+  return (
+    <Screen>
+      <StatusBar barStyle={mode === 'light' ? 'dark-content' : 'light-content'} />
+      <ScrollView
+        contentContainerStyle={{ padding: theme.spacing.lg as number, gap: theme.spacing.lg as number, paddingBottom: 60 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={{ gap: 4 }}>
+          <Caption>omnistyle</Caption>
+          <Title>Playground</Title>
+          <Body muted>Todas as features da lib em uma tela. Edite ../src e veja o Fast Refresh.</Body>
+        </View>
+
+        <Card>
+          <Caption>Tema ao vivo (updateTheme)</Caption>
+          <Row wrap>
+            <Pill active={mode === 'light'} onPress={() => apply('light', accent, density)}>
+              <PillLabel active={mode === 'light'}>☀️ Claro</PillLabel>
+            </Pill>
+            <Pill active={mode === 'dark'} onPress={() => apply('dark', accent, density)}>
+              <PillLabel active={mode === 'dark'}>🌙 Escuro</PillLabel>
+            </Pill>
+            <Pill active={density === 'compact'} onPress={() => apply(mode, accent, density === 'compact' ? 'comfortable' : 'compact')}>
+              <PillLabel active={density === 'compact'}>↕ Compacto</PillLabel>
+            </Pill>
+          </Row>
+          <Row>
+            {(Object.keys(ACCENTS) as AccentName[]).map(a => (
+              <Swatch key={a} color={ACCENTS[a]} selected={a === accent} onPress={() => apply(mode, a, density)} />
+            ))}
+          </Row>
+        </Card>
+
+        <Card accent>
+          <Caption>omnistyle · multiplataforma</Caption>
+          <Body muted>
+            A tela “Universal” é a mesma lib de componentes que roda no app web (example-web).
+          </Body>
+          <Btn label="Abrir tela universal (shared-ui) →" onPress={() => router.push('/universal')} />
+        </Card>
+
+        <Card style={{ flexDirection: 'row', padding: 6, gap: 6 }}>
+          <Tab active={tab === 'visual'} onPress={() => setTab('visual')}>
+            <PillLabel active={tab === 'visual'}>Visual</PillLabel>
+          </Tab>
+          <Tab active={tab === 'tests'} onPress={() => setTab('tests')}>
+            <PillLabel active={tab === 'tests'}>Testes</PillLabel>
+          </Tab>
+          <Tab active={tab === 'bench'} onPress={() => setTab('bench')}>
+            <PillLabel active={tab === 'bench'}>Benchmark</PillLabel>
+          </Tab>
+        </Card>
+
+        {tab === 'visual' ? <VisualTab /> : tab === 'tests' ? <TestsTab /> : <Benchmark />}
+      </ScrollView>
+    </Screen>
+  );
 }

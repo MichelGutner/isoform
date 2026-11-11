@@ -54,4 +54,4 @@ export const useTheme = () => {
   return theme as EngineTheme;
 };
 
-export { setTheme, getTheme } from './store';
+export { updateTheme, getTheme } from './store';

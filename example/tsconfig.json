@@ -10,6 +10,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "omnistyle": [
+        "../src/index.ts"
       ]
     }
   },
@@ -17,6 +20,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
+    "../examples/shared-ui/**/*.ts",
+    "../examples/shared-ui/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]

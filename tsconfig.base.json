@@ -26,7 +26,6 @@
     "src/**/*/__mocks__/*",
     "src/**/*/jest.config.js",
     "src/**/*/babel.config.js",
-    "src/testing/*",
-    "src/web/*"
+    "src/testing/*"
   ]
 }

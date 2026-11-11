@@ -1,30 +1,20 @@
 import { Stack } from 'expo-router';
-import { setTheme } from 'stylized/react-native';
+// A MESMA config do app web (provider 'auto': aqui o Metro carrega o adapter React Native).
+import '../../examples/shared-ui/omni.config';
+import { applyTheme } from '../theme/presets';
 
 export const unstable_settings = {
   anchor: 'index',
 };
 
-setTheme({
-  color: {
-    background: '#f0f0f0',
-    text: '#333',
-    primary: '#6200ee',
-    error: '#b00020',
-  },
-  spacing: {
-    xs: 4,
-    sm: 8,
-    md: 16,
-    lg: 24,
-    xl: 32,
-  },
-});
+// Tema inicial (a tela de testes altera em tempo de execução).
+applyTheme('light', 'indigo', 'comfortable');
 
 export default function RootLayout() {
   return (
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="universal" options={{ title: 'Universal (shared-ui)' }} />
     </Stack>
   );
 }
