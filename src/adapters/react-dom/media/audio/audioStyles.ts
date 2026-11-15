@@ -5,19 +5,18 @@ import { ensureControlStyles } from '../shared/controlStyles';
  * CSS of the web `Audio` card. Fixed rules, inserted once into the same
  * `<style>` as the atomic classes (so they also show up in SSR).
  *
- * Look: a rounded card that follows the light/dark scheme (`color-scheme` or the
- * OS setting), a cover with a gradient fallback, a filled play button and the
- * shared seek track. Colors are CSS variables, so a parent can override them:
- * `--oa-bg`, `--oa-fg`, `--oa-muted`, `--oa-accent`, `--oa-accent-fg`.
+ * Look: a rounded, colorless card that follows the light/dark scheme (`color-scheme`
+ * or the OS setting), a neutral cover fallback, a plain play glyph and the shared seek track. Colors are CSS variables, so a parent can override them:
+ * `--oa-bg`, `--oa-fg`, `--oa-muted`, `--oa-border`.
  */
 const FONT = 'font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
 
 const LIGHT =
-  '--oa-bg:#fff;--oa-fg:#1c1c1e;--oa-muted:#6e6e73;--oa-accent:#0a84ff;--oa-accent-fg:#fff;--oa-border:rgba(0,0,0,.08);' +
+  '--oa-bg:#fff;--oa-fg:#1c1c1e;--oa-muted:#6e6e73;--oa-border:rgba(0,0,0,.08);' +
   '--ov-fg:#1c1c1e;--ov-rail:rgba(60,60,67,.18);--ov-buffer:rgba(60,60,67,.18);--ov-hover:rgba(60,60,67,.1);' +
   '--ov-menu-bg:rgba(255,255,255,.92);--ov-menu-fg:#1c1c1e;--ov-menu-hover:rgba(60,60,67,.08)';
 const DARK =
-  '--oa-bg:#1c1c1e;--oa-fg:#fff;--oa-muted:#98989f;--oa-accent:#0a84ff;--oa-accent-fg:#fff;--oa-border:rgba(255,255,255,.1);' +
+  '--oa-bg:#1c1c1e;--oa-fg:#fff;--oa-muted:#98989f;--oa-border:rgba(255,255,255,.1);' +
   '--ov-fg:#fff;--ov-rail:rgba(235,235,245,.2);--ov-buffer:rgba(235,235,245,.2);--ov-hover:rgba(255,255,255,.12);' +
   '--ov-menu-bg:rgba(44,44,46,.92);--ov-menu-fg:#fff;--ov-menu-hover:rgba(255,255,255,.1)';
 
@@ -31,7 +30,7 @@ const RULES = [
 
   // topo: capa, título/artista e velocidade
   '.oa-head{display:flex;align-items:center;gap:12px;min-width:0}',
-  '.oa-art{position:relative;flex:0 0 auto;width:56px;height:56px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#5e5ce6,#0a84ff 55%,#64d2ff);box-shadow:0 2px 8px rgba(10,132,255,.25)}',
+  '.oa-art{position:relative;flex:0 0 auto;width:56px;height:56px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--oa-muted);background-color:var(--ov-hover)}',
   '.oa-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}',
   '.oa-art svg{width:26px;height:26px}',
   '.oa-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}',
@@ -44,12 +43,11 @@ const RULES = [
   // controles
   '.oa-controls{display:flex;align-items:center;gap:6px}',
   '.oa-spacer{flex:1}',
-  '.oa-play{width:52px;height:52px;background-color:var(--oa-accent);color:var(--oa-accent-fg);box-shadow:0 6px 16px rgba(10,132,255,.35)}',
-  '.oa-play svg{width:26px;height:26px}',
-  '@media (hover:hover){.oa-play:hover{background-color:var(--oa-accent);filter:brightness(1.08)}}',
-  '.oa-skip{width:42px;height:42px}',
+  '.oa-play{width:48px;height:48px}',
+  '.oa-play svg{width:30px;height:30px}',
+  '.oa-skip{width:40px;height:40px}',
   '.oa-skip svg{width:26px;height:26px}',
-  '.oa-wait{position:absolute;inset:-3px;border-radius:50%;border:3px solid rgba(255,255,255,.35);border-top-color:#fff;animation:ov-spin .8s linear infinite;pointer-events:none}',
+  '.oa-wait{position:absolute;inset:0;border-radius:50%;border:2px solid var(--ov-rail);border-top-color:var(--ov-fg);animation:ov-spin .8s linear infinite;pointer-events:none}',
   '.oa-play{position:relative}',
   '.oa .ov-volume-slot .ov-track{width:72px}',
   '.oa .ov-menu{bottom:auto;top:calc(100% + 8px);transform-origin:top right}',

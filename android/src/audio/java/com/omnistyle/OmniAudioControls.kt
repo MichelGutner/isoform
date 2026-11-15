@@ -50,7 +50,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -88,8 +87,9 @@ import kotlin.math.sin
  */
 
 private const val SKIP_SECONDS = 10.0
+private const val SIDE_BUTTON = 40
+private const val PLAY_BUTTON = 48
 private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
-private val ACCENT = Color(0xFF0A84FF)
 
 /** The card palette, for the light or dark theme. */
 private class AudioColors(val card: Color, val text: Color, val muted: Color, val rail: Color, val buffer: Color, val chip: Color, val menu: Color) {
@@ -142,11 +142,11 @@ internal fun OmniAudioControls(
       .fillMaxSize()
       .clip(RoundedCornerShape(20.dp))
       .background(colors.card)
-      .padding(horizontal = 16.dp, vertical = 14.dp),
-    verticalArrangement = Arrangement.spacedBy(10.dp),
+      .padding(horizontal = 16.dp, vertical = 12.dp),
+    verticalArrangement = Arrangement.spacedBy(8.dp),
   ) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-      Artwork(state.artwork)
+      Artwork(state.artwork, colors)
       Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         AudioText(state.title.ifEmpty { "Audio" }, colors.text, 15, FontWeight.SemiBold)
         if (state.artist.isNotEmpty()) AudioText(state.artist, colors.muted, 13, FontWeight.Normal)
@@ -169,12 +169,17 @@ internal fun OmniAudioControls(
       }
     }
 
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-      IconButton("Back 10 seconds", 42, colors.text, onClick = { onSkip(-SKIP_SECONDS) }) { AudioSkipIcon(forward = false, color = colors.text) }
-      PlayButton(state.isPlaying, state.isBuffering && state.isPlaying, onTogglePlay)
-      IconButton("Forward 10 seconds", 42, colors.text, onClick = { onSkip(SKIP_SECONDS) }) { AudioSkipIcon(forward = true, color = colors.text) }
+    // skip · play · skip centered; mute on the leading side, a same-size blank on the trailing one
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+      IconButton(if (state.muted) "Unmute" else "Mute", SIDE_BUTTON, colors.text, onClick = onToggleMute) { AudioSpeakerIcon(state.muted, colors.text) }
       Spacer(Modifier.weight(1f))
-      IconButton(if (state.muted) "Unmute" else "Mute", 40, colors.text, onClick = onToggleMute) { AudioSpeakerIcon(state.muted, colors.text) }
+      Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        IconButton("Back 10 seconds", SIDE_BUTTON, colors.text, onClick = { onSkip(-SKIP_SECONDS) }) { AudioSkipIcon(forward = false, color = colors.text) }
+        PlayButton(state.isPlaying, state.isBuffering && state.isPlaying, colors.text, onTogglePlay)
+        IconButton("Forward 10 seconds", SIDE_BUTTON, colors.text, onClick = { onSkip(SKIP_SECONDS) }) { AudioSkipIcon(forward = true, color = colors.text) }
+      }
+      Spacer(Modifier.weight(1f))
+      Spacer(Modifier.size(SIDE_BUTTON.dp))
     }
   }
 }
@@ -214,18 +219,18 @@ private suspend fun download(url: String): Bitmap? =
     runCatching { URL(url).openStream().use { BitmapFactory.decodeStream(it) } }.getOrNull()
   }?.also { artworkCache.put(url, it) }
 
-/** Cover: the image over a gradient with a music note. */
+/** Cover: the image over a neutral fill with a music note. */
 @Composable
-private fun Artwork(url: String) {
+private fun Artwork(url: String, colors: AudioColors) {
   val bitmap = rememberArtwork(url)
   Box(
     modifier = Modifier
-      .size(56.dp)
+      .size(48.dp)
       .clip(RoundedCornerShape(12.dp))
-      .background(Brush.linearGradient(listOf(Color(0xFF5E5CE6), Color(0xFF0A84FF), Color(0xFF64D2FF)))),
+      .background(colors.chip),
     contentAlignment = Alignment.Center,
   ) {
-    MusicNote()
+    MusicNote(colors.muted)
     bitmap?.let { Image(it.asImageBitmap(), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
   }
 }
@@ -248,36 +253,35 @@ private fun IconButton(description: String, size: Int, color: Color, onClick: ()
   ) { content() }
 }
 
-/** The big filled play/pause button, with a ring while buffering. */
+/** Play/pause as a plain glyph, like the other controls but bigger, with a ring while buffering. */
 @Composable
-private fun PlayButton(playing: Boolean, buffering: Boolean, onClick: () -> Unit) {
+private fun PlayButton(playing: Boolean, buffering: Boolean, color: Color, onClick: () -> Unit) {
   val source = remember { MutableInteractionSource() }
   val pressed by source.collectIsPressedAsState()
-  val scale by animateFloatAsState(if (pressed) 0.92f else 1f, tween(120), label = "playPress")
+  val scale by animateFloatAsState(if (pressed) 0.9f else 1f, tween(120), label = "playPress")
   Box(
     modifier = Modifier
-      .size(52.dp)
+      .size(PLAY_BUTTON.dp)
       .graphicsLayer { scaleX = scale; scaleY = scale }
-      .shadow(8.dp, CircleShape, ambientColor = ACCENT, spotColor = ACCENT)
       .clip(CircleShape)
-      .background(ACCENT)
+      .background(if (pressed) color.copy(alpha = 0.1f) else Color.Transparent)
       .clickable(interactionSource = source, indication = null, onClick = onClick)
       .semantics { contentDescription = if (playing) "Pause" else "Play" },
     contentAlignment = Alignment.Center,
   ) {
     Crossfade(targetState = playing, animationSpec = tween(160), label = "playPause") { isPlaying ->
-      Canvas(Modifier.size(24.dp)) { if (isPlaying) drawPause(Color.White) else drawPlay(Color.White) }
+      Canvas(Modifier.size(28.dp)) { if (isPlaying) drawPause(color) else drawPlay(color) }
     }
-    if (buffering) BufferingRing()
+    if (buffering) BufferingRing(color)
   }
 }
 
 @Composable
-private fun BufferingRing() {
+private fun BufferingRing(color: Color) {
   val transition = rememberInfiniteTransition(label = "ring")
   val angle by transition.animateFloat(0f, 360f, infiniteRepeatable(tween(800, easing = LinearEasing)), label = "angle")
   Canvas(Modifier.fillMaxSize().graphicsLayer { rotationZ = angle }) {
-    drawArc(Color.White, startAngle = 0f, sweepAngle = 90f, useCenter = false, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round))
+    drawArc(color, startAngle = 0f, sweepAngle = 90f, useCenter = false, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
   }
 }
 
@@ -315,7 +319,7 @@ private fun SpeedMenu(rate: Float, colors: AudioColors, onSelect: (Float) -> Uni
                 .padding(horizontal = 10.dp, vertical = 9.dp),
               verticalAlignment = Alignment.CenterVertically,
             ) {
-              Box(Modifier.width(22.dp)) { if (speed == rate) Canvas(Modifier.size(14.dp)) { drawCheck(ACCENT) } }
+              Box(Modifier.width(22.dp)) { if (speed == rate) Canvas(Modifier.size(14.dp)) { drawCheck(colors.text) } }
               AudioText(rateLabel(speed), colors.text, 14, FontWeight.Normal)
             }
           }
@@ -344,7 +348,7 @@ private fun SeekBar(
   Box(
     modifier = Modifier
       .fillMaxWidth()
-      .height(28.dp)
+      .height(24.dp)
       .onSizeChanged { width = it.width.coerceAtLeast(1) }
       .pointerInput(duration) {
         detectTapGestures { offset -> if (duration > 0) onSeek(timeAt(offset.x)) }
@@ -388,8 +392,8 @@ private fun SeekBar(
       val loaded = if (duration > 0) (buffered / duration).toFloat().coerceIn(0f, 1f) else 0f
       bar(1f, colors.rail)
       bar(loaded, colors.buffer)
-      bar(played, ACCENT)
-      drawCircle(Color.White, radius = 10.dp.toPx() * growth, center = Offset(size.width * played, size.height / 2))
+      bar(played, colors.text)
+      drawCircle(colors.text, radius = 10.dp.toPx() * growth, center = Offset(size.width * played, size.height / 2))
     }
   }
 }
@@ -434,23 +438,23 @@ private fun DrawScope.drawCheck(color: Color) {
 }
 
 @Composable
-private fun MusicNote() {
+private fun MusicNote(color: Color) {
   Canvas(Modifier.size(26.dp)) {
     val w = size.width
     val h = size.height
-    drawCircle(Color.White, radius = w * 0.17f, center = Offset(w * 0.3f, h * 0.76f))
-    drawCircle(Color.White, radius = w * 0.17f, center = Offset(w * 0.74f, h * 0.66f))
+    drawCircle(color, radius = w * 0.17f, center = Offset(w * 0.3f, h * 0.76f))
+    drawCircle(color, radius = w * 0.17f, center = Offset(w * 0.74f, h * 0.66f))
     val stem = w * 0.07f
-    drawRoundRect(Color.White, Offset(w * 0.42f, h * 0.18f), Size(stem, h * 0.58f), CornerRadius(stem / 2))
-    drawRoundRect(Color.White, Offset(w * 0.86f, h * 0.08f), Size(stem, h * 0.58f), CornerRadius(stem / 2))
-    drawRoundRect(Color.White, Offset(w * 0.42f, h * 0.08f), Size(w * 0.51f, h * 0.18f), CornerRadius(stem))
+    drawRoundRect(color, Offset(w * 0.42f, h * 0.18f), Size(stem, h * 0.58f), CornerRadius(stem / 2))
+    drawRoundRect(color, Offset(w * 0.86f, h * 0.08f), Size(stem, h * 0.58f), CornerRadius(stem / 2))
+    drawRoundRect(color, Offset(w * 0.42f, h * 0.08f), Size(w * 0.51f, h * 0.18f), CornerRadius(stem))
   }
 }
 
 /** Circular arrow with "10" in the middle; `forward` mirrors it. */
 @Composable
 private fun AudioSkipIcon(forward: Boolean, color: Color) {
-  Box(Modifier.size(28.dp), contentAlignment = Alignment.Center) {
+  Box(Modifier.size(26.dp), contentAlignment = Alignment.Center) {
     Canvas(Modifier.fillMaxSize()) {
       val stroke = 1.8.dp.toPx()
       val inset = stroke + 2.dp.toPx()

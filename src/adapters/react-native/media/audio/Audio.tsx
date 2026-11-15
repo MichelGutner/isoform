@@ -111,5 +111,5 @@ const AudioPlayer = forwardRef<AudioHandle, Props>(
 );
 AudioPlayer.displayName = 'AudioPlayer';
 
-/** Default card height (title row + seek bar + controls) so an unsized `Audio` is not collapsed. */
-const styles = StyleSheet.create({ container: { minHeight: 172, overflow: 'hidden' } });
+/** Default card height (padding + title row + seek bar with times + play row), so an unsized `Audio` is neither collapsed nor clipped. */
+const styles = StyleSheet.create({ container: { minHeight: 180, overflow: 'hidden' } });

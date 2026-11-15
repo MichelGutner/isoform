@@ -150,18 +150,18 @@ final class OmniAudioCard: UIView {
   }
 
   private func configureButtons() {
-    skipBackButton.configuration = Self.plainConfiguration(symbol: "gobackward.10", size: 22)
+    skipBackButton.configuration = Self.plainConfiguration(symbol: "gobackward.10", size: 20)
     skipBackButton.accessibilityLabel = "Back 10 seconds"
     skipBackButton.addAction(UIAction { [weak self] _ in self?.actions.skip(-Self.skipSeconds) }, for: .touchUpInside)
 
-    skipForwardButton.configuration = Self.plainConfiguration(symbol: "goforward.10", size: 22)
+    skipForwardButton.configuration = Self.plainConfiguration(symbol: "goforward.10", size: 20)
     skipForwardButton.accessibilityLabel = "Forward 10 seconds"
     skipForwardButton.addAction(UIAction { [weak self] _ in self?.actions.skip(Self.skipSeconds) }, for: .touchUpInside)
 
     playButton.configuration = Self.playConfiguration()
     playButton.addAction(UIAction { [weak self] _ in self?.actions.togglePlay() }, for: .touchUpInside)
 
-    muteButton.configuration = Self.plainConfiguration(symbol: "speaker.wave.2.fill", size: 18)
+    muteButton.configuration = Self.plainConfiguration(symbol: "speaker.wave.2.fill", size: 16)
     muteButton.addAction(UIAction { [weak self] _ in self?.actions.toggleMute() }, for: .touchUpInside)
 
     speedButton.configuration = Self.pillConfiguration()
@@ -196,23 +196,37 @@ final class OmniAudioCard: UIView {
     progress.axis = .vertical
     progress.spacing = 0
 
-    let spacer = UIView()
-    spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-    let controls = UIStackView(arrangedSubviews: [skipBackButton, playButton, skipForwardButton, spacer, muteButton])
+    // skip · play · skip centered; mute on the leading side, a same-size blank on the trailing one
+    let transport = UIStackView(arrangedSubviews: [skipBackButton, playButton, skipForwardButton])
+    transport.axis = .horizontal
+    transport.alignment = .center
+    transport.spacing = 14
+
+    let leadingSpace = UIView()
+    let trailingSpace = UIView()
+    let balance = UIView()
+    let controls = UIStackView(arrangedSubviews: [muteButton, leadingSpace, transport, trailingSpace, balance])
     controls.axis = .horizontal
     controls.alignment = .center
-    controls.spacing = 6
+    controls.spacing = 0
+
+    Self.pin(skipBackButton, size: Self.sideSize)
+    Self.pin(skipForwardButton, size: Self.sideSize)
+    Self.pin(muteButton, size: Self.sideSize)
+    Self.pin(playButton, size: Self.playSize)
+    Self.pin(balance, size: Self.sideSize)
+    leadingSpace.widthAnchor.constraint(equalTo: trailingSpace.widthAnchor).isActive = true
 
     let content = UIStackView(arrangedSubviews: [head, progress, controls])
     content.axis = .vertical
-    content.spacing = 10
+    content.spacing = 8
     content.translatesAutoresizingMaskIntoConstraints = false
     addSubview(content)
     NSLayoutConstraint.activate([
       content.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
       content.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-      content.topAnchor.constraint(equalTo: topAnchor, constant: 14),
-      content.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -14),
+      content.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+      content.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -12),
     ])
   }
 
@@ -245,7 +259,20 @@ final class OmniAudioCard: UIView {
     return h > 0 ? String(format: "%d:%02d:%02d", h, m, s) : String(format: "%d:%02d", m, s)
   }
 
-  // MARK: - Button styles (Liquid Glass on iOS 26, system styles before)
+  // MARK: - Button styles (system configurations, monochrome: plain icons, gray pill)
+
+  /// Diameter of the play button and of the round side buttons (compact card; the touch area is the whole button).
+  private static let playSize: CGFloat = 48
+  private static let sideSize: CGFloat = 40
+
+  /// Fixes a view to `size` × `size`, so a glyph change (play ↔ pause) never moves the layout.
+  private static func pin(_ view: UIView, size: CGFloat) {
+    view.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      view.widthAnchor.constraint(equalToConstant: size),
+      view.heightAnchor.constraint(equalToConstant: size),
+    ])
+  }
 
   private static func plainConfiguration(symbol: String, size: CGFloat) -> UIButton.Configuration {
     var config = UIButton.Configuration.plain()
@@ -256,37 +283,16 @@ final class OmniAudioCard: UIView {
     return config
   }
 
+  /// Plain glyph in the label color, like the other controls, only bigger.
   private static func playConfiguration() -> UIButton.Configuration {
-    var config: UIButton.Configuration
-    #if compiler(>=6.2)
-    if #available(iOS 26.0, *) {
-      config = .prominentGlass()
-    } else {
-      config = .filled()
-    }
-    #else
-    config = .filled()
-    #endif
-    config.image = UIImage(systemName: "play.fill")
-    config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold)
-    config.cornerStyle = .capsule
-    config.contentInsets = NSDirectionalEdgeInsets(top: 15, leading: 17, bottom: 15, trailing: 17)
-    config.baseBackgroundColor = .tintColor
-    config.baseForegroundColor = .white
+    var config = plainConfiguration(symbol: "play.fill", size: 30)
+    config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 30, weight: .semibold)
+    config.contentInsets = .zero
     return config
   }
 
   private static func pillConfiguration() -> UIButton.Configuration {
-    var config: UIButton.Configuration
-    #if compiler(>=6.2)
-    if #available(iOS 26.0, *) {
-      config = .glass()
-    } else {
-      config = .gray()
-    }
-    #else
-    config = .gray()
-    #endif
+    var config = UIButton.Configuration.gray()
     config.cornerStyle = .capsule
     config.baseForegroundColor = .label
     config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
@@ -307,9 +313,8 @@ final class OmniAudioCard: UIView {
 
 // MARK: - Cover
 
-/// The cover, or a gradient with a music note while there is none.
+/// The cover, or a neutral fill with a music note while there is none.
 private final class OmniArtworkView: UIView {
-  private let gradient = CAGradientLayer()
   private let note = UIImageView(image: UIImage(systemName: "music.note"))
   private let picture = UIImageView()
 
@@ -323,11 +328,8 @@ private final class OmniArtworkView: UIView {
     layer.cornerRadius = 12
     layer.cornerCurve = .continuous
     clipsToBounds = true
-    gradient.colors = [UIColor.systemIndigo.cgColor, UIColor.systemBlue.cgColor, UIColor.systemTeal.cgColor]
-    gradient.startPoint = CGPoint(x: 0, y: 0)
-    gradient.endPoint = CGPoint(x: 1, y: 1)
-    layer.addSublayer(gradient)
-    note.tintColor = .white
+    backgroundColor = .tertiarySystemFill
+    note.tintColor = .secondaryLabel
     note.contentMode = .center
     note.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 24, weight: .medium)
     addSubview(note)
@@ -343,7 +345,6 @@ private final class OmniArtworkView: UIView {
 
   override func layoutSubviews() {
     super.layoutSubviews()
-    gradient.frame = bounds
     note.frame = bounds
     picture.frame = bounds
   }
@@ -381,7 +382,7 @@ private final class OmniSeekBar: UISlider {
 
   override init(frame: CGRect) {
     super.init(frame: frame)
-    minimumTrackTintColor = .tintColor
+    minimumTrackTintColor = .label
     maximumTrackTintColor = .clear
     rail.backgroundColor = .tertiarySystemFill
     bufferedRail.backgroundColor = .quaternaryLabel
@@ -404,7 +405,7 @@ private final class OmniSeekBar: UISlider {
       self.onCommit?(self.seconds)
     }
     addAction(finish, for: [.touchUpInside, .touchUpOutside, .touchCancel])
-    heightAnchor.constraint(equalToConstant: 28).isActive = true
+    heightAnchor.constraint(equalToConstant: 24).isActive = true
     isAccessibilityElement = true
   }
 
