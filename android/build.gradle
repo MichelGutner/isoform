@@ -1,0 +1,76 @@
+// Componente nativo de vídeo do omnistyle: Media3 ExoPlayer + controles em Jetpack Compose.
+// O plugin `com.facebook.react` roda o Codegen a partir do `codegenConfig` do package.json.
+
+buildscript {
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : (project.findProperty(prop) ?: fallback)
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    // O compilador do Compose precisa ter a MESMA versão do Kotlin do app.
+    classpath("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${safeExtGet("kotlinVersion", "2.1.20")}")
+  }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "org.jetbrains.kotlin.plugin.compose"
+apply plugin: "com.facebook.react"
+
+/**
+ * Media3 1.10.x: a linha mais nova publicada com Kotlin 2.0 e Compose 1.7,
+ * compatível com o Kotlin 2.1 do React Native 0.81. O app pode sobrescrever
+ * com `ext.omnistyleMedia3Version` / `ext.omnistyleComposeBomVersion`.
+ */
+def media3Version = safeExtGet("omnistyleMedia3Version", "1.10.1")
+def composeBomVersion = safeExtGet("omnistyleComposeBomVersion", "2024.12.01")
+
+android {
+  namespace "com.omnistyle"
+  compileSdkVersion safeExtGet("compileSdkVersion", 35)
+
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+    targetSdkVersion safeExtGet("targetSdkVersion", 35)
+  }
+
+  buildFeatures {
+    compose true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+}
+
+dependencies {
+  implementation "com.facebook.react:react-android"
+
+  implementation "androidx.media3:media3-exoplayer:$media3Version"
+  implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+  implementation "androidx.media3:media3-ui-compose:$media3Version"
+  // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
+  implementation "androidx.annotation:annotation-experimental:1.4.1"
+  // tela cheia: esconder as barras do sistema (WindowInsetsControllerCompat)
+  implementation "androidx.core:core:1.13.1"
+
+  implementation platform("androidx.compose:compose-bom:$composeBomVersion")
+  implementation "androidx.compose.ui:ui"
+  implementation "androidx.compose.foundation:foundation"
+  implementation "androidx.compose.animation:animation"
+}

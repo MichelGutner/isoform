@@ -98,7 +98,13 @@
     "!dist/**/babel.config.*",
     "!dist/**/jest.config.*",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "src/adapters/react-native/media/native/**",
+    "ios/**",
+    "android/build.gradle",
+    "android/src/**",
+    "omnistyle.podspec",
+    "react-native.config.js"
   ],
   "peerDependenciesMeta": {
     "react-dom": {
@@ -106,6 +112,19 @@
     },
     "react-native": {
       "optional": true
+    }
+  },
+  "codegenConfig": {
+    "name": "OmnistyleSpec",
+    "type": "components",
+    "jsSrcsDir": "src/adapters/react-native/media/native",
+    "android": {
+      "javaPackageName": "com.omnistyle"
+    },
+    "ios": {
+      "componentProvider": {
+        "OmniVideoView": "OmniVideoView"
+      }
     }
   }
 }

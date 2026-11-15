@@ -22,3 +22,6 @@ coverage/
 
 # environments
 env.json
+# android (lib)
+android/build/
+android/.gradle/

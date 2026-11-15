@@ -12,7 +12,7 @@ import { styleHost, type StyleHostFlags } from './styleHost';
 import { transitionHost } from './transitionHost';
 import { parseTransition, TRANSITION_KEYS, usesNativeDriver, type ResolvedTransition } from './transition';
 import { parseContent, WEB_ONLY_PSEUDOS, type NativePseudos } from './pseudo';
-import { Audio, Embed, Pdf, Video } from './media';
+import { Video } from './media';
 
 /** Nome omnistyle → nome do componente no `react-native`. */
 const PRIMITIVES: Record<string, string> = {
@@ -53,12 +53,12 @@ for (const name of Object.keys(PRIMITIVES)) {
   });
 }
 
-// mídia: componentes nossos (carregam a dependência nativa opcional sob demanda)
-Object.assign(primitives, { Video, Audio, Pdf, Embed });
+// vídeo: componente nativo da própria lib (ios/ e android/ na raiz do pacote)
+Object.assign(primitives, { Video });
 
 const PRESSABLE = new Set(['Pressable']);
 /** Primitivas sem `children`: não recebem `::before`/`::after`. */
-const NO_CHILDREN = new Set(['Input', 'TextInput', 'Image', 'Video', 'Audio', 'Pdf', 'Embed']);
+const NO_CHILDREN = new Set(['Input', 'TextInput', 'Image', 'Video']);
 const INPUT = new Set(['Input', 'TextInput']);
 
 /** Saída de `compileStyle` no mobile. */
@@ -256,16 +256,34 @@ export const reactNativeAdapter: PlatformAdapter = {
       if (hasTransition) transitionProps = take(TRANSITION_KEYS);
     }
 
+    // `transition` declarada num estado ou breakpoint (ex.: `.when('lg', { style: { transition } })`)
+    // também vale: no mobile ela passa a valer para o elemento, se o base não declarar a sua.
+    const withoutTransition = (st: Record<string, any>) => {
+      if (!TRANSITION_KEYS.some((k) => k in st)) return st;
+      const copy = { ...st };
+      for (const k of TRANSITION_KEYS) {
+        if (k in copy) {
+          (transitionProps ??= {})[k] ??= copy[k];
+          delete copy[k];
+        }
+      }
+      return copy;
+    };
+
     const e = env();
     const compiled: NativeCompiled = { base: normalizeNative(rest, e) };
 
-    if (states?.pressed) compiled.pressed = normalizeNative(states.pressed, e);
-    const focus = { ...states?.focus, ...states?.['focus-visible'] };
+    if (states?.pressed) compiled.pressed = normalizeNative(withoutTransition(states.pressed), e);
+    const focus = withoutTransition({ ...states?.focus, ...states?.['focus-visible'] });
     if (Object.keys(focus).length) compiled.focus = normalizeNative(focus, e);
     // `hover` não existe no toque: ignorado no mobile (sem aviso — é comum declarar só para a web)
 
     if (breakpoints?.length) {
-      compiled.breakpoints = breakpoints.map((b) => ({ min: b.min, max: b.max, style: normalizeNative(b.style, e) }));
+      compiled.breakpoints = breakpoints.map((b) => ({
+        min: b.min,
+        max: b.max,
+        style: normalizeNative(withoutTransition(b.style), e),
+      }));
     }
 
     if (pseudos) compiled.pseudos = compilePseudos(pseudos, e);

@@ -1,7 +1,7 @@
 /**
- * Contrato das primitivas de mídia (`Video`, `Audio`, `Pdf`, `Embed`): o mesmo
- * nas duas plataformas. A web usa o elemento do navegador; o mobile usa uma
- * dependência opcional (veja `adapters/react-native/media`).
+ * Contrato da primitiva `Video`: o mesmo nas duas plataformas.
+ * Web: `<video>` do navegador. Mobile: componente nativo da própria lib
+ * (AVPlayer no iOS, Media3 ExoPlayer no Android), sem dependências externas.
  */
 
 export interface MediaTime {
@@ -11,7 +11,14 @@ export interface MediaTime {
   duration: number;
 }
 
-/** Controle imperativo, obtido pelo `ref` de `Video` e `Audio`. */
+/** Metadados prontos: duração e tamanho natural do vídeo (0 enquanto desconhecido). */
+export interface MediaInfo {
+  duration: number;
+  width: number;
+  height: number;
+}
+
+/** Controle imperativo de qualquer mídia (base para futuras mídias, como áudio). */
 export interface MediaHandle {
   play(): void;
   pause(): void;
@@ -19,7 +26,13 @@ export interface MediaHandle {
   seekTo(seconds: number): void;
 }
 
-/** Props de reprodução comuns a `Video` e `Audio`. */
+/** Controle imperativo do `Video`, obtido pelo `ref`. */
+export interface VideoHandle extends MediaHandle {
+  /** Entra ou sai da tela cheia. */
+  setFullscreen(fullscreen: boolean): void;
+}
+
+/** Props de reprodução (base para futuras mídias, como áudio). */
 export interface PlaybackProps {
   src: string;
   autoPlay?: boolean;
@@ -33,9 +46,19 @@ export interface PlaybackProps {
   onPause?: () => void;
   onEnded?: () => void;
   onTimeUpdate?: (time: MediaTime) => void;
-  /** Metadados prontos (a duração já é conhecida). */
-  onLoad?: (info: { duration: number }) => void;
+  /** Metadados prontos: duração e tamanho natural. */
+  onLoad?: (info: MediaInfo) => void;
   onError?: (message: string) => void;
+  /** Pulou de posição (barra, ±10 s ou `seekTo`), em segundos. */
+  onSeek?: (seek: { from: number; to: number }) => void;
+  /** Começou (`true`) ou terminou (`false`) de esperar dados para continuar. */
+  onBuffering?: (buffering: boolean) => void;
+  /** Até onde o conteúdo já foi baixado, em segundos. */
+  onBufferedChange?: (buffered: number) => void;
+  /** Volume ou mudo mudaram (pelos controles ou pelas props). */
+  onVolumeChange?: (volume: { volume: number; muted: boolean }) => void;
+  /** A velocidade mudou (pelos controles ou pela prop `rate`). */
+  onRateChange?: (rate: number) => void;
 }
 
 export interface VideoOwnProps extends PlaybackProps {
@@ -43,31 +66,11 @@ export interface VideoOwnProps extends PlaybackProps {
   poster?: string;
   /** Controles do sistema. Padrão: `true`. */
   controls?: boolean;
-}
-
-export interface AudioOwnProps extends PlaybackProps {
-  /** Barra de controle mínima. Padrão: `true`. */
-  controls?: boolean;
-}
-
-export interface PdfOwnProps {
-  src: string;
-  /** Página inicial (começa em 1). */
-  page?: number;
-  /** `pages` só é informado no mobile: o visualizador do navegador não expõe isso. */
-  onLoad?: (info: { pages?: number }) => void;
-  /** Só no mobile (veja `onLoad`). */
-  onPageChange?: (page: number, pages: number) => void;
-  onError?: (message: string) => void;
-}
-
-export interface EmbedOwnProps {
-  /** Endereço da página. Use `html` para conteúdo próprio. */
-  src?: string;
-  /** HTML inline (vence `src`). */
-  html?: string;
-  /** Rótulo de acessibilidade. */
-  title?: string;
-  onLoad?: () => void;
-  onError?: (message: string) => void;
+  /** Entrou (`true`) ou saiu (`false`) da tela cheia. */
+  onFullscreenChange?: (fullscreen: boolean) => void;
+  /**
+   * Entrou (`true`) ou saiu (`false`) do picture-in-picture.
+   * @platform web — no mobile o PiP ainda não foi implementado.
+   */
+  onPictureInPictureChange?: (active: boolean) => void;
 }

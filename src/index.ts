@@ -32,18 +32,14 @@ export type {
   ImageProps,
   ScrollProps,
   VideoProps,
-  AudioProps,
-  PdfProps,
-  EmbedProps,
 } from './core/primitives';
 export type {
   MediaHandle,
+  VideoHandle,
+  MediaInfo,
   MediaTime,
   PlaybackProps,
   VideoOwnProps,
-  AudioOwnProps,
-  PdfOwnProps,
-  EmbedOwnProps,
 } from './core/media';
 export { useTheme, updateTheme, getTheme } from './theme';
 

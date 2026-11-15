@@ -1,93 +1,98 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import type { MediaHandle, VideoOwnProps } from '../../../core/media';
-import { MissingModule } from './MissingModule';
+import type { VideoHandle, VideoOwnProps } from '../../../core/media';
 
 declare const require: (id: string) => any;
 
 /**
- * O `require` fica dentro de um `try/catch` de propósito: é assim que o Metro
- * entende que a dependência é OPCIONAL (sem isso, o app nem compilaria sem ela).
+ * A spec só é carregada quando um `Video` é renderizado: assim importar o
+ * adaptador (inclusive em testes) não exige o runtime do Codegen.
  */
-let cached: any;
-function expoVideo(): any {
-  if (cached === undefined) {
-    try {
-      cached = require('expo-video');
-    } catch {
-      cached = null;
-    }
-  }
-  return cached;
-}
+type Spec = typeof import('./native/OmniVideoViewNativeComponent');
+let spec: Spec | undefined;
+const nativeSpec = (): Spec => (spec ??= require('./native/OmniVideoViewNativeComponent'));
 
 type Props = Partial<VideoOwnProps> & { style?: any; testID?: string };
 
-/** Parte que usa os hooks do `expo-video` (só é montada quando a lib existe). */
-const Player = forwardRef<MediaHandle, Props & { lib: any }>(
-  ({ lib, src, poster, controls = true, autoPlay, loop, muted, rate, volume, style, testID, ...callbacks }, ref) => {
-    const player = lib.useVideoPlayer(src ?? null, (p: any) => {
-      p.timeUpdateEventInterval = 0.25;
-      if (autoPlay) p.play();
-    });
+/**
+ * `Video` no mobile: o componente nativo da lib (AVPlayer no iOS, Media3 no
+ * Android). Aqui só traduzimos o contrato do omnistyle para as props e os
+ * eventos nativos, e mostramos o `poster` até o primeiro play.
+ */
+export const Video = forwardRef<VideoHandle, Props>(
+  (
+    {
+      src,
+      poster,
+      controls = true,
+      autoPlay = false,
+      loop = false,
+      muted = false,
+      rate = 1,
+      volume = 1,
+      onPlay,
+      onPause,
+      onEnded,
+      onTimeUpdate,
+      onLoad,
+      onError,
+      onSeek,
+      onBuffering,
+      onBufferedChange,
+      onVolumeChange,
+      onRateChange,
+      onFullscreenChange,
+      style,
+      testID,
+    },
+    ref,
+  ) => {
+    const { default: NativeVideo, Commands } = nativeSpec();
+    const native = useRef<any>(null);
     const [started, setStarted] = useState(false);
-
-    // sempre o callback mais recente, sem reassinar os eventos a cada render
-    const latest = useRef(callbacks);
-    latest.current = callbacks;
 
     useImperativeHandle(
       ref,
       () => ({
-        play: () => player.play(),
-        pause: () => player.pause(),
-        seekTo: (seconds) => {
-          player.currentTime = seconds;
-        },
+        play: () => native.current && Commands.play(native.current),
+        pause: () => native.current && Commands.pause(native.current),
+        seekTo: (seconds) => native.current && Commands.seekTo(native.current, seconds),
+        setFullscreen: (fullscreen) => native.current && Commands.setFullscreen(native.current, fullscreen),
       }),
-      [player],
+      [Commands],
     );
-
-    useEffect(() => {
-      player.loop = !!loop;
-    }, [player, loop]);
-    useEffect(() => {
-      player.muted = !!muted;
-    }, [player, muted]);
-    useEffect(() => {
-      if (rate !== undefined) player.playbackRate = rate;
-    }, [player, rate]);
-    useEffect(() => {
-      if (volume !== undefined) player.volume = volume;
-    }, [player, volume]);
-
-    useEffect(() => {
-      const subscriptions = [
-        player.addListener('playingChange', ({ isPlaying }: { isPlaying: boolean }) => {
-          if (isPlaying) {
-            setStarted(true);
-            latest.current.onPlay?.();
-          } else {
-            latest.current.onPause?.();
-          }
-        }),
-        player.addListener('playToEnd', () => latest.current.onEnded?.()),
-        player.addListener('timeUpdate', ({ currentTime }: { currentTime: number }) =>
-          latest.current.onTimeUpdate?.({ currentTime, duration: player.duration || 0 }),
-        ),
-        player.addListener('statusChange', ({ status, error }: { status: string; error?: { message?: string } }) => {
-          if (status === 'readyToPlay') latest.current.onLoad?.({ duration: player.duration || 0 });
-          if (status === 'error') latest.current.onError?.(error?.message ?? 'Falha ao carregar o vídeo.');
-        }),
-      ];
-      return () => subscriptions.forEach((s: any) => s.remove());
-    }, [player]);
 
     return (
       <View style={[styles.container, style]} testID={testID}>
-        <lib.VideoView player={player} style={StyleSheet.absoluteFill} nativeControls={controls} contentFit="contain" />
+        <NativeVideo
+          ref={native}
+          style={StyleSheet.absoluteFill}
+          src={src}
+          controls={controls}
+          autoPlay={autoPlay}
+          loop={loop}
+          muted={muted}
+          rate={rate}
+          volume={volume}
+          onPlayerPlay={() => {
+            setStarted(true);
+            onPlay?.();
+          }}
+          onPlayerPause={() => onPause?.()}
+          onPlayerEnd={() => onEnded?.()}
+          onPlayerTime={(e) => onTimeUpdate?.({ currentTime: e.nativeEvent.currentTime, duration: e.nativeEvent.duration })}
+          onPlayerLoad={({ nativeEvent: { duration, width, height } }) => onLoad?.({ duration, width, height })}
+          onPlayerError={(e) => onError?.(e.nativeEvent.message)}
+          onPlayerSeek={(e) => onSeek?.({ from: e.nativeEvent.from, to: e.nativeEvent.to })}
+          onPlayerBuffering={(e) => onBuffering?.(e.nativeEvent.buffering)}
+          onPlayerBuffered={(e) => onBufferedChange?.(e.nativeEvent.buffered)}
+          onPlayerVolume={(e) => onVolumeChange?.({ volume: e.nativeEvent.volume, muted: e.nativeEvent.muted })}
+          onPlayerRate={(e) => onRateChange?.(e.nativeEvent.rate)}
+          onPlayerFullscreen={(e) => onFullscreenChange?.(e.nativeEvent.fullscreen)}
+        />
         {poster && !started ? (
+          // `pointerEvents="none"`: o toque passa direto para os controles nativos
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
             <Image source={{ uri: poster }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           </View>
@@ -96,13 +101,6 @@ const Player = forwardRef<MediaHandle, Props & { lib: any }>(
     );
   },
 );
-Player.displayName = 'VideoPlayer';
-
-export const Video = forwardRef<MediaHandle, Props>((props, ref) => {
-  const lib = expoVideo();
-  if (!lib) return <MissingModule primitive="Video" pkg="expo-video" style={props.style} />;
-  return <Player ref={ref} lib={lib} {...props} />;
-});
 Video.displayName = 'Video';
 
 const styles = StyleSheet.create({ container: { backgroundColor: '#000', overflow: 'hidden' } });

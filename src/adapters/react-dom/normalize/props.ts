@@ -21,9 +21,6 @@ export const CANONICAL: Record<string, string> = {
   Scroll: 'Scroll',
   ScrollView: 'Scroll',
   Video: 'Video',
-  Audio: 'Audio',
-  Pdf: 'Pdf',
-  Embed: 'Embed',
 };
 
 /**
@@ -39,11 +36,10 @@ const BASE: Record<string, string> = {
   Image: 'border-style:solid;border-width:0;display:block;box-sizing:border-box;object-fit:cover;flex-shrink:0',
   Scroll:
     'border-style:solid;border-width:0;display:flex;flex-direction:column;position:relative;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;min-width:0;min-height:0;flex-grow:1;flex-shrink:1',
-  // mídia: `display:block` tira o vão de linha embaixo do elemento; o fundo preto é o do player
-  Video: 'border-style:solid;border-width:0;display:block;box-sizing:border-box;max-width:100%;background-color:#000;object-fit:contain;flex-shrink:0',
-  Audio: 'display:block;box-sizing:border-box;max-width:100%;flex-shrink:0',
-  Pdf: 'border:0;display:block;box-sizing:border-box;width:100%;min-height:0;flex-shrink:0;background-color:#fff',
-  Embed: 'border:0;display:block;box-sizing:border-box;width:100%;min-height:0;flex-shrink:0',
+  // vídeo: container dos controles (`position:relative`) que recorta as bordas arredondadas;
+  // o `object-fit` daqui é herdado pelo `<video>` de dentro
+  Video:
+    'border-style:solid;border-width:0;display:block;position:relative;overflow:hidden;box-sizing:border-box;max-width:100%;background-color:#000;object-fit:contain;flex-shrink:0',
 };
 
 function baseClass(primitive: string): string {
