@@ -35,3 +35,28 @@ export const darkTokens = {
     error: '#f87171',
   },
 };
+
+/** Accent colors the Theme page lets you pick (they replace `color.primary`). */
+export const ACCENTS = {
+  indigo: '#6366f1',
+  emerald: '#10b981',
+  rose: '#f43f5e',
+  amber: '#f59e0b',
+  sky: '#0ea5e9',
+} as const;
+
+export type AccentName = keyof typeof ACCENTS;
+export type Mode = 'light' | 'dark';
+export type Density = 'compact' | 'comfortable';
+
+const COMPACT_SPACING = { xs: 2, sm: 4, md: 10, lg: 16, xl: 24 };
+
+/** The theme for a mode, an accent color and a spacing density: pass it to `updateTheme`. */
+export const buildTokens = (mode: Mode, accent: AccentName, density: Density) => {
+  const base = mode === 'dark' ? darkTokens : lightTokens;
+  return {
+    ...base,
+    color: { ...base.color, primary: ACCENTS[accent] },
+    spacing: density === 'compact' ? COMPACT_SPACING : base.spacing,
+  };
+};

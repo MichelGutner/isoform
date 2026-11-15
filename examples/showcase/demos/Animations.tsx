@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { engine, keyframes } from 'omnistyle';
-import { Body, Button, ButtonLabel, Card, Heading, Row, themeFade } from './ui';
+import { Body, Button, ButtonLabel, Card, Heading, Row, themeFade } from '../ui';
 
 /**
- * Laboratório de animações: tudo declarado com `keyframes()` + `animation` e
+ * Animations: tudo declarado com `keyframes()` + `animation` e
  * renderizado igual na web (@keyframes) e no mobile (Animated).
  * Cada bloco exercita uma parte diferente da feature.
  */
@@ -144,19 +144,19 @@ export function AnimationLab() {
 
   return (
     <Card testID="animation-lab">
-      <Heading>Laboratório de animações</Heading>
-      <Body muted>keyframes() + animation: o mesmo código vira @keyframes na web e Animated no mobile.</Body>
+      <Heading>Animation lab</Heading>
+      <Body muted>keyframes() + animation: the same code becomes @keyframes on the web and Animated on mobile.</Body>
 
       <Row wrap>
         <Cell>
-          <Body muted>rotação</Body>
+          <Body muted>rotation</Body>
           <Stage>
             <Ring testID="anim-ring" />
           </Stage>
         </Cell>
 
         <Cell>
-          <Body muted>órbita + núcleo</Body>
+          <Body muted>orbit + core</Body>
           <Stage>
             <OrbitBox testID="anim-orbit">
               {SATELLITES.map((_, n) => (
@@ -168,7 +168,7 @@ export function AnimationLab() {
         </Cell>
 
         <Cell>
-          <Body muted>equalizador</Body>
+          <Body muted>equalizer</Body>
           <Row>
             {[0, 1, 2, 3, 4].map((i) => (
               <Bar key={i} i={i} testID={`anim-bar-${i}`} />
@@ -177,7 +177,7 @@ export function AnimationLab() {
         </Cell>
 
         <Cell>
-          <Body muted>digitando…</Body>
+          <Body muted>typing…</Body>
           <Row>
             {[0, 1, 2].map((i) => (
               <Dot key={i} i={i} />
@@ -194,7 +194,7 @@ export function AnimationLab() {
       <Row between>
         {/* flex: 1 deixa o texto quebrar de linha em vez de empurrar o botão para fora da tela */}
         <Body muted style={{ flex: 1 }}>
-          entrada em cascata (delay + cubic-bezier + fill both)
+          staggered entrance (delay + cubic-bezier + fill both)
         </Body>
         <Button size="sm" variant="secondary" onPress={() => setRun((r) => r + 1)} testID="replay">
           <ButtonLabel>↻ Replay</ButtonLabel>
@@ -202,7 +202,7 @@ export function AnimationLab() {
       </Row>
       {/* trocar a `key` remonta os itens e a animação de entrada roda de novo */}
       <Cell key={run}>
-        {['Design tokens', 'Componentes universais', 'Uma só config'].map((label, i) => (
+        {['Design tokens', 'Universal components', 'One config'].map((label, i) => (
           <Reveal key={label} i={i} testID={`anim-reveal-${i}`}>
             <Body>{label}</Body>
           </Reveal>

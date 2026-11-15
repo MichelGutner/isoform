@@ -1,5 +1,5 @@
 import { engine } from 'omnistyle';
-import { Body, Card, Heading, themeFade } from './ui';
+import { Body, Card, Heading, themeFade } from '../ui';
 
 /**
  * Layout responsivo mobile-first: `when('breakpoints:md')` vale de 768px para cima,
@@ -62,27 +62,27 @@ const OnlyTablet = engine('Box', { display: 'none', paddingBlock: 6, paddingInli
 export function ResponsiveDemo() {
   return (
     <Card testID="responsive-demo">
-      <Heading>Responsivo (breakpoints)</Heading>
-      <Body muted>when('breakpoints:sm' | 'md' | 'lg' | 'xl') — mobile-first. Redimensione o navegador ou gire o aparelho.</Body>
+      <Heading>Breakpoints</Heading>
+      <Body muted>when('breakpoints:sm' | 'md' | 'lg' | 'xl') — mobile-first. Resize the browser or rotate the device.</Body>
 
       <Meter testID="bp-meter">
-        <Label from="base" testID="bp-base">abaixo de 480px · base</Label>
+        <Label from="base" testID="bp-base">below 480px · base</Label>
         <Label from="sm" testID="bp-sm">≥ 480px · sm</Label>
         <Label from="md" testID="bp-md">≥ 768px · md (3 colunas)</Label>
         <Label from="lg" testID="bp-lg">≥ 1024px · lg</Label>
         <Label from="xl" testID="bp-xl">≥ 1280px · xl</Label>
       </Meter>
 
-      <Body muted>Faixas: <Body style={{ fontWeight: '700' }}>{'<md'}</Body> e <Body style={{ fontWeight: '700' }}>md..lg</Body></Body>
+      <Body muted>Ranges: <Body style={{ fontWeight: '700' }}>{'<md'}</Body> and <Body style={{ fontWeight: '700' }}>md..lg</Body></Body>
       <OnlyBelowMd testID="bp-below-md">
-        <Body>{"só abaixo de 768px · when('breakpoints:<md')"}</Body>
+        <Body>{"only below 768px · when('breakpoints:<md')"}</Body>
       </OnlyBelowMd>
       <OnlyTablet testID="bp-tablet">
-        <Body>só entre 768px e 1024px · when('breakpoints:md..lg')</Body>
+        <Body>only between 768px and 1024px · when('breakpoints:md..lg')</Body>
       </OnlyTablet>
 
       <Grid testID="bp-grid">
-        {['Tokens', 'Componentes', 'Config'].map((t) => (
+        {['Tokens', 'Components', 'Config'].map((t) => (
           <Tile key={t}>
             <Body>{t}</Body>
           </Tile>

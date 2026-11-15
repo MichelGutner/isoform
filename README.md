@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ```tsx
-// shared-ui/Button.tsx — no react-native, no react-dom, no platform checks
+// showcase/ui.tsx — no react-native, no react-dom, no platform checks
 import { engine } from 'omnistyle';
 
 export const Button = engine<'Pressable', { variant?: 'primary' | 'ghost' }>(
@@ -95,7 +95,7 @@ export const Title = engine('Text', ({ theme }) => ({
 </Card>
 ```
 
-A complete runnable proof lives in this repo: [`examples/shared-ui`](./examples/shared-ui) is rendered by both the Expo app in [`example/`](./example) and the Vite + React DOM app in [`example-web/`](./example-web).
+A complete runnable proof lives in this repo: [`examples/showcase`](./examples/showcase) is rendered by both the Expo app in [`example/`](./example) and the Vite + React DOM app in [`example-web/`](./example-web).
 
 ## How the platform is chosen
 
@@ -528,7 +528,7 @@ updateTheme((prev) => ({ /* … */ }));
 const theme = useTheme();                          // reactive (useSyncExternalStore)
 ```
 
-Type your theme once by augmenting the global `EngineTheme` interface (see [`examples/shared-ui/theme.d.ts`](./examples/shared-ui/theme.d.ts)).
+Type your theme once by augmenting the global `EngineTheme` interface (see [`examples/showcase/theme.d.ts`](./examples/showcase/theme.d.ts)).
 
 ## Server-side rendering (web)
 

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 const lib = path.resolve(__dirname, '../src/index.ts');
-const sharedUi = path.resolve(__dirname, '../examples/shared-ui');
+const showcase = path.resolve(__dirname, '../examples/showcase');
 
 export default defineConfig({
   plugins: [react()],
@@ -18,5 +18,5 @@ export default defineConfig({
   },
   server: { fs: { allow: [path.resolve(__dirname, '..')] } },
   // a lib de UI compartilhada fica fora do projeto
-  optimizeDeps: { entries: ['index.html', path.join(sharedUi, '**/*.tsx')] },
+  optimizeDeps: { entries: ['index.html', path.join(showcase, '**/*.tsx')] },
 });

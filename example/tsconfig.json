@@ -20,8 +20,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
-    "../examples/shared-ui/**/*.ts",
-    "../examples/shared-ui/**/*.tsx",
+    "../examples/showcase/**/*.ts",
+    "../examples/showcase/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]

@@ -34,6 +34,7 @@ jest.mock('react-native', () => {
   const View = host;
   return {
     Platform: { OS: 'ios' },
+    StyleSheet: { create: (styles: any) => styles, absoluteFill: {}, flatten: (style: any) => style },
     Dimensions: { get: () => ({ width: 400, height: 800 }) },
     Easing: { bezier: (...args: number[]) => Object.assign((t: number) => t, { args }) },
     Animated: {
@@ -56,8 +57,8 @@ jest.mock('react-native', () => {
 import * as RN from 'react-native';
 import { registerBundledProvider, resetProvider } from '../../config';
 import { updateTheme } from '../../theme';
-import { AnimationLab } from '../../../examples/shared-ui/Animations';
-import { lightTokens } from '../../../examples/shared-ui/tokens';
+import { AnimationLab } from '../../../examples/showcase/demos/Animations';
+import { lightTokens } from '../../../examples/showcase/tokens';
 import { reactNativeAdapter } from './adapter';
 
 const byTestId = (root: TestRenderer.ReactTestInstance, id: string) =>
@@ -102,8 +103,8 @@ describe('AnimationLab on the React Native adapter', () => {
     act(() => jest.advanceTimersByTime(2000));
     const durations = mockRuns.map((r) => r.config.duration).sort((a, b) => a - b);
 
-    // ring (800), orbit (2400), core (1200), glow (1400), 5 bars (700..1060), dots (1000 x3), reveals (600 x3)
-    expect(durations).toEqual([600, 600, 600, 700, 790, 800, 880, 970, 1000, 1000, 1000, 1060, 1200, 1400, 2400]);
+    // ring (1800), orbit (2400), core (1200), glow (1400), 5 bars (700..1060), dots (1000 x3), reveals (600 x3)
+    expect(durations).toEqual([600, 600, 600, 700, 790, 880, 970, 1000, 1000, 1000, 1060, 1200, 1400, 1800, 2400]);
 
     const nonNative = mockRuns.filter((r) => !r.config.useNativeDriver);
     // só o núcleo anima `backgroundColor` → driver JS; o resto roda no driver nativo

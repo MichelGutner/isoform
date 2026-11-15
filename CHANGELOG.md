@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `when('focus')` on `Input` is now tracked by the shared style host (no more dedicated `TextInput` wrapper), so `focus` changes can be transitioned and combine with breakpoints.
 - Web primitives default to `border-style: solid; border-width: 0`, matching React Native's border model.
 - `extend()` is now part of the public component type.
-- Example apps: `examples/shared-ui` (shared component library), the Expo app (`example/`) and a new Vite + React DOM app (`example-web/`) render the same components.
+- Example apps: `examples/showcase` (an interactive showcase with one page per feature: theme, components, states, responsive, animations, platform, Video, Audio, Pdf), the Expo app (`example/`) and a Vite + React DOM app (`example-web/`) render the same pages.
 
 ### Changed
 - **BREAKING:** package renamed from `react-native-stylized` to `omnistyle`; the `/react-native` subpath export was removed — import everything from the root.

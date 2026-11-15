@@ -1,3 +1,3 @@
-// A forma do `EngineTheme` é compartilhada com o app web: fica em examples/shared-ui/theme.d.ts.
-/// <reference path="../examples/shared-ui/theme.d.ts" />
+// A forma do `EngineTheme` é compartilhada com o app web: fica em examples/showcase/theme.d.ts.
+/// <reference path="../examples/showcase/theme.d.ts" />
 export {};

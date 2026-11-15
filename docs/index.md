@@ -29,6 +29,6 @@ export const Button = engine('Pressable', ({ theme }) => ({
 |---|---|
 | [README](../README.md) | Overview, quick start, vocabulary and migration |
 | [Guide](./README.md) | Architecture, adapters, atomic CSS, custom providers, troubleshooting |
-| [`examples/shared-ui`](../examples/shared-ui) | A component library written once, used by both apps |
-| [`example/`](../example) | Expo app consuming `shared-ui` |
-| [`example-web/`](../example-web) | Vite + React DOM app consuming the same `shared-ui` |
+| [`examples/showcase`](../examples/showcase) | The interactive showcase: one page per feature, used by both apps |
+| [`example/`](../example) | Expo app running the showcase |
+| [`example-web/`](../example-web) | Vite + React DOM app running the same showcase |
