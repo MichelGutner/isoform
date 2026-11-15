@@ -109,7 +109,8 @@
     "android/src/**",
     "omnistyle.podspec",
     "react-native.config.js",
-    "metro.js"
+    "metro.js",
+    "scripts/setup-ios.js"
   ],
   "peerDependenciesMeta": {
     "react-dom": {
@@ -132,5 +133,8 @@
         "OmniAudioView": "OmniAudioView"
       }
     }
+  },
+  "bin": {
+    "omnistyle-setup-ios": "scripts/setup-ios.js"
   }
 }

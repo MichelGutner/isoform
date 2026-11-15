@@ -91,6 +91,8 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
 
   init {
     addView(composeView)
+    // system media controls (no-op unless `modules.mediaSession` is on)
+    OmniMediaSession.attach(reactContext, player)
 
     player.addListener(object : Player.Listener {
       override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -162,14 +164,17 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
 
   fun setTitle(value: String?) {
     ui.title = value.orEmpty()
+    OmniMediaSession.setMetadata(player, ui.title, ui.artist, ui.artwork)
   }
 
   fun setArtist(value: String?) {
     ui.artist = value.orEmpty()
+    OmniMediaSession.setMetadata(player, ui.title, ui.artist, ui.artwork)
   }
 
   fun setArtwork(value: String?) {
     ui.artwork = value.orEmpty()
+    OmniMediaSession.setMetadata(player, ui.title, ui.artist, ui.artwork)
   }
 
   fun setAutoPlay(value: Boolean) {
@@ -228,6 +233,7 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
   fun release() {
     handler.removeCallbacks(ticker)
     composeView.disposeComposition()
+    OmniMediaSession.detach(player)
     player.release()
   }
 

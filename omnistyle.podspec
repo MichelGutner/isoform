@@ -4,7 +4,7 @@ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 # Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 # (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-#   { "modules": { "video": true, "audio": true } }
+#   { "modules": { "video": true, "audio": true, "mediaSession": true } }
 # Módulo fora do arquivo (ou `false`) não é compilado. Sem o arquivo, tudo é
 # compilado e só o `configure` decide em runtime. Depois de mudar: `pod install`.
 #
@@ -16,7 +16,9 @@ omnistyle_module = ->(name) { omnistyle_config.nil? || omnistyle_config.dig("mod
 
 video = omnistyle_module.call("video")
 audio = omnistyle_module.call("audio")
-Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}"
+# controles na tela de bloqueio: só com `"mediaSession": true` explícito (nunca por padrão)
+media_session = audio && !omnistyle_config.nil? && omnistyle_config.dig("modules", "mediaSession") == true
+Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}"
 
 Pod::Spec.new do |s|
   s.name         = "omnistyle"
@@ -35,8 +37,10 @@ Pod::Spec.new do |s|
   sources << (video ? "ios/video/**/*.{h,m,mm,swift}" : "ios/stubs/video/**/*.{h,m,mm}")
   sources << (audio ? "ios/audio/**/*.{h,m,mm,swift}" : "ios/stubs/audio/**/*.{h,m,mm}")
   sources << "ios/shared/**/*.swift" if video || audio
+  # o áudio sempre usa `OmniNowPlaying`: a versão real (tela de bloqueio) ou a vazia
+  sources << (media_session ? "ios/mediaSession/**/*.swift" : "ios/mediaSessionOff/**/*.swift") if audio
   s.source_files = sources
-  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : [])
+  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : [])
 
   # Gera o header `omnistyle-Swift.h` importado pelo .mm do vídeo.
   s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES" }
@@ -49,11 +53,28 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; puts(m.nil? ? "video:true,audio:true" : "video:" + (m["video"] == true).to_s + ",audio:" + (m["audio"] == true).to_s)' "$CONFIG")
-      EXPECTED="video:#{video},audio:#{audio}"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; puts(m.nil? ? "video:true,audio:true,mediaSession:false" : "video:" + (m["video"] == true).to_s + ",audio:" + (m["audio"] == true).to_s + ",mediaSession:" + (m["mediaSession"] == true && m["audio"] == true).to_s)' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1
+      fi
+
+      # mediaSession: o iOS só deixa o áudio tocar com a tela bloqueada se o Info.plist do app
+      # tiver `UIBackgroundModes` → `audio`. Um pod não consegue declarar isso, então o build
+      # acrescenta a chave (idempotente; o mesmo que `scripts/setup-ios.js`).
+      if [ "#{media_session}" = "true" ]; then
+        IOS_DIR=$(cd "${PODS_ROOT}/.." && pwd)
+        for PLIST in "$IOS_DIR"/*/Info.plist; do
+          [ -f "$PLIST" ] || continue
+          case "$PLIST" in */Pods/*|*/build/*) continue ;; esac
+          MODES=$(/usr/bin/plutil -extract UIBackgroundModes json -o - "$PLIST" 2>/dev/null)
+          case "$MODES" in
+            *'"audio"'*) ;;
+            "") /usr/bin/plutil -insert UIBackgroundModes -json '["audio"]' "$PLIST" && echo "note: [omnistyle] UIBackgroundModes audio adicionado em $PLIST" ;;
+            *) /usr/bin/plutil -insert UIBackgroundModes.0 -string audio "$PLIST" && echo "note: [omnistyle] UIBackgroundModes audio adicionado em $PLIST" ;;
+          esac
+        done
       fi
     SH
   }

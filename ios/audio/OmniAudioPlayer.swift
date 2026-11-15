@@ -26,6 +26,16 @@ public final class OmniAudioPlayer: UIView {
 
   private let player = AVPlayer()
   private let ui = OmniAudioCard()
+  /// Lock screen controls (a no-op unless `modules.mediaSession` is on).
+  private lazy var nowPlaying = OmniNowPlaying(commands: .init(
+    play: { [weak self] in self?.play() },
+    pause: { [weak self] in self?.pause() },
+    skip: { [weak self] seconds in self?.skip(by: seconds) },
+    seek: { [weak self] seconds in self?.seek(to: seconds) }
+  ))
+  private var title = ""
+  private var artist = ""
+  private var artwork = ""
 
   private var source: String?
   private var shouldAutoPlay = false
@@ -89,6 +99,7 @@ public final class OmniAudioPlayer: UIView {
   }
 
   deinit {
+    nowPlaying.deactivate()
     if let timeObserver { player.removeTimeObserver(timeObserver) }
     clearItemObservers()
     player.pause()
@@ -131,9 +142,9 @@ public final class OmniAudioPlayer: UIView {
   }
 
   @objc public func setControls(_ value: Bool) { ui.isHidden = !value }
-  @objc public func setTitle(_ value: String) { ui.setTitle(value) }
-  @objc public func setArtist(_ value: String) { ui.setArtist(value) }
-  @objc public func setArtwork(_ value: String) { ui.setArtwork(value) }
+  @objc public func setTitle(_ value: String) { title = value; ui.setTitle(value); publishMetadata() }
+  @objc public func setArtist(_ value: String) { artist = value; ui.setArtist(value); publishMetadata() }
+  @objc public func setArtwork(_ value: String) { artwork = value; ui.setArtwork(value); publishMetadata() }
   @objc public func setAutoPlay(_ value: Bool) { shouldAutoPlay = value }
   @objc public func setLoop(_ value: Bool) { shouldLoop = value }
 
@@ -153,6 +164,7 @@ public final class OmniAudioPlayer: UIView {
     player.defaultRate = rate
     if isPlaying { player.rate = rate }
     ui.update(rate: rate)
+    publishNowPlaying()
     delegate?.audioDidChangeRate(Double(rate))
   }
 
@@ -185,6 +197,7 @@ public final class OmniAudioPlayer: UIView {
     lastBuffered = 0
     ui.update(current: 0, duration: 0, buffered: 0)
     ui.update(playing: false, buffering: false)
+    nowPlaying.deactivate()
     OmniAudioSession.release()
   }
 
@@ -202,6 +215,16 @@ public final class OmniAudioPlayer: UIView {
     player.isMuted.toggle()
   }
 
+  private func publishMetadata() {
+    nowPlaying.setMetadata(title: title, artist: artist, artwork: artwork)
+    publishNowPlaying()
+  }
+
+  /// Position, duration and speed for the lock screen (on every state change, not every tick).
+  private func publishNowPlaying() {
+    nowPlaying.publish(current: player.currentTime().seconds, duration: duration, rate: isPlaying ? playbackRate : 0)
+  }
+
   /// Audio session according to the current sound (see `OmniAudioSession`).
   private func prepareAudio() {
     OmniAudioSession.prepare(muted: player.isMuted || player.volume == 0)
@@ -213,6 +236,7 @@ public final class OmniAudioPlayer: UIView {
     switch item.status {
     case .readyToPlay:
       ui.update(current: lastTime, duration: duration)
+      publishNowPlaying()
       delegate?.audioDidLoad(duration)
       if shouldAutoPlay { play() }
     case .failed:
@@ -234,12 +258,15 @@ public final class OmniAudioPlayer: UIView {
     ui.update(playing: playing, buffering: false)
     guard playing != isPlaying else { return }
     isPlaying = playing
+    if playing { nowPlaying.activate() }
+    publishNowPlaying()
     if playing { delegate?.audioDidPlay() } else { delegate?.audioDidPause() }
   }
 
   private func didPlayToEnd() {
     guard !shouldLoop else { return restart() }
     OmniAudioSession.release()
+    publishNowPlaying()
     delegate?.audioDidEnd()
   }
 
@@ -253,6 +280,7 @@ public final class OmniAudioPlayer: UIView {
     guard to.isFinite, abs(to - lastTime) > 0.5 else { return }
     delegate?.audioDidSeek(from: lastTime, to: to)
     lastTime = to
+    publishNowPlaying()
   }
 
   private func bufferedChanged(_ item: AVPlayerItem) {

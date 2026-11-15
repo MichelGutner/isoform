@@ -62,13 +62,23 @@ export interface OmniModules {
    * Default `false`.
    */
   audio?: boolean;
+  /**
+   * Background audio with system controls for `Audio`: Android foreground service
+   * and media notification (Media3 `MediaSession`), iOS lock screen / Control Center
+   * (`MPNowPlayingInfoCenter`). **Build-time only**: it is read from
+   * `omnistyle.config.json` by Gradle and CocoaPods, and ignored in JS. Needs `audio`.
+   * Extra app setup: iOS `UIBackgroundModes` → `audio` in Info.plist; Android 13+
+   * runtime `POST_NOTIFICATIONS` permission to show the notification.
+   * Default `false`.
+   */
+  mediaSession?: boolean;
 }
 
-/** Name of an optional module (`'video'` | `'audio'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'mediaSession'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<Required<OmniModules>> = { video: false, audio: false };
+export const DEFAULT_MODULES: Readonly<Required<OmniModules>> = { video: false, audio: false, mediaSession: false };
 let modules: Required<OmniModules> = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

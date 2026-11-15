@@ -162,8 +162,141 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
+| `Video`, `Audio` | optional players, see [Optional modules](#optional-modules-video-and-audio) | native players |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
+
+## Optional modules: `Video` and `Audio`
+
+The media players are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
+
+```json
+{
+  "modules": {
+    "video": true,
+    "audio": true,
+    "mediaSession": false
+  }
+}
+```
+
+```ts
+import { configure } from 'omnistyle';
+import omnistyle from './omnistyle.config.json';
+
+configure({ modules: omnistyle.modules });
+```
+
+The same file drives every build, so a disabled module is really left out:
+
+| Where | What the file decides |
+|---|---|
+| Web (Vite, webpack, Next) | The player is a separate chunk, downloaded only when the module is on and a player renders. |
+| Metro (iOS/Android JS) | `withOmnistyle` in `metro.config.js` swaps disabled modules for an empty stub: `const { withOmnistyle } = require('omnistyle/metro'); module.exports = withOmnistyle(getDefaultConfig(__dirname));` |
+| Android (Gradle) | Media3, Compose and the module's Kotlin code are only compiled when on. |
+| iOS (CocoaPods) | The module's Swift and Objective-C++ are only compiled when on, with an empty shell otherwise. |
+
+On iOS the file is read at `pod install`. If you change it, run `cd ios && pod install`: the build stops with a clear message if the two are out of sync. Without the file, everything is compiled and only `configure` decides at runtime.
+
+| Module | Primitive | Web | iOS | Android |
+|---|---|---|---|---|
+| `video` | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + `AVPlayerViewController` | Media3 + Compose controls |
+| `audio` | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
+
+```tsx
+const Player = engine('Audio', () => ({ width: '100%' }));
+
+<Player src="https://example.com/episode.mp3" title="Episode 1" artist="My show" artwork="https://example.com/cover.jpg" />
+```
+
+Both share the same props (`src`, `autoPlay`, `loop`, `muted`, `rate`, `volume`) and events (`onPlay`, `onPause`, `onEnded`, `onTimeUpdate`, `onLoad`, `onError`, `onSeek`, `onBuffering`, `onBufferedChange`, `onVolumeChange`, `onRateChange`). The `ref` gives `play()`, `pause()` and `seekTo(seconds)`. `Video` adds `poster`, `onFullscreenChange` and `setFullscreen()`; `Audio` adds `title`, `artist` and `artwork`.
+
+### Background audio and notification controls (`mediaSession`)
+
+Add `"mediaSession": true` (it needs `audio`) so an `Audio` keeps playing with the screen locked or the app in the background, with controls outside the app. It is **build-time only** and off unless set explicitly, because it adds permissions to your app.
+
+| Platform | What you get | What the lib sets up for you |
+|---|---|---|
+| Android | A media notification (play/pause, ±10 s, seek bar, cover, title) and a foreground service | The lib's own manifest is merged at build time: the `mediaPlayback` service and the `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `POST_NOTIFICATIONS` permissions. No native code in your app. |
+| iOS | Lock screen and Control Center controls (play/pause, ±10 s, seek, cover, title) | The pod's build step adds `UIBackgroundModes` → `audio` to your app's `Info.plist` (a pod cannot declare it). The change shows up in git once. |
+
+What is left to you:
+
+- **Android 13+:** request the `POST_NOTIFICATIONS` permission at runtime. Without it, audio still plays but the notification is hidden.
+
+  ```ts
+  import { PermissionsAndroid, Platform } from 'react-native';
+
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+  }
+  ```
+
+- **iOS:** reinstall the pods after turning it on (the build then edits the `Info.plist` for you):
+
+  ```bash
+  cd ios && pod install
+  ```
+
+### Running the iOS setup by hand
+
+To apply the `Info.plist` change without building (e.g. in CI, or after `expo prebuild`-style regeneration of `ios/`), run from the app root:
+
+```bash
+node node_modules/omnistyle/scripts/setup-ios.js
+# or
+npx omnistyle-setup-ios
+# app in another folder (monorepo):
+npx omnistyle-setup-ios path/to/app
+```
+
+It only acts when `omnistyle.config.json` has `audio` and `mediaSession` on, runs on macOS only (it uses the system `plutil`) and is safe to run again.
+
+### Setting it up manually (no script, no build step)
+
+Prefer to own the native files? Leave `mediaSession` as `false` in the config and add this yourself (the player works the same, the controls and background playback depend on these entries).
+
+**iOS** (`ios/<App>/Info.plist`):
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+  <string>audio</string>
+</array>
+```
+
+Or, from a terminal:
+
+```bash
+/usr/bin/plutil -insert UIBackgroundModes -json '["audio"]' ios/<App>/Info.plist
+# if the key already exists (e.g. "fetch"), add to it instead:
+/usr/bin/plutil -insert UIBackgroundModes.0 -string audio ios/<App>/Info.plist
+```
+
+The lock screen controls themselves (`MPNowPlayingInfoCenter`) are compiled only with `mediaSession: true`; the plist entry alone just lets audio keep playing in the background.
+
+**Android** (`android/app/src/main/AndroidManifest.xml`). With `mediaSession: true` the lib's own manifest already adds the entries below at build time, so there is nothing to write. They are listed so you can see what is added, or override it in your manifest (for example `tools:node="remove"` on `POST_NOTIFICATIONS` if you do not want that permission):
+
+```xml
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+<application ...>
+  <service
+    android:name="com.omnistyle.OmniMediaService"
+    android:exported="true"
+    android:foregroundServiceType="mediaPlayback">
+    <intent-filter>
+      <action android:name="androidx.media3.session.MediaSessionService" />
+    </intent-filter>
+  </service>
+</application>
+```
+
+The `OmniMediaService` class only exists when `mediaSession` is `true`, so the flag must be on for the service to be compiled; the manifest entries alone do nothing.
+
+Notes: the iOS build step and script run on macOS only (iOS builds happen there anyway); Android builds on any OS. If your Xcode project has `ENABLE_USER_SCRIPT_SANDBOXING = YES` the build step cannot write the plist (React Native's template sets it to `NO`); run the script or the `plutil` command by hand in that case.
 
 ## Conditional styling
 

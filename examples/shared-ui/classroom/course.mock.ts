@@ -10,6 +10,12 @@ const VIDEOS = {
   hls: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
 };
 
+/** Áudio público para testar o player de áudio (MP3). */
+const AUDIO = {
+  /** SoundHelix, música de teste livre. */
+  song: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+};
+
 /** Curso de exemplo (no app real viria da API). */
 export const course: Course = {
   title: 'Cardiologia clínica',
@@ -22,7 +28,8 @@ export const course: Course = {
       assets: [
         { id: 'a1', title: 'Anatomia do coração', kind: 'video', detail: '14 min', src: VIDEOS.flower },
         { id: 'a2', title: 'Ciclo cardíaco', kind: 'video', detail: '18 min', src: VIDEOS.bunny },
-        { id: 'a3', title: 'Resumo: fisiologia cardíaca', kind: 'pdf', detail: '12 páginas' },
+        { id: 'a3', title: 'Podcast: ausculta cardíaca', kind: 'audio', detail: '6 min', src: AUDIO.song },
+        { id: 'a3b', title: 'Resumo: fisiologia cardíaca', kind: 'pdf', detail: '12 páginas' },
       ],
     },
     {

@@ -4,7 +4,7 @@ import type { Asset, AssetKind, Module } from './types';
 
 /* ───────────────────────── item (conteúdo) ───────────────────────── */
 
-const KIND_ICON: Record<AssetKind, string> = { video: '▶', pdf: '📄', quiz: '✎' };
+const KIND_ICON: Record<AssetKind, string> = { video: '▶', audio: '♪', pdf: '📄', quiz: '✎' };
 
 const Row = engine<'Pressable', { active?: boolean }>('Pressable', ({ theme }) => ({
   flexDirection: 'row',

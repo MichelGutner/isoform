@@ -96,6 +96,27 @@ function VideoPreview({ src }: { src: string }) {
   );
 }
 
+/* ───────────────────────── áudio ───────────────────────── */
+
+/** `engine('Audio')`: cartão do player (capa, título, barra, velocidade, mudo). */
+const AudioPlayer = engine('Audio', () => ({ width: '100%' }));
+
+function AudioPreview({ src, title }: { src: string; title: string }) {
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <VideoBox>
+      <AudioPlayer
+        src={src}
+        title={title}
+        artist="Cardiologia clínica"
+        testID="audio-player"
+        onError={setError}
+      />
+      {error ? <VideoStatus error>Não foi possível tocar este áudio: {error}</VideoStatus> : null}
+    </VideoBox>
+  );
+}
+
 /* ───────────────────────── PDF ───────────────────────── */
 
 const Paper = engine('Box', ({ theme }) => ({
@@ -174,6 +195,8 @@ export function AssetPreview({ asset }: { asset: Asset }) {
   switch (asset.kind) {
     case 'video':
       return asset.src ? <VideoPreview src={asset.src} /> : null;
+    case 'audio':
+      return asset.src ? <AudioPreview src={asset.src} title={asset.title} /> : null;
     case 'pdf':
       return <PdfPreview detail={asset.detail} />;
     case 'quiz':

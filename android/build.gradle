@@ -3,7 +3,7 @@
 //
 // Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 // (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-//   { "modules": { "video": true, "audio": true } }
+//   { "modules": { "video": true, "audio": true, "mediaSession": true } }
 // Módulo fora do arquivo (ou `false`) não é compilado: sem Media3 nem Compose no APK.
 // Sem o arquivo, tudo é compilado e só o `configure` decide em runtime.
 
@@ -32,7 +32,10 @@ def videoEnabled = omnistyleModule("video")
 def audioEnabled = omnistyleModule("audio")
 // player e interface (Media3 + Compose) são comuns aos dois módulos
 def mediaEnabled = videoEnabled || audioEnabled
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+// foreground service + controles na notificação: só com `"mediaSession": true` explícito
+// (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
+def mediaSessionEnabled = audioEnabled && omnistyleConfig != null && omnistyleConfig.modules?.get("mediaSession") == true
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
@@ -69,7 +72,13 @@ android {
   sourceSets {
     main {
       if (videoEnabled) java.srcDirs += "src/video/java"
-      if (audioEnabled) java.srcDirs += "src/audio/java"
+      if (audioEnabled) {
+        java.srcDirs += "src/audio/java"
+        // o áudio sempre chama `OmniMediaSession`: a versão real (serviço) ou a vazia
+        java.srcDirs += (mediaSessionEnabled ? "src/mediaSession/java" : "src/mediaSessionOff/java")
+      }
+      // o manifest com o serviço e as permissões só entra com `mediaSession` ligado
+      if (mediaSessionEnabled) manifest.srcFile "src/mediaSession/AndroidManifest.xml"
     }
   }
 
@@ -103,6 +112,11 @@ dependencies {
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.foundation:foundation"
     implementation "androidx.compose.animation:animation"
+  }
+
+  // controles na notificação do sistema (MediaSession + foreground service)
+  if (mediaSessionEnabled) {
+    implementation "androidx.media3:media3-session:$media3Version"
   }
 
   // a superfície do vídeo dentro do Compose (`ContentFrame`) só é usada pelo vídeo

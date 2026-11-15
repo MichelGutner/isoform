@@ -1,6 +1,6 @@
 /** Modelo de dados da sala de aula. */
 
-export type AssetKind = 'video' | 'pdf' | 'quiz';
+export type AssetKind = 'video' | 'audio' | 'pdf' | 'quiz';
 
 /** Um conteúdo da aula (o que aparece na playlist e no player). */
 export interface Asset {
@@ -9,7 +9,7 @@ export interface Asset {
   kind: AssetKind;
   /** Texto curto de apoio, como "12 min" ou "5 questões". */
   detail: string;
-  /** Endereço do vídeo (MP4 ou HLS), só para `kind: 'video'`. */
+  /** Endereço do vídeo (MP4 ou HLS) ou do áudio (MP3), só para `kind: 'video'` e `'audio'`. */
   src?: string;
 }
 
