@@ -11,6 +11,8 @@ export interface Asset {
   detail: string;
   /** Endereço do vídeo (MP4 ou HLS) ou do áudio (MP3), só para `kind: 'video'` e `'audio'`. */
   src?: string;
+  /** Endereço da capa, só para `kind: 'audio'`. */
+  cover?: string;
 }
 
 /** Um módulo agrupa conteúdos (é o "acordeão" da playlist). */

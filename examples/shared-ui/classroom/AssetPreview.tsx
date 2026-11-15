@@ -101,7 +101,7 @@ function VideoPreview({ src }: { src: string }) {
 /** `engine('Audio')`: cartão do player (capa, título, barra, velocidade, mudo). */
 const AudioPlayer = engine('Audio', () => ({ width: '100%' }));
 
-function AudioPreview({ src, title }: { src: string; title: string }) {
+function AudioPreview({ src, title, cover }: { src: string; title: string; cover?: string }) {
   const [error, setError] = useState<string | null>(null);
   return (
     <VideoBox>
@@ -109,6 +109,7 @@ function AudioPreview({ src, title }: { src: string; title: string }) {
         src={src}
         title={title}
         artist="Cardiologia clínica"
+        artwork={cover}
         testID="audio-player"
         onError={setError}
       />
@@ -196,7 +197,7 @@ export function AssetPreview({ asset }: { asset: Asset }) {
     case 'video':
       return asset.src ? <VideoPreview src={asset.src} /> : null;
     case 'audio':
-      return asset.src ? <AudioPreview src={asset.src} title={asset.title} /> : null;
+      return asset.src ? <AudioPreview src={asset.src} title={asset.title} cover={asset.cover} /> : null;
     case 'pdf':
       return <PdfPreview detail={asset.detail} />;
     case 'quiz':

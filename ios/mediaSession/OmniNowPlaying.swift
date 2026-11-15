@@ -75,6 +75,7 @@ public final class OmniNowPlaying: NSObject {
     if duration > 0 { info[MPMediaItemPropertyPlaybackDuration] = duration }
     if let artwork { info[MPMediaItemPropertyArtwork] = artwork }
     MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    MPNowPlayingInfoCenter.default().playbackState = rate > 0 ? .playing : .paused
   }
 
   // MARK: - System buttons
@@ -88,6 +89,9 @@ public final class OmniNowPlaying: NSObject {
       center.skipForwardCommand, center.skipBackwardCommand, center.changePlaybackPositionCommand,
     ]
     enabled.forEach { $0.isEnabled = true }
+    // same buttons as the card (−10 s · play/pause · +10 s): no next/previous track
+    [center.nextTrackCommand, center.previousTrackCommand, center.seekForwardCommand, center.seekBackwardCommand]
+      .forEach { $0.isEnabled = false }
 
     add(center.playCommand) { [commands] _ in commands.play(); return .success }
     add(center.pauseCommand) { [commands] _ in commands.pause(); return .success }

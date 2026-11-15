@@ -36,6 +36,9 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
       true,
     )
     .setHandleAudioBecomingNoisy(true)
+    // ±10 s, like the card and the system controls (the default is 5 s back, 15 s forward)
+    .setSeekBackIncrementMs(10_000)
+    .setSeekForwardIncrementMs(10_000)
     .build()
 
   /** State read by the Compose controls (updated by the listener and the ticker). */
@@ -155,6 +158,7 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
       return
     }
     player.setMediaItem(MediaItem.fromUri(value))
+    OmniMediaSession.setMetadata(player, ui.title, ui.artist, ui.artwork)
     player.prepare()
   }
 

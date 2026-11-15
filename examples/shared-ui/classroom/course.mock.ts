@@ -14,6 +14,8 @@ const VIDEOS = {
 const AUDIO = {
   /** SoundHelix, música de teste livre. */
   song: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  /** Capa de teste (Picsum, a mesma imagem para a mesma "semente"). Aparece no cartão e nos controles do sistema. */
+  cover: 'https://picsum.photos/seed/omnistyle-audio/600/600',
 };
 
 /** Curso de exemplo (no app real viria da API). */
@@ -28,7 +30,7 @@ export const course: Course = {
       assets: [
         { id: 'a1', title: 'Anatomia do coração', kind: 'video', detail: '14 min', src: VIDEOS.flower },
         { id: 'a2', title: 'Ciclo cardíaco', kind: 'video', detail: '18 min', src: VIDEOS.bunny },
-        { id: 'a3', title: 'Podcast: ausculta cardíaca', kind: 'audio', detail: '6 min', src: AUDIO.song },
+        { id: 'a3', title: 'Podcast: ausculta cardíaca', kind: 'audio', detail: '6 min', src: AUDIO.song, cover: AUDIO.cover },
         { id: 'a3b', title: 'Resumo: fisiologia cardíaca', kind: 'pdf', detail: '12 páginas' },
       ],
     },
