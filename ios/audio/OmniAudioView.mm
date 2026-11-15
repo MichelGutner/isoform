@@ -7,6 +7,8 @@
 
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
+// O header gerado do Swift (compartilhado com o vídeo) cita `AVPlayerViewControllerDelegate` sem importar o AVKit.
+#import <AVKit/AVKit.h>
 
 #import <react/renderer/components/OmnistyleSpec/ComponentDescriptors.h>
 #import <react/renderer/components/OmnistyleSpec/EventEmitters.h>

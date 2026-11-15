@@ -161,7 +161,7 @@ public final class OmniAudioPlayer: UIView {
     let rate = value > 0 ? value : 1
     guard rate != playbackRate else { return }
     playbackRate = rate
-    player.defaultRate = rate
+    if #available(iOS 16.0, *) { player.defaultRate = rate }
     if isPlaying { player.rate = rate }
     ui.update(rate: rate)
     publishNowPlaying()

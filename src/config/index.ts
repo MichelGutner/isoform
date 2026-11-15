@@ -36,7 +36,7 @@ export interface ConfigureOptions {
    * Optional modules. **All off by default.** The recommended way is an
    * `omnistyle.config.json` at the app root, passed here:
    * ```ts
-   * // omnistyle.config.json → { "modules": { "video": true } }
+   * // omnistyle.config.json → { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true } } }
    * import omnistyle from './omnistyle.config.json';
    * configure({ modules: omnistyle.modules });
    * ```
@@ -47,39 +47,57 @@ export interface ConfigureOptions {
   modules?: OmniModules;
 }
 
-/** The lib's optional modules. Every one is `false` (off) unless turned on. */
+/** Options every optional module accepts when it is turned on with an object. */
+export interface ModuleOptions {
+  /** Turns the module on. Default `false`: an object without `enabled: true` leaves it off. */
+  enabled?: boolean;
+}
+
+/** Options of the `audio` module. */
+export interface AudioModuleOptions extends ModuleOptions {
+  /**
+   * Background audio with system controls: Android foreground service and media
+   * notification (Media3 `MediaSession`), iOS lock screen / Control Center
+   * (`MPNowPlayingInfoCenter`). **Build-time only**: Gradle and CocoaPods read it
+   * from `omnistyle.config.json`; it is ignored in JS. Only applies when `enabled` is `true`.
+   * Extra app setup: Android 13+ runtime `POST_NOTIFICATIONS` permission to show the
+   * notification. (On iOS the build adds `UIBackgroundModes` → `audio` to Info.plist.)
+   * Default `false`.
+   */
+  mediaSession?: boolean;
+}
+
+/**
+ * The lib's optional modules. Every one is off unless turned on, either with
+ * `true` or with an object (`{ enabled: true, ...options }`).
+ */
 export interface OmniModules {
   /**
    * `engine('Video')`: a video player. Web: `<video>` with the lib's controls
    * (loaded on demand). iOS: AVPlayer. Android: Media3 ExoPlayer with Jetpack Compose controls.
    * Default `false`.
    */
-  video?: boolean;
+  video?: boolean | ModuleOptions;
   /**
    * `engine('Audio')`: an audio player with title, artist and cover. Web: `<audio>`
    * with the lib's controls (loaded on demand). iOS: AVPlayer with a UIKit card.
    * Android: Media3 ExoPlayer with Jetpack Compose controls.
+   * Use an object for options: `{ enabled: true, mediaSession: true }`.
    * Default `false`.
    */
-  audio?: boolean;
-  /**
-   * Background audio with system controls for `Audio`: Android foreground service
-   * and media notification (Media3 `MediaSession`), iOS lock screen / Control Center
-   * (`MPNowPlayingInfoCenter`). **Build-time only**: it is read from
-   * `omnistyle.config.json` by Gradle and CocoaPods, and ignored in JS. Needs `audio`.
-   * Extra app setup: iOS `UIBackgroundModes` → `audio` in Info.plist; Android 13+
-   * runtime `POST_NOTIFICATIONS` permission to show the notification.
-   * Default `false`.
-   */
-  mediaSession?: boolean;
+  audio?: boolean | AudioModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'mediaSession'`). */
+/** Name of an optional module (`'video'` | `'audio'`). */
 export type ModuleName = keyof OmniModules;
 
+/** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
+const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
+  setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
+
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<Required<OmniModules>> = { video: false, audio: false, mediaSession: false };
-let modules: Required<OmniModules> = { ...DEFAULT_MODULES };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false };
+let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */
 let bundled: PlatformAdapter | null = null;
@@ -111,7 +129,7 @@ export function resetProvider(): void {
 }
 
 /** Whether the module was turned on with `configure({ modules })`. */
-export const isModuleEnabled = (name: ModuleName): boolean => modules[name];
+export const isModuleEnabled = (name: ModuleName): boolean => isOn(modules[name]);
 
 /**
  * The active platform adapter (the one chosen by `configure`, or the bundled one).

@@ -1,6 +1,6 @@
 {
   "modules": {
-    "video": true,
-    "audio": true
+    "video": { "enabled": true },
+    "audio": { "enabled": true, "mediaSession": true }
   }
 }

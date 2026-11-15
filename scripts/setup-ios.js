@@ -9,7 +9,7 @@
  *   node node_modules/omnistyle/scripts/setup-ios.js [app-root]
  *
  * It only acts when `omnistyle.config.json` (at the app root) has
- * `modules.mediaSession: true` and is safe to run again (idempotent).
+ * `modules.audio: { enabled: true, mediaSession: true }` and is safe to run again (idempotent).
  * Android needs nothing: the library's own manifest is merged at build time.
  */
 const fs = require('fs');
@@ -18,6 +18,9 @@ const { execFileSync } = require('child_process');
 
 const root = path.resolve(process.argv[2] ?? process.cwd());
 const MODE = 'audio';
+
+/** `true` or `{ enabled: true }`. */
+const isOn = (setting) => setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 const log = (message) => console.log(`[omnistyle] ${message}`);
 const fail = (message) => {
@@ -65,8 +68,8 @@ function enableAudio(file) {
 
 function main() {
   const modules = readModules();
-  if (modules.mediaSession !== true || modules.audio !== true) {
-    return log('modules.audio and modules.mediaSession are not both true in omnistyle.config.json: nothing to do.');
+  if (!isOn(modules.audio) || modules.audio.mediaSession !== true) {
+    return log('modules.audio is not { enabled: true, mediaSession: true } in omnistyle.config.json: nothing to do.');
   }
   if (process.platform !== 'darwin') return fail('run this on macOS (it uses plutil).');
 

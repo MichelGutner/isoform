@@ -11,7 +11,14 @@ export type { Engine } from './core/engine';
 export { keyframes } from './core/keyframes';
 export type { Keyframes } from './core/keyframes';
 export { configure, getProvider } from './config';
-export type { ConfigureOptions, ModuleName, OmniModules, ProviderName } from './config';
+export type {
+  AudioModuleOptions,
+  ConfigureOptions,
+  ModuleName,
+  ModuleOptions,
+  OmniModules,
+  ProviderName,
+} from './config';
 export type { PlatformAdapter, ApplyPropsInput, StateStyles } from './core/adapter';
 export type {
   Condition,

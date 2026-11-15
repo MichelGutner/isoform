@@ -173,12 +173,13 @@ The media players are **optional and off by default**, so apps that do not use t
 ```json
 {
   "modules": {
-    "video": true,
-    "audio": true,
-    "mediaSession": false
+    "video": { "enabled": true },
+    "audio": { "enabled": true, "mediaSession": false }
   }
 }
 ```
+
+Each module takes `true` or an object (`{ "enabled": true, ...options }`), so `"video": true` works too. A module is only on with `true` or `enabled: true`; an object without it stays off.
 
 ```ts
 import { configure } from 'omnistyle';
@@ -213,7 +214,7 @@ Both share the same props (`src`, `autoPlay`, `loop`, `muted`, `rate`, `volume`)
 
 ### Background audio and notification controls (`mediaSession`)
 
-Add `"mediaSession": true` (it needs `audio`) so an `Audio` keeps playing with the screen locked or the app in the background, with controls outside the app. It is **build-time only** and off unless set explicitly, because it adds permissions to your app.
+Set `audio.mediaSession` to `true` (next to `"enabled": true`) so an `Audio` keeps playing with the screen locked or the app in the background, with controls outside the app. It is **build-time only** and off unless set explicitly, because it adds permissions to your app.
 
 | Platform | What you get | What the lib sets up for you |
 |---|---|---|
@@ -250,11 +251,11 @@ npx omnistyle-setup-ios
 npx omnistyle-setup-ios path/to/app
 ```
 
-It only acts when `omnistyle.config.json` has `audio` and `mediaSession` on, runs on macOS only (it uses the system `plutil`) and is safe to run again.
+It only acts when `omnistyle.config.json` has `audio: { enabled: true, mediaSession: true }`, runs on macOS only (it uses the system `plutil`) and is safe to run again.
 
 ### Setting it up manually (no script, no build step)
 
-Prefer to own the native files? Leave `mediaSession` as `false` in the config and add this yourself (the player works the same, the controls and background playback depend on these entries).
+Prefer to own the native files? Leave `audio.mediaSession` as `false` in the config and add this yourself (the player works the same, the controls and background playback depend on these entries).
 
 **iOS** (`ios/<App>/Info.plist`):
 
@@ -275,7 +276,7 @@ Or, from a terminal:
 
 The lock screen controls themselves (`MPNowPlayingInfoCenter`) are compiled only with `mediaSession: true`; the plist entry alone just lets audio keep playing in the background.
 
-**Android** (`android/app/src/main/AndroidManifest.xml`). With `mediaSession: true` the lib's own manifest already adds the entries below at build time, so there is nothing to write. They are listed so you can see what is added, or override it in your manifest (for example `tools:node="remove"` on `POST_NOTIFICATIONS` if you do not want that permission):
+**Android** (`android/app/src/main/AndroidManifest.xml`). With `audio.mediaSession: true` the lib's own manifest already adds the entries below at build time, so there is nothing to write. They are listed so you can see what is added, or override it in your manifest (for example `tools:node="remove"` on `POST_NOTIFICATIONS` if you do not want that permission):
 
 ```xml
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

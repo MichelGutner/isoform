@@ -4,7 +4,8 @@ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 # Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 # (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-#   { "modules": { "video": true, "audio": true, "mediaSession": true } }
+#   { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true } } }
+# (cada módulo aceita `true` ou `{ "enabled": true, ...opções }`)
 # Módulo fora do arquivo (ou `false`) não é compilado. Sem o arquivo, tudo é
 # compilado e só o `configure` decide em runtime. Depois de mudar: `pod install`.
 #
@@ -12,12 +13,14 @@ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 config_file = File.join(Pod::Config.instance.installation_root.to_s, "..", "omnistyle.config.json")
 omnistyle_config = File.exist?(config_file) ? JSON.parse(File.read(config_file)) : nil
 # (lambda, não `def`: o CocoaPods avalia o podspec dentro do módulo `Pod`)
-omnistyle_module = ->(name) { omnistyle_config.nil? || omnistyle_config.dig("modules", name) == true }
+omnistyle_on = ->(setting) { setting == true || (setting.is_a?(Hash) && setting["enabled"] == true) }
+omnistyle_module = ->(name) { omnistyle_config.nil? || omnistyle_on.call(omnistyle_config.dig("modules", name)) }
 
 video = omnistyle_module.call("video")
 audio = omnistyle_module.call("audio")
-# controles na tela de bloqueio: só com `"mediaSession": true` explícito (nunca por padrão)
-media_session = audio && !omnistyle_config.nil? && omnistyle_config.dig("modules", "mediaSession") == true
+# controles na tela de bloqueio: só com `audio.mediaSession: true` explícito (nunca por padrão)
+audio_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "audio")
+media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSession"] == true
 Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}"
 
 Pod::Spec.new do |s|
@@ -53,7 +56,7 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; puts(m.nil? ? "video:true,audio:true,mediaSession:false" : "video:" + (m["video"] == true).to_s + ",audio:" + (m["audio"] == true).to_s + ",mediaSession:" + (m["mediaSession"] == true && m["audio"] == true).to_s)' "$CONFIG")
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false" else a = m["audio"]; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s end' "$CONFIG")
       EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"

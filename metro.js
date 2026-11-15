@@ -20,12 +20,15 @@ const MODULE_FILES = {
   audio: /[\\/]adapters[\\/]react-native[\\/]media[\\/]audio[\\/]Audio\.(tsx|js)$/,
 };
 
-/** `{ video: true, audio: false }` do arquivo, ou `null` se o app não tem o arquivo. */
+/** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */
 function readModules(projectRoot) {
   const file = path.join(projectRoot, CONFIG_FILE);
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, 'utf8')).modules ?? {};
 }
+
+/** `true` ou `{ enabled: true }`. */
+const isEnabled = (setting) => setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 const disabledVersion = (filePath) => filePath.replace(/\.(tsx|js)$/, '.disabled.$1');
 
@@ -34,7 +37,7 @@ function withOmnistyle(config, { projectRoot = config.projectRoot ?? process.cwd
   if (!modules) return config;
 
   const off = Object.entries(MODULE_FILES)
-    .filter(([name]) => modules[name] !== true)
+    .filter(([name]) => !isEnabled(modules[name]))
     .map(([, pattern]) => pattern);
   if (!off.length) return config;
 
