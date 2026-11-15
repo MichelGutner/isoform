@@ -9,6 +9,8 @@ export interface Asset {
   kind: AssetKind;
   /** Texto curto de apoio, como "12 min" ou "5 questões". */
   detail: string;
+  /** Endereço do vídeo (MP4 ou HLS), só para `kind: 'video'`. */
+  src?: string;
 }
 
 /** Um módulo agrupa conteúdos (é o "acordeão" da playlist). */

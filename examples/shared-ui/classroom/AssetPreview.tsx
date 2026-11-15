@@ -1,74 +1,98 @@
 import { useState } from 'react';
-import { engine, keyframes } from 'omnistyle';
+import { engine } from 'omnistyle';
 import type { Asset } from './types';
 
 /**
- * Pré-visualização do conteúdo por tipo. No app real, cada tipo vira o
- * componente de verdade (VideoPlayer, PdfViewer, Quiz); aqui são só placeholders.
+ * Conteúdo da aula por tipo. O vídeo usa o player real da lib (`engine('Video')`);
+ * PDF e quiz ainda são placeholders.
  */
 
 /* ───────────────────────── vídeo ───────────────────────── */
 
-const Player = engine('Box', ({ theme }) => ({
-  aspectRatio: 16 / 9,
+/**
+ * O player de verdade: `engine('Video')` vira `<video>` na web e o componente
+ * nativo da lib no mobile (AVPlayer no iOS, Media3 no Android).
+ */
+const Player = engine('Video', ({ theme }) => ({
   width: '100%',
+  aspectRatio: 16 / 9,
   borderRadius: theme.borderRadius?.lg,
   backgroundColor: theme.color.brandDark,
-  alignItems: 'center',
-  justifyContent: 'center',
-  overflow: 'hidden',
 }));
 
-const PlayButton = engine('Pressable', {
-  width: 64,
-  height: 64,
-  borderRadius: 32,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  transition: 'transform 150ms',
-})
-  .when('hover', { style: { transform: 'scale(1.08)' } })
-  .when('pressed', { style: { transform: 'scale(0.95)' } })
-  .when('web', { style: { cursor: 'pointer' } });
+const VideoBox = engine('Box', ({ theme }) => ({ width: '100%', gap: theme.spacing.sm }));
 
-const PlayIcon = engine('Text', { color: '#ffffff', fontSize: 24 });
-
-/** A barra de progresso do vídeo desliza da esquerda enquanto "toca". */
-const slideIn = keyframes({
-  from: { transform: 'translateX(-1200px)' },
-  to: { transform: 'translateX(0px)' },
-});
-
-const VideoTrack = engine('Box', {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: 0,
-  height: 4,
-  overflow: 'hidden',
-  backgroundColor: 'rgba(255, 255, 255, 0.25)',
-});
-
-const VideoFill = engine('Box', ({ theme }) => ({
-  height: 4,
-  backgroundColor: theme.color.primary,
-  animation: `${slideIn} 20s linear both`,
+const VideoStatus = engine<'Text', { error?: boolean }>('Text', ({ theme, props }) => ({
+  fontSize: 13,
+  color: props.error ? theme.color.error : theme.color.muted,
 }));
 
-function VideoPreview() {
-  const [playing, setPlaying] = useState(false);
+const clock = (seconds: number) => {
+  const total = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+};
+
+const EventLog = engine('Box', ({ theme }) => ({
+  gap: 2,
+  padding: theme.spacing.sm,
+  borderRadius: theme.borderRadius?.md,
+  backgroundColor: theme.color.brandSurface,
+}));
+
+const EventLine = engine('Text', ({ theme }) => ({ fontSize: 12, color: theme.color.text, fontFamily: 'monospace' }));
+
+/** Quantos eventos o registro mostra (os mais recentes primeiro). */
+const LOG_SIZE = 6;
+
+function VideoPreview({ src }: { src: string }) {
+  const [time, setTime] = useState({ currentTime: 0, duration: 0 });
+  const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<string[]>([]);
+
+  // Registro das ações do player, para testar de ponta a ponta o que chega ao JS.
+  const log = (text: string) => setEvents((prev) => [text, ...prev].slice(0, LOG_SIZE));
+  const s = (seconds: number) => `${seconds.toFixed(1)}s`;
+
   return (
-    <Player>
-      <PlayButton onPress={() => setPlaying(!playing)} testID="play">
-        <PlayIcon>{playing ? '❚❚' : '▶'}</PlayIcon>
-      </PlayButton>
-      {playing ? (
-        <VideoTrack>
-          <VideoFill />
-        </VideoTrack>
+    <VideoBox>
+      <Player
+        src={src}
+        testID="video-player"
+        onLoad={({ duration, width, height }) => {
+          setTime({ currentTime: 0, duration });
+          log(`load ${s(duration)} ${width}×${height}`);
+        }}
+        onTimeUpdate={setTime}
+        onError={(message) => {
+          setError(message);
+          log(`error ${message}`);
+        }}
+        onPlay={() => log('play')}
+        onPause={() => log('pause')}
+        onEnded={() => log('ended')}
+        onSeek={({ from, to }) => log(`seek ${s(from)} → ${s(to)}`)}
+        onBuffering={(buffering) => log(buffering ? 'buffering…' : 'buffering ok')}
+        onBufferedChange={(buffered) => log(`buffered ${s(buffered)}`)}
+        onVolumeChange={({ volume, muted }) => log(`volume ${volume.toFixed(2)}${muted ? ' (mudo)' : ''}`)}
+        onRateChange={(rate) => log(`rate ${rate}x`)}
+        onFullscreenChange={(fullscreen) => log(fullscreen ? 'fullscreen on' : 'fullscreen off')}
+        onPictureInPictureChange={(active) => log(active ? 'pip on' : 'pip off')}
+      />
+      {error ? (
+        <VideoStatus error>Não foi possível tocar este vídeo: {error}</VideoStatus>
+      ) : (
+        <VideoStatus>
+          {clock(time.currentTime)} / {clock(time.duration)}
+        </VideoStatus>
+      )}
+      {events.length ? (
+        <EventLog testID="video-events">
+          {events.map((text, i) => (
+            <EventLine key={`${i}-${text}`}>{text}</EventLine>
+          ))}
+        </EventLog>
       ) : null}
-    </Player>
+    </VideoBox>
   );
 }
 
@@ -149,7 +173,7 @@ function QuizPreview() {
 export function AssetPreview({ asset }: { asset: Asset }) {
   switch (asset.kind) {
     case 'video':
-      return <VideoPreview />;
+      return asset.src ? <VideoPreview src={asset.src} /> : null;
     case 'pdf':
       return <PdfPreview detail={asset.detail} />;
     case 'quiz':
