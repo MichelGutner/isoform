@@ -15,6 +15,7 @@ export default function RootLayout() {
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="universal" options={{ title: 'Universal (shared-ui)' }} />
+      <Stack.Screen name="classroom" options={{ title: 'Sala de aula' }} />
     </Stack>
   );
 }

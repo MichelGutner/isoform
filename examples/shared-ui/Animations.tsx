@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { engine, keyframes } from 'omnistyle';
-import { Body, Button, ButtonLabel, Card, Heading, Row } from './ui';
+import { Body, Button, ButtonLabel, Card, Heading, Row, themeFade } from './ui';
 
 /**
  * Laboratório de animações: tudo declarado com `keyframes()` + `animation` e
@@ -10,7 +10,11 @@ import { Body, Button, ButtonLabel, Card, Heading, Row } from './ui';
 
 // ───────────── 1 · rotação infinita linear (transform, native driver) ─────────────
 const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
-
+const pulse = keyframes({
+  '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+  '50%': { transform: 'scale(1.4)', opacity: 0.4 },
+});
+ 
 const Ring = engine('Box', ({ theme }) => ({
   width: 44,
   height: 44,
@@ -18,7 +22,9 @@ const Ring = engine('Box', ({ theme }) => ({
   borderWidth: 4,
   borderColor: theme.color.border,
   borderTopColor: theme.color.primary,
-  animation: `${spin} 800ms linear infinite`,
+  animation: `${spin} 1800ms linear infinite`,
+  // animation: `${pulse} 1.9s infinite`
+  // animation: `${spin} 2s linear infinite`,
 }));
 
 // ───────────── 2 · órbita: rotação lenta + núcleo que pulsa e troca de cor ─────────────
@@ -95,6 +101,7 @@ const shimmer = keyframes({
 });
 
 const SkeletonTrack = engine('Box', ({ theme }) => ({
+  transition: themeFade(),
   height: 14,
   width: '100%',
   borderRadius: 7,

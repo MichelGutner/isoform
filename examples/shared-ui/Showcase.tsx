@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine, getTheme, updateTheme, useTheme } from 'omnistyle';
+import { engine, getProvider, getTheme, useTheme } from 'omnistyle';
 import {
   Badge,
   BadgeText,
@@ -17,8 +17,14 @@ import {
   Title,
 } from './ui';
 import { AnimationLab } from './Animations';
+import { Cubes } from './Cubes';
+import { Gyroscope } from './Gyroscope';
+import { Helix } from './Helix';
+import { PrismScene } from './Prism';
+import { WaveGrid } from './WaveGrid';
 import { PseudoLab, TransitionLab } from './Pseudo';
 import { ResponsiveDemo } from './Responsive';
+import { useThemeBubble } from './ThemeBubble';
 import { darkTokens, lightTokens } from './tokens';
 
 /** Um componente de página ESCRITO UMA VEZ e renderizado na web e no mobile. */
@@ -46,13 +52,17 @@ export function Showcase() {
   const [count, setCount] = useState(0);
   const [tag, setTag] = useState('web');
 
-  const toggleDark = () => {
-    updateTheme(dark ? lightTokens : darkTokens);
+  const { switchTheme, backdrop } = useThemeBubble();
+  const toggleDark = (event?: unknown) => {
+    const next = dark ? lightTokens : darkTokens;
+    switchTheme(event, next, next.color.background);
     setDark(!dark);
   };
 
   return (
-    <Screen>
+    <>
+    {backdrop}
+    <Screen style={{ backgroundColor: 'transparent' }}>
       <Page>
         <Header>
           <Title>omnistyle</Title>
@@ -131,6 +141,39 @@ export function Showcase() {
 
         <TransitionLab />
 
+        {/* <Card>
+          <Heading>Hélice (animação difícil)</Heading>
+          <Body muted>36 keyframes de 21 quadros: translateX + scale + opacity + cor mudando juntos, defasados.</Body>
+          <Helix />
+        </Card>
+
+        <Card>
+          <Heading>Giroscópio (ainda mais difícil)</Heading>
+          <Body muted>3D aninhado, morfose do núcleo, entrada com delay e 24 partículas em Lissajous.</Body>
+          <Gyroscope />
+        </Card>
+
+        <Card>
+          <Heading>Grade de ondas (nível máximo)</Heading>
+          <Body muted>49 células × 3 camadas: onda, torção, colapso. Cor por crossfade de opacity: tudo no driver nativo.</Body>
+          <WaveGrid />
+        </Card>
+
+        <Card>
+          <Heading>Cubos 3D (web e mobile)</Heading>
+          <Body muted>3D projetado em JS e assado nos keyframes: rotate + skewX + scale por face, luz e faces ocultas por opacity.</Body>
+          <Cubes />
+        </Card> */}
+
+        {/* só na web: usa 3D real (translateZ), conic-gradient, backdrop-filter, clip-path… */}
+        {getProvider().os() === 'web' && (
+          <Card>
+            <Heading>Prisma 3D (só web)</Heading>
+            <Body muted>preserve-3d, translateZ, conic-gradient, backdrop-filter, mix-blend-mode, clip-path e filter animados.</Body>
+            <PrismScene />
+          </Card>
+        )}
+
         <AnimationLab />
 
         <PlatformCard>
@@ -139,5 +182,6 @@ export function Showcase() {
         </PlatformCard>
       </Page>
     </Screen>
+    </>
   );
 }

@@ -14,6 +14,10 @@ declare global {
       success?: string;
       warning?: string;
       error?: string;
+      /** Fundo suave da cor da marca (item ativo, hover). */
+      brandSurface?: string;
+      /** Tom escuro da marca. */
+      brandDark?: string;
     };
     spacing: {
       xs: number;

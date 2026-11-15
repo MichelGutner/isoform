@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { engine } from 'omnistyle';
-import { Body, Button, ButtonLabel, Card, Heading, Row } from './ui';
+import { Body, Button, ButtonLabel, Card, Heading, Row, themeFade } from './ui';
 
 /**
  * Pseudo-elementos e transições: a mesma declaração vira CSS na web
@@ -9,6 +9,7 @@ import { Body, Button, ButtonLabel, Card, Heading, Row } from './ui';
 
 // ───────────── ::before / ::after com texto ─────────────
 const Quote = engine('Text', ({ theme }) => ({
+  transition: themeFade(),
   fontSize: 16,
   fontStyle: 'italic',
   color: theme.color.text,
@@ -34,6 +35,7 @@ const Heading2 = engine('Box', { alignSelf: 'flex-start' })
 
 // ───────────── ::first-letter: capitular ─────────────
 const DropCap = engine('Text', ({ theme }) => ({
+  transition: themeFade(),
   fontSize: 15,
   lineHeight: '1.5',
   color: theme.color.text,
@@ -52,7 +54,7 @@ const FancyField = engine('Input', ({ theme }) => ({
   paddingBlock: theme.spacing.md,
   paddingInline: theme.spacing.md,
   fontSize: 15,
-  transition: 'border-color 250ms ease',
+  transition: themeFade(),
 }))
   .when('focus', ({ theme }) => ({ style: { borderColor: theme.color.secondary } }))
   .when('::placeholder', { style: { color: '#f59e0b' } })

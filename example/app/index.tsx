@@ -388,6 +388,7 @@ export default function HomeScreen() {
             A tela “Universal” é a mesma lib de componentes que roda no app web (example-web).
           </Body>
           <Btn label="Abrir tela universal (shared-ui) →" onPress={() => router.push('/universal')} />
+          <Btn label="Abrir sala de aula (web + mobile) →" onPress={() => router.push('/classroom')} />
         </Card>
 
         <Card style={{ flexDirection: 'row', padding: 6, gap: 6 }}>

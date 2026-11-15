@@ -1,5 +1,5 @@
 import { engine } from 'omnistyle';
-import { Body, Card, Heading } from './ui';
+import { Body, Card, Heading, themeFade } from './ui';
 
 /**
  * Layout responsivo mobile-first: `when('md')` vale de 768px para cima,
@@ -15,6 +15,7 @@ const Grid = engine('Box', ({ theme }) => ({
   .when('md', { style: { flexDirection: 'row' } });
 
 const Tile = engine('Box', ({ theme }) => ({
+  transition: themeFade(),
   flex: 1,
   padding: theme.spacing.md,
   borderRadius: 12,
@@ -39,6 +40,7 @@ const Meter = engine('Box', ({ theme }) => ({
 
 /** Só um rótulo aparece por vez: cada um se esconde fora da sua faixa. */
 const Label = engine<'Text', { from: 'base' | 'sm' | 'md' | 'lg' | 'xl' }>('Text', ({ theme, props }) => ({
+  transition: themeFade(),
   color: theme.color.text,
   fontWeight: '800',
   fontSize: 14,

@@ -5,7 +5,15 @@ import { engine, keyframes } from 'omnistyle';
  * (nada de react-native nem react-dom) e usa as primitivas neutras.
  */
 
+/** Troca de tema suave: ao chamar `updateTheme`, cores animam em vez de pular (CSS na web, Animated no mobile). */
+/** Mesma duração e curva da bolha (ThemeBubble): as cores trocam junto com ela, nas duas plataformas. */
+const FADE = ['background-color', 'border-color', 'color'].map((p) => `${p} 550ms cubic-bezier(0.4, 0, 0.2, 1)`).join(', ');
+
+/** `transition` de troca de tema; `extra` acrescenta outras propriedades (ex.: `opacity 150ms`). */
+export const themeFade = (extra = ''): string => (extra ? `${FADE}, ${extra}` : FADE);
+
 export const Screen = engine('Scroll', ({ theme }) => ({
+  transition: themeFade(),
   backgroundColor: theme.color.background,
   flexGrow: 1,
 }));
@@ -14,6 +22,7 @@ export const Card = engine<'Box', { flat?: boolean; accent?: boolean }>(
   'Box',
   ({ theme }) => ({
     backgroundColor: theme.color.surface,
+    transition: themeFade(),
     borderRadius: theme.borderRadius?.lg ?? 20,
     padding: theme.spacing.md,
     gap: theme.spacing.sm,
@@ -36,6 +45,7 @@ export const Row = engine<'Box', { wrap?: boolean; between?: boolean }>('Box', (
   .when('between', { style: { justifyContent: 'space-between' } });
 
 export const Title = engine('Text', ({ theme }) => ({
+  transition: themeFade(),
   fontSize: theme.typography?.fontSize?.xl ?? 26,
   fontWeight: '800',
   color: theme.color.text,
@@ -43,12 +53,14 @@ export const Title = engine('Text', ({ theme }) => ({
 }));
 
 export const Heading = engine('Text', ({ theme }) => ({
+  transition: themeFade(),
   fontSize: theme.typography?.fontSize?.lg ?? 18,
   fontWeight: '800',
   color: theme.color.text,
 }));
 
 export const Body = engine<'Text', { muted?: boolean }>('Text', ({ theme, props }) => ({
+  transition: themeFade(),
   fontSize: theme.typography?.fontSize?.md ?? 15,
   lineHeight: '1.4', // multiplicador (como no CSS): 1.4 × fontSize nas duas plataformas
   color: props.muted ? theme.color.muted : theme.color.text,
@@ -64,6 +76,7 @@ export const Button = engine<
 >('Pressable', ({ theme, props }) => ({
   backgroundColor: variantColor(theme, props.variant),
   borderWidth: 1.5,
+  transition: themeFade('opacity 150ms, transform 100ms'),
   borderColor: variantColor(theme, props.variant),
   paddingBlock: theme.spacing.sm,
   paddingInline: '1.25rem', // rem funciona nas duas plataformas
@@ -84,12 +97,13 @@ export const Button = engine<
   .when('hover', { style: { opacity: 0.85 } })
   .when('pressed', { style: { transform: 'scale(0.97)' } })
   // escape hatches por plataforma
-  .when('web', { style: { cursor: 'pointer', transition: 'opacity .15s, transform .1s' } })
+  .when('web', { style: { cursor: 'pointer' } })
   .when('native', { style: { elevation: 1 } });
 
 export const ButtonLabel = engine<'Text', { outlined?: boolean; variant?: Variant }>(
   'Text',
   ({ theme, props }) => ({
+    transition: themeFade(),
     color: props.outlined ? variantColor(theme, props.variant) : '#ffffff',
     fontWeight: '700',
     fontSize: 15,
@@ -97,6 +111,7 @@ export const ButtonLabel = engine<'Text', { outlined?: boolean; variant?: Varian
 );
 
 export const Field = engine<'Input', { invalid?: boolean }>('Input', ({ theme }) => ({
+  transition: themeFade(),
   backgroundColor: theme.color.background,
   color: theme.color.text,
   borderWidth: 1.5,
@@ -107,8 +122,7 @@ export const Field = engine<'Input', { invalid?: boolean }>('Input', ({ theme })
   fontSize: 15,
 }))
   .when('focus', ({ theme }) => ({ style: { borderColor: theme.color.primary } }))
-  .when('invalid', ({ theme }) => ({ style: { borderColor: theme.color.error } }))
-  .when('web', { style: { transition: 'border-color .15s' } });
+  .when('invalid', ({ theme }) => ({ style: { borderColor: theme.color.error } }));
 
 const pulse = keyframes({
   from: { opacity: 1, transform: 'scale(1)' },
@@ -124,6 +138,7 @@ export const PulseDot = engine('Box', ({ theme }) => ({
 }));
 
 export const Chip = engine<'Pressable', { active?: boolean }>('Pressable', ({ theme }) => ({
+  transition: themeFade(),
   paddingBlock: 6,
   paddingInline: theme.spacing.md,
   borderRadius: theme.borderRadius?.full ?? 999,
@@ -135,12 +150,14 @@ export const Chip = engine<'Pressable', { active?: boolean }>('Pressable', ({ th
 }));
 
 export const ChipLabel = engine<'Text', { active?: boolean }>('Text', ({ theme, props }) => ({
+  transition: themeFade(),
   fontSize: 13,
   fontWeight: '700',
   color: props.active ? '#ffffff' : theme.color.text,
 }));
 
 export const Badge = engine<'Box', { tone?: Variant }>('Box', ({ theme, props }) => ({
+  transition: themeFade(),
   alignSelf: 'flex-start',
   paddingBlock: 3,
   paddingInline: 10,
@@ -149,6 +166,7 @@ export const Badge = engine<'Box', { tone?: Variant }>('Box', ({ theme, props })
 }));
 
 export const BadgeText = engine<'Text', { tone?: Variant }>('Text', ({ theme, props }) => ({
+  transition: themeFade(),
   fontSize: 12,
   fontWeight: '800',
   color: variantColor(theme, props.tone),
