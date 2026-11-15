@@ -3,7 +3,7 @@
 //
 // Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 // (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-//   { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true } } }
+//   { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
 // (cada módulo aceita `true` ou `{ "enabled": true, ...opções }`)
 // Módulo fora do arquivo (ou `false`) não é compilado: sem Media3 nem Compose no APK.
 // Sem o arquivo, tudo é compilado e só o `configure` decide em runtime.
@@ -33,19 +33,21 @@ def omnistyleModule = { String name -> omnistyleConfig == null || omnistyleOn(om
 
 def videoEnabled = omnistyleModule("video")
 def audioEnabled = omnistyleModule("audio")
+def pdfEnabled = omnistyleModule("pdf")
 // player e interface (Media3 + Compose) são comuns aos dois módulos
 def mediaEnabled = videoEnabled || audioEnabled
 // foreground service + controles na notificação: só com `audio.mediaSession: true` explícito
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
 def audioSetting = omnistyleConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-// Compose só é usado pelos controles do vídeo e do áudio
-if (mediaEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
+// Compose: controles do vídeo e do áudio e o leitor de PDF
+def composeEnabled = mediaEnabled || pdfEnabled
+if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
  * Sempre as versões estáveis mais novas que o React Native 0.81 aceita
@@ -69,7 +71,7 @@ android {
   }
 
   buildFeatures {
-    compose mediaEnabled
+    compose composeEnabled
   }
 
   // cada módulo ligado acrescenta a sua pasta de código
@@ -81,6 +83,8 @@ android {
         // o áudio sempre chama `OmniMediaSession`: a versão real (serviço) ou a vazia
         java.srcDirs += (mediaSessionEnabled ? "src/mediaSession/java" : "src/mediaSessionOff/java")
       }
+      // PDF: o `PdfRenderer` do sistema + Compose (sem dependência extra)
+      if (pdfEnabled) java.srcDirs += "src/pdf/java"
       // o manifest com o serviço e as permissões só entra com `mediaSession` ligado
       if (mediaSessionEnabled) manifest.srcFile "src/mediaSession/AndroidManifest.xml"
     }
@@ -109,13 +113,20 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
     // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
     implementation "androidx.annotation:annotation-experimental:1.6.0"
+  }
+
+  if (composeEnabled) {
     // tela cheia do vídeo: esconder as barras do sistema (WindowInsetsControllerCompat)
     implementation "androidx.core:core:1.18.0"
-
     implementation platform("androidx.compose:compose-bom:$composeBomVersion")
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.foundation:foundation"
     implementation "androidx.compose.animation:animation"
+  }
+
+  // PDF: `@RequiresApi`/`@RequiresExtension` nos renderizadores novos do sistema
+  if (pdfEnabled) {
+    implementation "androidx.annotation:annotation:1.11.0"
   }
 
   // controles na notificação do sistema (MediaSession + foreground service)

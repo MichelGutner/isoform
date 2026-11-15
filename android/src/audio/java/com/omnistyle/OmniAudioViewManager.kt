@@ -60,6 +60,12 @@ class OmniAudioViewManager :
   @ReactProp(name = "artist")
   override fun setArtist(view: OmniAudioView, value: String?) = view.setArtist(value)
 
+  @ReactProp(name = "playlistIndex", defaultInt = -1)
+  override fun setPlaylistIndex(view: OmniAudioView, value: Int) = view.setPlaylist(value, view.playlistCount)
+
+  @ReactProp(name = "playlistCount")
+  override fun setPlaylistCount(view: OmniAudioView, value: Int) = view.setPlaylist(view.playlistIndex, value)
+
   @ReactProp(name = "artwork")
   override fun setArtwork(view: OmniAudioView, value: String?) = view.setArtwork(value)
 

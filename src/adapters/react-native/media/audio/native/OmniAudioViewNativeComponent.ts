@@ -34,6 +34,9 @@ export interface NativeProps extends ViewProps {
   title?: string;
   artist?: string;
   artwork?: string;
+  // list (`items`): the controls show a playlist button with the position
+  playlistIndex?: CodegenTypes.WithDefault<CodegenTypes.Int32, -1>;
+  playlistCount?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;
 
   // `onPlayer*` prefix so they do not clash with events React Native already defines (e.g. `onError`).
   onPlayerPlay?: CodegenTypes.DirectEventHandler<EmptyEvent>;
@@ -47,6 +50,7 @@ export interface NativeProps extends ViewProps {
   onPlayerBuffered?: CodegenTypes.DirectEventHandler<BufferedEvent>;
   onPlayerVolume?: CodegenTypes.DirectEventHandler<VolumeEvent>;
   onPlayerRate?: CodegenTypes.DirectEventHandler<RateEvent>;
+  onPlayerPlaylist?: CodegenTypes.DirectEventHandler<EmptyEvent>;
 }
 
 type ComponentType = HostComponent<NativeProps>;

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import type { WithoutPlaylist } from '../../../../core/playlist';
 import { StyleSheet, View } from 'react-native';
 import { isModuleEnabled } from '../../../../config';
 import type { AudioHandle, AudioOwnProps } from '../../../../core/media';
@@ -15,14 +16,14 @@ type Spec = typeof import('./native/OmniAudioViewNativeComponent');
 let spec: Spec | undefined;
 const nativeSpec = (): Spec => (spec ??= require('./native/OmniAudioViewNativeComponent'));
 
-type Props = Partial<AudioOwnProps> & { style?: any; testID?: string };
+type Props = Partial<AudioOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void } };
 
 /**
  * Entry point of `Audio` on mobile. With `modules.audio` off not even the native
  * spec is loaded: an empty box with the same style stays (and a dev warning),
  * instead of the "native component not found" error.
  */
-export const Audio = forwardRef<AudioHandle, Props>((props, ref) => {
+export const Audio = forwardRef<WithoutPlaylist<AudioHandle>, Props>((props, ref) => {
   if (!isModuleEnabled('audio')) {
     warnModuleDisabled('audio');
     return <View style={props.style} testID={props.testID} />;
@@ -36,7 +37,7 @@ Audio.displayName = 'Audio';
  * Compose on Android). It only translates the omnistyle contract to the native
  * props and events. The card draws its own background, so the style just sizes it.
  */
-const AudioPlayer = forwardRef<AudioHandle, Props>(
+const AudioPlayer = forwardRef<WithoutPlaylist<AudioHandle>, Props>(
   (
     {
       src,
@@ -62,6 +63,8 @@ const AudioPlayer = forwardRef<AudioHandle, Props>(
       onRateChange,
       style,
       testID,
+      overlay,
+      playlist,
     },
     ref,
   ) => {
@@ -82,6 +85,9 @@ const AudioPlayer = forwardRef<AudioHandle, Props>(
       <View style={[styles.container, style]} testID={testID}>
         <NativeAudio
           ref={native}
+          playlistIndex={playlist?.index ?? -1}
+          playlistCount={playlist?.count ?? 0}
+          onPlayerPlaylist={() => playlist?.onPress()}
           style={StyleSheet.absoluteFill}
           src={src}
           controls={controls}
@@ -105,6 +111,7 @@ const AudioPlayer = forwardRef<AudioHandle, Props>(
           onPlayerVolume={(e) => onVolumeChange?.({ volume: e.nativeEvent.volume, muted: e.nativeEvent.muted })}
           onPlayerRate={(e) => onRateChange?.(e.nativeEvent.rate)}
         />
+        {overlay}
       </View>
     );
   },

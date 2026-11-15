@@ -8,6 +8,7 @@ import type {
 } from 'react';
 import type { StyleInput } from './style/types';
 import type { AudioOwnProps, VideoOwnProps } from './media';
+import type { PdfOwnProps } from './pdf';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -187,6 +188,12 @@ export type VideoProps = Media<VideoOwnProps>;
  */
 export type AudioProps = Media<AudioOwnProps>;
 
+/**
+ * Props of `Pdf`: a document viewer with search, thumbnails and zoom (see {@link PdfOwnProps}).
+ * Requires `configure({ modules: { pdf: true } })`.
+ */
+export type PdfProps = Media<PdfOwnProps>;
+
 /** Native-only (or legacy) components: loosely typed (any prop is accepted). */
 type NativeLoose = BoxProps & { [key: string]: any };
 
@@ -223,6 +230,14 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { audio: true } })`.
    */
   Audio: AudioProps;
+
+  /**
+   * PDF viewer. Web: pdf.js (loaded on demand). iOS: PDFKit. Android: the system
+   * `PdfRenderer` with Jetpack Compose (basic viewer on Android older than 12).
+   * The `ref` is a `PdfHandle` (`goToPage`, `search`, `searchNext`, `searchPrevious`, `clearSearch`, `setZoom`).
+   * Requires `configure({ modules: { pdf: true } })`.
+   */
+  Pdf: PdfProps;
 
   /** @deprecated Use `Box`. */
   View: BoxProps;

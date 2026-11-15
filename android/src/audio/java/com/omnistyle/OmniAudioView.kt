@@ -63,6 +63,7 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
         onSeek = { seconds -> seekTo(seconds) },
         onToggleMute = { setMuted(!muted) },
         onRateSelected = { rate -> setRate(rate) },
+        onPlaylist = { emit(PLAYLIST) },
       )
     }
   }
@@ -174,6 +175,15 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
   fun setArtist(value: String?) {
     ui.artist = value.orEmpty()
     OmniMediaSession.setMetadata(player, ui.title, ui.artist, ui.artwork)
+  }
+
+  val playlistIndex: Int get() = ui.playlistIndex
+  val playlistCount: Int get() = ui.playlistCount
+
+  /** List (`items`): shows the playlist chip with the position (`count` 0 hides it). */
+  fun setPlaylist(index: Int, count: Int) {
+    ui.playlistIndex = index
+    ui.playlistCount = count
   }
 
   fun setArtwork(value: String?) {
@@ -312,6 +322,7 @@ class OmniAudioView(private val reactContext: ThemedReactContext) : FrameLayout(
     const val BUFFERED = "topPlayerBuffered"
     const val VOLUME = "topPlayerVolume"
     const val RATE = "topPlayerRate"
-    val EVENTS = listOf(PLAY, PAUSE, END, TIME, LOAD, ERROR, SEEK, BUFFERING, BUFFERED, VOLUME, RATE)
+    const val PLAYLIST = "topPlayerPlaylist"
+    val EVENTS = listOf(PLAY, PAUSE, END, TIME, LOAD, ERROR, SEEK, BUFFERING, BUFFERED, VOLUME, RATE, PLAYLIST)
   }
 }

@@ -48,6 +48,15 @@ class OmniVideoViewManager :
   @ReactProp(name = "muted")
   override fun setMuted(view: OmniVideoView, value: Boolean) = view.setMuted(value)
 
+  @ReactProp(name = "playlistIndex", defaultInt = -1)
+  override fun setPlaylistIndex(view: OmniVideoView, value: Int) = view.setPlaylist(value, view.playlistCount)
+
+  @ReactProp(name = "playlistItems")
+  override fun setPlaylistItems(view: OmniVideoView, value: String?) = view.setPlaylistItems(value)
+
+  @ReactProp(name = "playlistCount")
+  override fun setPlaylistCount(view: OmniVideoView, value: Int) = view.setPlaylist(view.playlistIndex, value)
+
   @ReactProp(name = "rate", defaultFloat = 1f)
   override fun setRate(view: OmniVideoView, value: Float) = view.setRate(value)
 

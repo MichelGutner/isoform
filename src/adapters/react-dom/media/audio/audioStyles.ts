@@ -50,7 +50,7 @@ const RULES = [
   '.oa-wait{position:absolute;inset:0;border-radius:50%;border:2px solid var(--ov-rail);border-top-color:var(--ov-fg);animation:ov-spin .8s linear infinite;pointer-events:none}',
   '.oa-play{position:relative}',
   '.oa .ov-volume-slot .ov-track{width:72px}',
-  '.oa .ov-menu{bottom:auto;top:calc(100% + 8px);transform-origin:top right}',
+  // the speed menu sits at the bottom right of the card: it opens upward (the shared default)
 ];
 
 /** Inserts the CSS of the audio card (once, however many players are on screen). */

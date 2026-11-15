@@ -3,8 +3,8 @@ import { engine } from 'omnistyle';
 import type { Asset } from './types';
 
 /**
- * Conteúdo da aula por tipo. O vídeo usa o player real da lib (`engine('Video')`);
- * PDF e quiz ainda são placeholders.
+ * Conteúdo da aula por tipo. Vídeo, áudio e PDF usam os componentes reais da lib
+ * (`engine('Video')`, `engine('Audio')`, `engine('Pdf')`); o quiz ainda é um exemplo simples.
  */
 
 /* ───────────────────────── vídeo ───────────────────────── */
@@ -44,7 +44,7 @@ const EventLine = engine('Text', ({ theme }) => ({ fontSize: 12, color: theme.co
 /** Quantos eventos o registro mostra (os mais recentes primeiro). */
 const LOG_SIZE = 6;
 
-function VideoPreview({ src }: { src: string }) {
+function VideoPreview({ src, items }: { src?: string; items?: Asset['items'] }) {
   const [time, setTime] = useState({ currentTime: 0, duration: 0 });
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<string[]>([]);
@@ -57,6 +57,8 @@ function VideoPreview({ src }: { src: string }) {
     <VideoBox>
       <Player
         src={src}
+        items={items}
+        onItemChange={({ index, item }) => log(`item ${index + 1}: ${item.title ?? item.src}`)}
         testID="video-player"
         onLoad={({ duration, width, height }) => {
           setTime({ currentTime: 0, duration });
@@ -101,7 +103,7 @@ function VideoPreview({ src }: { src: string }) {
 /** `engine('Audio')`: cartão do player (capa, título, barra, velocidade, mudo). */
 const AudioPlayer = engine('Audio', () => ({ width: '100%' }));
 
-function AudioPreview({ src, title, cover }: { src: string; title: string; cover?: string }) {
+function AudioPreview({ src, title, cover, items }: { src?: string; title: string; cover?: string; items?: Asset['items'] }) {
   const [error, setError] = useState<string | null>(null);
   return (
     <VideoBox>
@@ -110,6 +112,7 @@ function AudioPreview({ src, title, cover }: { src: string; title: string; cover
         title={title}
         artist="Cardiologia clínica"
         artwork={cover}
+        items={items}
         testID="audio-player"
         onError={setError}
       />
@@ -120,32 +123,19 @@ function AudioPreview({ src, title, cover }: { src: string; title: string; cover
 
 /* ───────────────────────── PDF ───────────────────────── */
 
-const Paper = engine('Box', ({ theme }) => ({
-  width: '100%',
-  padding: theme.spacing.lg,
-  gap: theme.spacing.sm,
-  borderRadius: theme.borderRadius?.lg,
-  backgroundColor: theme.color.brandSurface,
-}));
+/**
+ * `engine('Pdf')`: leitor com busca e destaque das palavras, miniaturas, zoom,
+ * sumário, links, senha e modo noturno. A altura vem do estilo.
+ */
+const PdfViewer = engine('Pdf', () => ({ width: '100%', height: 560 }));
 
-const PaperLine = engine<'Box', { short?: boolean }>('Box', ({ theme, props }) => ({
-  height: 10,
-  width: props.short ? '55%' : '100%',
-  borderRadius: 5,
-  backgroundColor: theme.color.border,
-}));
-
-const PaperCaption = engine('Text', ({ theme }) => ({ color: theme.color.muted, fontSize: 13 }));
-
-function PdfPreview({ detail }: { detail: string }) {
+function PdfPreview({ src, items }: { src?: string; items?: Asset['items'] }) {
+  const [error, setError] = useState<string | null>(null);
   return (
-    <Paper>
-      <PaperCaption>PDF · {detail}</PaperCaption>
-      <PaperLine />
-      <PaperLine />
-      <PaperLine />
-      <PaperLine short />
-    </Paper>
+    <>
+      <PdfViewer src={src} items={items} testID="pdf-viewer" onError={setError} />
+      {error ? <VideoStatus error>Não foi possível abrir este PDF: {error}</VideoStatus> : null}
+    </>
   );
 }
 
@@ -195,11 +185,11 @@ function QuizPreview() {
 export function AssetPreview({ asset }: { asset: Asset }) {
   switch (asset.kind) {
     case 'video':
-      return asset.src ? <VideoPreview src={asset.src} /> : null;
+      return asset.src || asset.items ? <VideoPreview src={asset.src} items={asset.items} /> : null;
     case 'audio':
-      return asset.src ? <AudioPreview src={asset.src} title={asset.title} cover={asset.cover} /> : null;
+      return asset.src || asset.items ? <AudioPreview src={asset.src} title={asset.title} cover={asset.cover} items={asset.items} /> : null;
     case 'pdf':
-      return <PdfPreview detail={asset.detail} />;
+      return asset.src || asset.items ? <PdfPreview src={asset.src} items={asset.items} /> : null;
     case 'quiz':
       return <QuizPreview />;
   }

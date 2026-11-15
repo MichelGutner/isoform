@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type { WithoutPlaylist } from '../../../../core/playlist';
 import type { VideoHandle, VideoOwnProps } from '../../../../core/media';
 import { setFullscreen, watchFullscreen } from './fullscreen';
 import { isPictureInPictureSupported, togglePictureInPicture, watchPictureInPicture } from './pictureInPicture';
@@ -57,7 +58,7 @@ const readElement = (v: HTMLVideoElement): Partial<PlayerState> => ({
   rate: v.playbackRate,
 });
 
-export const Video = forwardRef<VideoHandle, VideoElementProps>(
+export const Video = forwardRef<WithoutPlaylist<VideoHandle>, VideoElementProps>(
   (
     {
       src,
@@ -81,6 +82,8 @@ export const Video = forwardRef<VideoHandle, VideoElementProps>(
       onRateChange,
       onFullscreenChange,
       onPictureInPictureChange,
+      overlay,
+      controlsExtra,
       className,
       style,
       ...rest
@@ -242,7 +245,8 @@ export const Video = forwardRef<VideoHandle, VideoElementProps>(
           playsInline
           {...events}
         />
-        {controls ? <VideoControls state={state} actions={actions} /> : null}
+        {controls ? <VideoControls state={state} actions={actions} extra={controlsExtra} /> : null}
+        {overlay}
       </div>
     );
   },

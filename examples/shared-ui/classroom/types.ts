@@ -9,10 +9,15 @@ export interface Asset {
   kind: AssetKind;
   /** Texto curto de apoio, como "12 min" ou "5 questões". */
   detail: string;
-  /** Endereço do vídeo (MP4 ou HLS) ou do áudio (MP3), só para `kind: 'video'` e `'audio'`. */
+  /** Endereço do vídeo (MP4 ou HLS), do áudio (MP3) ou do PDF, para `kind: 'video'`, `'audio'` e `'pdf'`. */
   src?: string;
   /** Endereço da capa, só para `kind: 'audio'`. */
   cover?: string;
+  /**
+   * Uma lista no lugar de `src` (vídeos, áudios ou PDFs da mesma aula), mostrada
+   * como carrossel abaixo do player.
+   */
+  items?: Array<{ src: string; title?: string; poster?: string; artist?: string; artwork?: string; thumbnail?: string }>;
 }
 
 /** Um módulo agrupa conteúdos (é o "acordeão" da playlist). */

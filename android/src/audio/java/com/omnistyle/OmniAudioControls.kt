@@ -88,6 +88,8 @@ import kotlin.math.sin
 
 private const val SKIP_SECONDS = 10.0
 private const val SIDE_BUTTON = 40
+/** Width of the left (mute) and right (speed) slots of the control row. */
+private const val SIDE_SLOT = 64
 private const val PLAY_BUTTON = 48
 private val SPEEDS = listOf(0.5f, 0.75f, 1f, 1.25f, 1.5f, 2f)
 
@@ -101,6 +103,9 @@ private class AudioColors(val card: Color, val text: Color, val muted: Color, va
 
 /** State that the native view updates and the controls read. */
 class OmniAudioUiState {
+  /** List (`items`): current position and size; the playlist chip only shows with `playlistCount > 0`. */
+  var playlistIndex by mutableIntStateOf(-1)
+  var playlistCount by mutableIntStateOf(0)
   var isPlaying by mutableStateOf(false)
   var isBuffering by mutableStateOf(false)
   var muted by mutableStateOf(false)
@@ -130,6 +135,7 @@ internal fun OmniAudioControls(
   onSeek: (Double) -> Unit,
   onToggleMute: () -> Unit,
   onRateSelected: (Float) -> Unit,
+  onPlaylist: () -> Unit = {},
 ) {
   if (!state.controlsEnabled) return
   val colors = if (isSystemInDarkTheme()) AudioColors.Dark else AudioColors.Light
@@ -151,7 +157,7 @@ internal fun OmniAudioControls(
         AudioText(state.title.ifEmpty { "Audio" }, colors.text, 15, FontWeight.SemiBold)
         if (state.artist.isNotEmpty()) AudioText(state.artist, colors.muted, 13, FontWeight.Normal)
       }
-      SpeedMenu(state.rate, colors, onRateSelected)
+      if (state.playlistCount > 0) PlaylistChip(state.playlistIndex, state.playlistCount, colors, onPlaylist)
     }
 
     Column {
@@ -169,9 +175,11 @@ internal fun OmniAudioControls(
       }
     }
 
-    // skip · play · skip centered; mute on the leading side, a same-size blank on the trailing one
+    // skip · play · skip centered; mute on the left and the speed on the right, in same-width slots
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-      IconButton(if (state.muted) "Unmute" else "Mute", SIDE_BUTTON, colors.text, onClick = onToggleMute) { AudioSpeakerIcon(state.muted, colors.text) }
+      Box(Modifier.width(SIDE_SLOT.dp), contentAlignment = Alignment.CenterStart) {
+        IconButton(if (state.muted) "Unmute" else "Mute", SIDE_BUTTON, colors.text, onClick = onToggleMute) { AudioSpeakerIcon(state.muted, colors.text) }
+      }
       Spacer(Modifier.weight(1f))
       Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         IconButton("Back 10 seconds", SIDE_BUTTON, colors.text, onClick = { onSkip(-SKIP_SECONDS) }) { AudioSkipIcon(forward = false, color = colors.text) }
@@ -179,7 +187,7 @@ internal fun OmniAudioControls(
         IconButton("Forward 10 seconds", SIDE_BUTTON, colors.text, onClick = { onSkip(SKIP_SECONDS) }) { AudioSkipIcon(forward = true, color = colors.text) }
       }
       Spacer(Modifier.weight(1f))
-      Spacer(Modifier.size(SIDE_BUTTON.dp))
+      Box(Modifier.width(SIDE_SLOT.dp), contentAlignment = Alignment.CenterEnd) { SpeedMenu(state.rate, colors, onRateSelected) }
     }
   }
 }
@@ -285,11 +293,25 @@ private fun BufferingRing(color: Color) {
   }
 }
 
+/** "☰ 2/4" chip that opens the carousel of the list (`items`). */
+@Composable
+private fun PlaylistChip(index: Int, count: Int, colors: AudioColors, onClick: () -> Unit) {
+  Box(
+    modifier = Modifier
+      .clip(CircleShape)
+      .background(colors.chip)
+      .clickable(onClick = onClick)
+      .padding(horizontal = 10.dp, vertical = 7.dp)
+      .semantics { contentDescription = "Playlist, item ${index + 1} of $count" },
+  ) { AudioText("☰ ${index + 1}/$count", colors.text, 13, FontWeight.SemiBold) }
+}
+
 /** "1x" chip that opens the speed list in a popup, with a ✓ on the current one. */
 @Composable
 private fun SpeedMenu(rate: Float, colors: AudioColors, onSelect: (Float) -> Unit) {
   var open by remember { mutableStateOf(false) }
-  val offset = with(LocalDensity.current) { IntOffset(0, 40.dp.roundToPx()) }
+  // the chip is at the bottom of the card: the list opens above it
+  val offset = with(LocalDensity.current) { IntOffset(0, -44.dp.roundToPx()) }
   Box {
     Box(
       modifier = Modifier
@@ -301,7 +323,7 @@ private fun SpeedMenu(rate: Float, colors: AudioColors, onSelect: (Float) -> Uni
     ) { AudioText(rateLabel(rate), colors.text, 13, FontWeight.SemiBold) }
 
     if (open) {
-      Popup(alignment = Alignment.TopEnd, offset = offset, onDismissRequest = { open = false }, properties = PopupProperties(focusable = true)) {
+      Popup(alignment = Alignment.BottomEnd, offset = offset, onDismissRequest = { open = false }, properties = PopupProperties(focusable = true)) {
         Column(
           modifier = Modifier
             .width(150.dp)

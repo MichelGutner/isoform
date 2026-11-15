@@ -12,6 +12,7 @@ final class OmniAudioCard: UIView {
     var seek: (Double) -> Void = { _ in }
     var toggleMute: () -> Void = {}
     var selectRate: (Float) -> Void = { _ in }
+    var openPlaylist: () -> Void = {}
   }
 
   var actions = Actions()
@@ -24,6 +25,8 @@ final class OmniAudioCard: UIView {
   private let titleLabel = UILabel()
   private let artistLabel = UILabel()
   private let speedButton = UIButton(type: .system)
+  /// List (`items`): opens the carousel; hidden without a list.
+  private let playlistButton = UIButton(type: .system)
   private let seekBar = OmniSeekBar()
   private let elapsedLabel = UILabel()
   private let remainingLabel = UILabel()
@@ -78,6 +81,13 @@ final class OmniAudioCard: UIView {
     isMuted = muted
     muteButton.configuration?.image = UIImage(systemName: muted ? "speaker.slash.fill" : "speaker.wave.2.fill")
     muteButton.accessibilityLabel = muted ? "Unmute" : "Mute"
+  }
+
+  /// Shows the playlist button with the position ("2/4"), or hides it (`count` 0).
+  func update(playlistIndex index: Int, count: Int) {
+    playlistButton.isHidden = count == 0 || index < 0
+    playlistButton.configuration?.title = "\(index + 1)/\(count)"
+    playlistButton.accessibilityLabel = "Playlist, item \(index + 1) of \(count)"
   }
 
   func update(rate: Float) {
@@ -164,6 +174,16 @@ final class OmniAudioCard: UIView {
     muteButton.configuration = Self.plainConfiguration(symbol: "speaker.wave.2.fill", size: 16)
     muteButton.addAction(UIAction { [weak self] _ in self?.actions.toggleMute() }, for: .touchUpInside)
 
+    var playlist = Self.pillConfiguration()
+    playlist.image = UIImage(systemName: "list.bullet")
+    playlist.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
+    playlist.imagePadding = 4
+    playlistButton.configuration = playlist
+    playlistButton.isHidden = true
+    playlistButton.setContentHuggingPriority(.required, for: .horizontal)
+    playlistButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+    playlistButton.addAction(UIAction { [weak self] _ in self?.actions.openPlaylist() }, for: .touchUpInside)
+
     speedButton.configuration = Self.pillConfiguration()
     speedButton.showsMenuAsPrimaryAction = true
     speedButton.setContentHuggingPriority(.required, for: .horizontal)
@@ -185,7 +205,7 @@ final class OmniAudioCard: UIView {
     meta.spacing = 2
     meta.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-    let head = UIStackView(arrangedSubviews: [artwork, meta, speedButton])
+    let head = UIStackView(arrangedSubviews: [artwork, meta, playlistButton])
     head.axis = .horizontal
     head.alignment = .center
     head.spacing = 12
@@ -204,8 +224,13 @@ final class OmniAudioCard: UIView {
 
     let leadingSpace = UIView()
     let trailingSpace = UIView()
-    let balance = UIView()
-    let controls = UIStackView(arrangedSubviews: [muteButton, leadingSpace, transport, trailingSpace, balance])
+    // mute on the left and the speed on the right, in same-width slots, so play stays centered
+    let muteSlot = UIView()
+    let speedSlot = UIView()
+    [muteButton, speedButton].forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
+    muteSlot.addSubview(muteButton)
+    speedSlot.addSubview(speedButton)
+    let controls = UIStackView(arrangedSubviews: [muteSlot, leadingSpace, transport, trailingSpace, speedSlot])
     controls.axis = .horizontal
     controls.alignment = .center
     controls.spacing = 0
@@ -214,8 +239,18 @@ final class OmniAudioCard: UIView {
     Self.pin(skipForwardButton, size: Self.sideSize)
     Self.pin(muteButton, size: Self.sideSize)
     Self.pin(playButton, size: Self.playSize)
-    Self.pin(balance, size: Self.sideSize)
-    leadingSpace.widthAnchor.constraint(equalTo: trailingSpace.widthAnchor).isActive = true
+    NSLayoutConstraint.activate([
+      muteButton.leadingAnchor.constraint(equalTo: muteSlot.leadingAnchor),
+      muteButton.centerYAnchor.constraint(equalTo: muteSlot.centerYAnchor),
+      muteSlot.heightAnchor.constraint(equalToConstant: Self.sideSize),
+      speedButton.trailingAnchor.constraint(equalTo: speedSlot.trailingAnchor),
+      speedButton.centerYAnchor.constraint(equalTo: speedSlot.centerYAnchor),
+      speedSlot.heightAnchor.constraint(equalToConstant: Self.sideSize),
+      speedSlot.widthAnchor.constraint(greaterThanOrEqualTo: speedButton.widthAnchor),
+      muteSlot.widthAnchor.constraint(greaterThanOrEqualTo: muteButton.widthAnchor),
+      muteSlot.widthAnchor.constraint(equalTo: speedSlot.widthAnchor),
+      leadingSpace.widthAnchor.constraint(equalTo: trailingSpace.widthAnchor),
+    ])
 
     let content = UIStackView(arrangedSubviews: [head, progress, controls])
     content.axis = .vertical

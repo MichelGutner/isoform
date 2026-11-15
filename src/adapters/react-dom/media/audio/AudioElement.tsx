@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type { WithoutPlaylist } from '../../../../core/playlist';
 import type { AudioHandle, AudioOwnProps } from '../../../../core/media';
 import { AudioControls, SHORTCUTS, type AudioActions, type AudioState } from './AudioControls';
 import { ensureAudioStyles } from './audioStyles';
@@ -42,7 +43,7 @@ const readElement = (a: HTMLAudioElement): Partial<AudioState> => ({
   rate: a.playbackRate,
 });
 
-export const Audio = forwardRef<AudioHandle, AudioElementProps>(
+export const Audio = forwardRef<WithoutPlaylist<AudioHandle>, AudioElementProps>(
   (
     {
       src,
@@ -66,6 +67,8 @@ export const Audio = forwardRef<AudioHandle, AudioElementProps>(
       onBufferedChange,
       onVolumeChange,
       onRateChange,
+      overlay,
+      controlsExtra,
       className,
       style,
       ...rest
@@ -206,7 +209,8 @@ export const Audio = forwardRef<AudioHandle, AudioElementProps>(
           preload="metadata"
           {...events}
         />
-        {controls ? <AudioControls state={state} actions={actions} meta={{ title, artist, artwork }} /> : null}
+        {controls ? <AudioControls state={state} actions={actions} meta={{ title, artist, artwork }} extra={controlsExtra} /> : null}
+        {overlay}
       </div>
     );
   },

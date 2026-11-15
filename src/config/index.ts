@@ -36,7 +36,7 @@ export interface ConfigureOptions {
    * Optional modules. **All off by default.** The recommended way is an
    * `omnistyle.config.json` at the app root, passed here:
    * ```ts
-   * // omnistyle.config.json → { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true } } }
+   * // omnistyle.config.json → { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
    * import omnistyle from './omnistyle.config.json';
    * configure({ modules: omnistyle.modules });
    * ```
@@ -67,6 +67,17 @@ export interface AudioModuleOptions extends ModuleOptions {
   mediaSession?: boolean;
 }
 
+/** Options of the `pdf` module. */
+export interface PdfModuleOptions extends ModuleOptions {
+  /**
+   * Web only: URL of the pdf.js worker (`pdfjs-dist/build/pdf.worker.min.mjs`,
+   * copied to your public folder, same `pdfjs-dist` version). With it, PDFs are
+   * parsed in a background thread; without it (default) they are parsed on the
+   * main thread, which needs no setup but can stutter on very large files.
+   */
+  workerSrc?: string;
+}
+
 /**
  * The lib's optional modules. Every one is off unless turned on, either with
  * `true` or with an object (`{ enabled: true, ...options }`).
@@ -86,9 +97,18 @@ export interface OmniModules {
    * Default `false`.
    */
   audio?: boolean | AudioModuleOptions;
+  /**
+   * `engine('Pdf')`: a PDF viewer with search and highlighted matches, thumbnails,
+   * zoom, links, password prompt and night mode. Web: pdf.js (`pdfjs-dist`, loaded on
+   * demand). iOS: PDFKit. Android: the system `PdfRenderer` with Jetpack Compose
+   * (a basic viewer, without search and links, on Android older than 12).
+   * Use an object for options: `{ enabled: true, workerSrc: '/pdf.worker.min.mjs' }`.
+   * Default `false`.
+   */
+  pdf?: boolean | PdfModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -96,7 +116,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false };
 let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */
@@ -130,6 +150,12 @@ export function resetProvider(): void {
 
 /** Whether the module was turned on with `configure({ modules })`. */
 export const isModuleEnabled = (name: ModuleName): boolean => isOn(modules[name]);
+
+/** Web: the pdf.js worker URL from `modules.pdf.workerSrc` (`undefined` when not set). */
+export const pdfWorkerSrc = (): string | undefined => {
+  const setting = modules.pdf;
+  return typeof setting === 'object' && setting !== null ? setting.workerSrc : undefined;
+};
 
 /**
  * The active platform adapter (the one chosen by `configure`, or the bundled one).

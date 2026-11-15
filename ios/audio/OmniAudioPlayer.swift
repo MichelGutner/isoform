@@ -14,6 +14,7 @@ import UIKit
   func audioDidChangeBuffered(_ buffered: Double)
   func audioDidChangeVolume(_ volume: Double, muted: Bool)
   func audioDidChangeRate(_ rate: Double)
+  func audioDidPressPlaylist()
 }
 
 /// Audio player with Apple APIs: `AVPlayer` for playback and a UIKit card for the
@@ -66,7 +67,8 @@ public final class OmniAudioPlayer: UIView {
       skip: { [weak self] seconds in self?.skip(by: seconds) },
       seek: { [weak self] seconds in self?.seek(to: seconds) },
       toggleMute: { [weak self] in self?.toggleMute() },
-      selectRate: { [weak self] rate in self?.setRate(rate) }
+      selectRate: { [weak self] rate in self?.setRate(rate) },
+      openPlaylist: { [weak self] in self?.delegate?.audioDidPressPlaylist() }
     )
 
     // Position every 250 ms (like the web `timeupdate`). It also keeps the
@@ -144,6 +146,8 @@ public final class OmniAudioPlayer: UIView {
   @objc public func setControls(_ value: Bool) { ui.isHidden = !value }
   @objc public func setTitle(_ value: String) { title = value; ui.setTitle(value); publishMetadata() }
   @objc public func setArtist(_ value: String) { artist = value; ui.setArtist(value); publishMetadata() }
+  /// List position for the playlist button in the card (`count` 0 hides it).
+  @objc public func setPlaylist(index: Int, count: Int) { ui.update(playlistIndex: index, count: count) }
   @objc public func setArtwork(_ value: String) { artwork = value; ui.setArtwork(value); publishMetadata() }
   @objc public func setAutoPlay(_ value: Bool) { shouldAutoPlay = value }
   @objc public func setLoop(_ value: Bool) { shouldLoop = value }

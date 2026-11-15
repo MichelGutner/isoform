@@ -34,6 +34,11 @@ export interface NativeProps extends ViewProps {
   muted?: CodegenTypes.WithDefault<boolean, false>;
   rate?: CodegenTypes.WithDefault<CodegenTypes.Float, 1.0>;
   volume?: CodegenTypes.WithDefault<CodegenTypes.Float, 1.0>;
+  // list (`items`): the controls show a playlist button with the position
+  playlistIndex?: CodegenTypes.WithDefault<CodegenTypes.Int32, -1>;
+  playlistCount?: CodegenTypes.WithDefault<CodegenTypes.Int32, 0>;
+  // the entries as JSON (`[{ title, image }]`): the fullscreen draws its own carousel with them
+  playlistItems?: string;
 
   // Prefixo `onPlayer*` para não colidir com eventos que o RN já define (ex.: `onError`).
   onPlayerPlay?: CodegenTypes.DirectEventHandler<EmptyEvent>;
@@ -48,6 +53,8 @@ export interface NativeProps extends ViewProps {
   onPlayerFullscreen?: CodegenTypes.DirectEventHandler<FullscreenEvent>;
   onPlayerVolume?: CodegenTypes.DirectEventHandler<VolumeEvent>;
   onPlayerRate?: CodegenTypes.DirectEventHandler<RateEvent>;
+  onPlayerPlaylist?: CodegenTypes.DirectEventHandler<EmptyEvent>;
+  onPlayerPlaylistSelect?: CodegenTypes.DirectEventHandler<Readonly<{ index: CodegenTypes.Int32 }>>;
 }
 
 type ComponentType = HostComponent<NativeProps>;

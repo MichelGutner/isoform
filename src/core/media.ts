@@ -1,3 +1,5 @@
+import type { AudioItem, MediaPlaylistProps, PlaylistHandle, VideoItem } from './playlist';
+
 /**
  * Contract of the `Video` and `Audio` primitives: the same on every platform.
  * Web: the browser's `<video>` / `<audio>` with the lib's controls. Native: the lib's own
@@ -22,8 +24,8 @@ export interface MediaInfo {
   height: number;
 }
 
-/** Imperative control shared by every media primitive (`Video` and `Audio`). */
-export interface MediaHandle {
+/** Imperative control shared by every media primitive (`Video` and `Audio`), plus list navigation. */
+export interface MediaHandle extends PlaylistHandle {
   /** Starts or resumes playback. */
   play(): void;
   /** Pauses playback, keeping the current position. */
@@ -44,8 +46,11 @@ export interface VideoHandle extends MediaHandle {
 
 /** Playback props shared by every media primitive (`Video` and `Audio`). */
 export interface PlaybackProps {
-  /** Media URL: a file (`.mp4`, `.mp3`, `.webm`…) or an HLS stream (`.m3u8`). HLS on the web needs Safari. */
-  src: string;
+  /**
+   * Media URL: a file (`.mp4`, `.mp3`, `.webm`…) or an HLS stream (`.m3u8`). HLS on the web needs Safari.
+   * Give either `src` or an `items` list.
+   */
+  src?: string;
   /** Starts playing as soon as the media is ready. Default `false`. Browsers only allow it when `muted`. */
   autoPlay?: boolean;
   /** Restarts from the beginning when the media ends. Default `false`. */
@@ -91,7 +96,7 @@ export interface PlaybackProps {
 }
 
 /** Props of the `Video` primitive (on top of {@link PlaybackProps}). */
-export interface VideoOwnProps extends PlaybackProps {
+export interface VideoOwnProps extends PlaybackProps, MediaPlaylistProps<VideoItem> {
   /** Image URL shown before playback starts. */
   poster?: string;
   /** Shows the player controls (play/pause, seek bar, speed, fullscreen…). Default `true`. */
@@ -109,7 +114,7 @@ export interface VideoOwnProps extends PlaybackProps {
 export type AudioHandle = MediaHandle;
 
 /** Props of the `Audio` primitive (on top of {@link PlaybackProps}). */
-export interface AudioOwnProps extends PlaybackProps {
+export interface AudioOwnProps extends PlaybackProps, MediaPlaylistProps<AudioItem> {
   /** Shows the player controls (play/pause, ±10 s, seek bar, speed, mute). Default `true`. */
   controls?: boolean;
   /** Track title shown above the seek bar (e.g. the episode or song name). */

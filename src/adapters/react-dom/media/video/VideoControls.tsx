@@ -89,7 +89,10 @@ function useIdle() {
   return { idle, wake, sleep };
 }
 
-export function VideoControls({ state, actions }: { state: PlayerState; actions: PlayerActions }) {
+/**
+ * @param extra Extra buttons for the bottom bar, before the speed (e.g. the playlist button).
+ */
+export function VideoControls({ state, actions, extra }: { state: PlayerState; actions: PlayerActions; extra?: React.ReactNode }) {
   const { idle, wake, sleep } = useIdle();
   const [menuOpen, setMenuOpen] = useState(false);
   // posição enquanto arrasta a barra: o seek só acontece ao soltar
@@ -199,6 +202,7 @@ export function VideoControls({ state, actions }: { state: PlayerState; actions:
 
             <div className="ov-spacer" />
 
+            {extra}
             <SpeedMenu rate={state.rate} open={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} onSelect={selectRate} />
 
             {state.pipSupported ? (

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import type { WithoutPlaylist } from '../../../../core/playlist';
 import { Image, StyleSheet, View } from 'react-native';
 import { isModuleEnabled } from '../../../../config';
 import type { VideoHandle, VideoOwnProps } from '../../../../core/media';
@@ -15,14 +16,14 @@ type Spec = typeof import('./native/OmniVideoViewNativeComponent');
 let spec: Spec | undefined;
 const nativeSpec = (): Spec => (spec ??= require('./native/OmniVideoViewNativeComponent'));
 
-type Props = Partial<VideoOwnProps> & { style?: any; testID?: string };
+type Props = Partial<VideoOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void; /** Entries for the carousel the fullscreen draws natively. */ items?: Array<{ title: string; image: string }>; /** An entry picked in that carousel. */ onSelect?(index: number): void }; /** Any touch on the player (also on the native controls): the overlay uses it to show itself like the controls do. */ onPlayerTouch?: () => void };
 
 /**
  * Porta de entrada do `Video` no mobile. Com `modules.video` desligado, nem a
  * spec nativa é carregada: fica só um espaço vazio com o mesmo estilo (e um
  * aviso em dev), em vez do erro "componente nativo não encontrado".
  */
-export const Video = forwardRef<VideoHandle, Props>((props, ref) => {
+export const Video = forwardRef<WithoutPlaylist<VideoHandle>, Props>((props, ref) => {
   if (!isModuleEnabled('video')) {
     warnModuleDisabled('video');
     return <View style={[styles.container, props.style]} testID={props.testID} />;
@@ -36,7 +37,7 @@ Video.displayName = 'Video';
  * Aqui só traduzimos o contrato do omnistyle para as props e os eventos
  * nativos, e mostramos o `poster` até o primeiro play.
  */
-const VideoPlayer = forwardRef<VideoHandle, Props>(
+const VideoPlayer = forwardRef<WithoutPlaylist<VideoHandle>, Props>(
   (
     {
       src,
@@ -61,6 +62,9 @@ const VideoPlayer = forwardRef<VideoHandle, Props>(
       onFullscreenChange,
       style,
       testID,
+      overlay,
+      playlist,
+      onPlayerTouch,
     },
     ref,
   ) => {
@@ -80,9 +84,20 @@ const VideoPlayer = forwardRef<VideoHandle, Props>(
     );
 
     return (
-      <View style={[styles.container, style]} testID={testID}>
+      <View style={[styles.container, style]} testID={testID} onTouchStart={onPlayerTouch}>
+        {poster && !started ? (
+          // under the native player (transparent until the first frame), so its controls draw over the poster
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Image source={{ uri: poster }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          </View>
+        ) : null}
         <NativeVideo
           ref={native}
+          playlistIndex={playlist?.index ?? -1}
+          playlistCount={playlist?.count ?? 0}
+          playlistItems={playlist?.items ? JSON.stringify(playlist.items) : ''}
+          onPlayerPlaylistSelect={(e) => playlist?.onSelect?.(e.nativeEvent.index)}
+          onPlayerPlaylist={() => playlist?.onPress()}
           style={StyleSheet.absoluteFill}
           src={src}
           controls={controls}
@@ -107,12 +122,7 @@ const VideoPlayer = forwardRef<VideoHandle, Props>(
           onPlayerRate={(e) => onRateChange?.(e.nativeEvent.rate)}
           onPlayerFullscreen={(e) => onFullscreenChange?.(e.nativeEvent.fullscreen)}
         />
-        {poster && !started ? (
-          // `pointerEvents="none"`: o toque passa direto para os controles nativos
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            <Image source={{ uri: poster }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          </View>
-        ) : null}
+        {overlay}
       </View>
     );
   },

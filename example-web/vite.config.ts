@@ -12,8 +12,9 @@ export default defineConfig({
       // aponta para o código-fonte da lib (no app real: `npm i omnistyle`)
       omnistyle: lib,
     },
-    // uma única cópia de React, mesmo com arquivos fora desta pasta
-    dedupe: ['react', 'react-dom'],
+    // uma única cópia de React, mesmo com arquivos fora desta pasta; o pdf.js
+    // (dependência da lib) também vem daqui, já que a lib é lida do código-fonte
+    dedupe: ['react', 'react-dom', 'pdfjs-dist'],
   },
   server: { fs: { allow: [path.resolve(__dirname, '..')] } },
   // a lib de UI compartilhada fica fora do projeto

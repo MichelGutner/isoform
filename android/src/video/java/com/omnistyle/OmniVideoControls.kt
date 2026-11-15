@@ -140,6 +140,13 @@ class OmniVideoUiState {
   var rate by mutableFloatStateOf(1f)
   /** Fica na view (não no Compose): o JS também abre e fecha pelo `setFullscreen`. */
   var fullscreen by mutableStateOf(false)
+  /** Lista (`items`): posição atual e total; o botão de playlist só aparece com `playlistCount > 0`. */
+  var playlistIndex by mutableIntStateOf(-1)
+  var playlistCount by mutableIntStateOf(0)
+  /** As entradas da lista, para o carrossel da tela cheia. */
+  internal var playlistItems by mutableStateOf<List<VideoPlaylistItem>>(emptyList())
+  /** Carrossel aberto na tela cheia (fora dela, o painel é o do React Native). */
+  var playlistOpen by mutableStateOf(false)
 
   fun reset() {
     isPlaying = false
@@ -165,6 +172,8 @@ internal fun OmniVideoControls(
   onToggleMute: () -> Unit,
   onRateSelected: (Float) -> Unit,
   onFullscreenChange: (Boolean) -> Unit,
+  onPlaylist: () -> Unit,
+  onPlaylistSelect: (Int) -> Unit = {},
 ) {
   if (state.fullscreen) {
     // no lugar do vídeo, fica um fundo preto enquanto ele está em tela cheia
@@ -175,12 +184,23 @@ internal fun OmniVideoControls(
       properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
       FullscreenWindow(player)
-      PlayerLayer(player, state, onTogglePlay, onSkip, onSeek, onToggleMute, onRateSelected, fullscreen = true) {
+      PlayerLayer(player, state, onTogglePlay, onSkip, onSeek, onToggleMute, onRateSelected, { state.playlistOpen = true }, fullscreen = true) {
         onFullscreenChange(false)
+      }
+      // the list's carousel, drawn over the controls (the React Native panel stays under the fullscreen window)
+      if (state.playlistOpen && state.playlistItems.isNotEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+          VideoPlaylistPanel(
+            items = state.playlistItems,
+            index = state.playlistIndex,
+            onSelect = onPlaylistSelect,
+            onClose = { state.playlistOpen = false },
+          )
+        }
       }
     }
   } else {
-    PlayerLayer(player, state, onTogglePlay, onSkip, onSeek, onToggleMute, onRateSelected, fullscreen = false) {
+    PlayerLayer(player, state, onTogglePlay, onSkip, onSeek, onToggleMute, onRateSelected, onPlaylist, fullscreen = false) {
       onFullscreenChange(true)
     }
   }
@@ -197,6 +217,7 @@ private fun PlayerLayer(
   onSeek: (Double) -> Unit,
   onToggleMute: () -> Unit,
   onRateSelected: (Float) -> Unit,
+  onPlaylist: () -> Unit,
   fullscreen: Boolean,
   onToggleFullscreen: () -> Unit,
 ) {
@@ -222,7 +243,8 @@ private fun PlayerLayer(
   Box(
     Modifier
       .fillMaxSize()
-      .background(Color.Black)
+      // inline: clear until the first frame (the poster sits under it); fullscreen has no poster below, so black
+      .background(if (fullscreen) Color.Black else Color.Transparent)
       .pointerInput(state.controlsEnabled) {
         if (!state.controlsEnabled) return@pointerInput
         detectTapGestures(
@@ -240,7 +262,7 @@ private fun PlayerLayer(
       },
   ) {
     // TextureView: respeita o recorte de bordas arredondadas (`borderRadius` no JS)
-    ContentFrame(player = player, modifier = Modifier.fillMaxSize(), surfaceType = SURFACE_TYPE_TEXTURE_VIEW)
+    ContentFrame(player = player, modifier = Modifier.fillMaxSize(), surfaceType = SURFACE_TYPE_TEXTURE_VIEW, shutter = { Box(Modifier.fillMaxSize().background(if (fullscreen) Color.Black else Color.Transparent)) })
 
     if (!shown && state.isBuffering) {
       BufferingRing(Modifier.align(Alignment.Center).size(34.dp))
@@ -278,6 +300,14 @@ private fun PlayerLayer(
           horizontalArrangement = Arrangement.spacedBy(8.dp),
           verticalAlignment = Alignment.CenterVertically,
         ) {
+          // lista (`items`): abre o carrossel, ao lado da velocidade
+          if (state.playlistCount > 0) {
+            GlassPill(onClick = {
+              onPlaylist()
+              touched()
+            }) { PillLabel("☰ ${state.playlistIndex + 1}/${state.playlistCount}") }
+          }
+
           Box {
             GlassPill(onClick = {
               speedMenuOpen = true
@@ -486,11 +516,10 @@ private fun FullscreenWindow(player: Player) {
       }
     }
 
+    // in fullscreen the screen follows the device (portrait, landscape, both sides),
+    // even in an app locked to portrait; leaving it restores the app's own orientation
     val previousOrientation = activity?.requestedOrientation
-    val video = player.videoSize
-    if (video.width >= video.height) {
-      activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-    }
+    activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
 
     onDispose {
       if (activity != null && previousOrientation != null) activity.requestedOrientation = previousOrientation

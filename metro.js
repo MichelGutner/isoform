@@ -18,6 +18,7 @@ const CONFIG_FILE = 'omnistyle.config.json';
 const MODULE_FILES = {
   video: /[\\/]adapters[\\/]react-native[\\/]media[\\/]video[\\/]Video\.(tsx|js)$/,
   audio: /[\\/]adapters[\\/]react-native[\\/]media[\\/]audio[\\/]Audio\.(tsx|js)$/,
+  pdf: /[\\/]adapters[\\/]react-native[\\/]media[\\/]pdf[\\/]Pdf\.(tsx|js)$/,
 };
 
 /** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */

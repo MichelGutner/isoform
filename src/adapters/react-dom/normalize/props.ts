@@ -22,6 +22,7 @@ export const CANONICAL: Record<string, string> = {
   ScrollView: 'Scroll',
   Video: 'Video',
   Audio: 'Audio',
+  Pdf: 'Pdf',
 };
 
 /**
@@ -43,6 +44,8 @@ const BASE: Record<string, string> = {
     'border-style:solid;border-width:0;display:block;position:relative;overflow:hidden;box-sizing:border-box;max-width:100%;background-color:#000;object-fit:contain;flex-shrink:0',
   // áudio: o cartão (`.oa`) define layout, borda e cores; aqui só o que não conflita com ele
   Audio: 'box-sizing:border-box;max-width:100%;flex-shrink:0',
+  // PDF: the viewer (`.op`) defines layout and colors; a default height keeps the pages scrolling inside it
+  Pdf: 'box-sizing:border-box;max-width:100%;height:420px;flex-shrink:0',
 };
 
 function baseClass(primitive: string): string {

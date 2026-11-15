@@ -59,6 +59,7 @@ using namespace facebook::react;
   [_player setTitle:[NSString stringWithUTF8String:next.title.c_str()]];
   [_player setArtist:[NSString stringWithUTF8String:next.artist.c_str()]];
   [_player setArtwork:[NSString stringWithUTF8String:next.artwork.c_str()]];
+  [_player setPlaylistWithIndex:next.playlistIndex count:next.playlistCount];
   [_player setAutoPlay:next.autoPlay];
   [_player setLoop:next.loop];
   [_player setMuted:next.muted];
@@ -157,6 +158,11 @@ using namespace facebook::react;
 - (void)audioDidChangeRate:(double)rate
 {
   if (auto emitter = [self emitter]) emitter->onPlayerRate({.rate = rate});
+}
+
+- (void)audioDidPressPlaylist
+{
+  if (auto emitter = [self emitter]) emitter->onPlayerPlaylist({});
 }
 
 @end

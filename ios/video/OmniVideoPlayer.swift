@@ -16,17 +16,35 @@ import UIKit
   func playerDidChangeFullscreen(_ fullscreen: Bool)
   func playerDidChangeVolume(_ volume: Double, muted: Bool)
   func playerDidChangeRate(_ rate: Double)
+  func playerDidPressPlaylist()
+  func playerDidSelectPlaylistItem(_ index: Int)
 }
 
-/// Player de vídeo com as APIs da Apple: `AVPlayer` para reprodução e
-/// `AVPlayerViewController` para os controles nativos (play, barra, velocidade,
-/// tela cheia, AirPlay, PiP).
+/// The video picture: a view whose own layer is an `AVPlayerLayer`, so resizing the
+/// view (also inside animations, like the fullscreen zoom) resizes the video with it.
+final class OmniVideoSurface: UIView {
+  override class var layerClass: AnyClass { AVPlayerLayer.self }
+  var playerLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+}
+
+/// Player de vídeo com as APIs da Apple: `AVPlayer` para reprodução, `AVPlayerLayer`
+/// para a imagem e os controles da própria lib (`OmniVideoControls`, iguais aos do
+/// Android e da web): play, ±10 s, barra, velocidade, mudo, tela cheia com a transição
+/// de zoom da Apple (`OmniVideoFullscreen`), picture-in-picture, AirPlay e playlist.
 @objc(OmniVideoPlayer)
 public final class OmniVideoPlayer: UIView {
   @objc public weak var delegate: OmniVideoPlayerDelegate?
 
   private let player = AVPlayer()
-  private let controller = AVPlayerViewController()
+  /// Picture + controls: this is what travels to fullscreen and back.
+  private let content = UIView()
+  private let surface = OmniVideoSurface()
+  private let controls = OmniVideoControls()
+  private let fullscreen = OmniVideoFullscreen()
+  /// The list's carousel inside the fullscreen (inline, the React Native panel is used).
+  private let playlistPanel = OmniVideoPlaylistPanel()
+  private var pictureInPicture: AVPictureInPictureController?
+  private var pipObservations: [NSKeyValueObservation] = []
 
   private var source: String?
   private var shouldAutoPlay = false
@@ -42,9 +60,6 @@ public final class OmniVideoPlayer: UIView {
   private var lastRate: Float = 1
   private var lastVolume: (Float, Bool)?
 
-  /// Tela cheia aberta por comando (`setFullscreen(true)`).
-  private var presentedController: AVPlayerViewController?
-
   private var timeObserver: Any?
   private var observations: [NSKeyValueObservation] = []
   private var itemObservations: [NSKeyValueObservation] = []
@@ -52,15 +67,33 @@ public final class OmniVideoPlayer: UIView {
 
   @objc public override init(frame: CGRect) {
     super.init(frame: frame)
-    backgroundColor = .black
+    // clear until the first frame: the poster sits under this view and the controls draw over it
+    backgroundColor = .clear
 
-    controller.player = player
-    controller.delegate = self
-    controller.videoGravity = .resizeAspect
-    controller.view.frame = bounds
-    controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    controller.view.backgroundColor = .black
-    addSubview(controller.view)
+    surface.playerLayer.player = player
+    surface.playerLayer.videoGravity = .resizeAspect
+    surface.backgroundColor = .clear
+    content.backgroundColor = .clear
+    content.clipsToBounds = true
+    content.frame = bounds
+    content.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    [surface, controls].forEach {
+      $0.frame = content.bounds
+      $0.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+      content.addSubview($0)
+    }
+    playlistPanel.translatesAutoresizingMaskIntoConstraints = false
+    content.addSubview(playlistPanel)
+    NSLayoutConstraint.activate([
+      playlistPanel.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+      playlistPanel.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+      playlistPanel.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+    ])
+    playlistPanel.onSelect = { [weak self] index in self?.delegate?.playerDidSelectPlaylistItem(index) }
+    addSubview(content)
+    configureControls()
+    configurePictureInPicture()
+    fullscreen.onClosed = { [weak self] in self?.fullscreenChanged(false) }
 
     // Posição a cada 250 ms (como o `timeupdate` da web). Também guarda a
     // última posição, que vira o `from` do próximo seek.
@@ -70,6 +103,7 @@ public final class OmniVideoPlayer: UIView {
     ) { [weak self] time in
       guard let self else { return }
       self.lastTime = time.seconds
+      self.controls.update(current: time.seconds, duration: self.duration, buffered: self.lastBuffered)
       if self.isPlaying { self.delegate?.playerDidUpdateTime(time.seconds, duration: self.duration) }
     }
 
@@ -84,6 +118,7 @@ public final class OmniVideoPlayer: UIView {
           guard let self, player.rate > 0, player.rate != self.lastRate else { return }
           self.lastRate = player.rate
           self.playbackRate = player.rate
+          self.controls.update(rate: player.rate)
           self.delegate?.playerDidChangeRate(Double(player.rate))
         }
       },
@@ -107,20 +142,69 @@ public final class OmniVideoPlayer: UIView {
     player.pause()
   }
 
-  // MARK: - Hierarquia de view controllers
+  // MARK: - Controls
 
-  /// O `AVPlayerViewController` precisa de um pai para a tela cheia funcionar.
-  public override func didMoveToWindow() {
-    super.didMoveToWindow()
-    if window != nil, controller.parent == nil, let parent = parentViewController {
-      parent.addChild(controller)
-      controller.didMove(toParent: parent)
-    } else if window == nil, controller.parent != nil {
-      controller.willMove(toParent: nil)
-      controller.removeFromParent()
-    }
+  private func configureControls() {
+    controls.actions = OmniVideoControls.Actions(
+      togglePlay: { [weak self] in self?.togglePlay() },
+      skip: { [weak self] seconds in self.map { $0.seek(to: max(0, $0.player.currentTime().seconds + seconds)) } },
+      seek: { [weak self] seconds in self?.seek(to: seconds) },
+      toggleMute: { [weak self] in self.map { $0.player.isMuted.toggle() } },
+      selectRate: { [weak self] rate in self?.setRate(rate) },
+      toggleFullscreen: { [weak self] in self.map { $0.setFullscreen(!$0.isFullscreen) } },
+      togglePictureInPicture: { [weak self] in self?.togglePictureInPicture() },
+      openPlaylist: { [weak self] in
+        guard let self else { return }
+        // fullscreen: our own carousel; inline: the React Native panel
+        guard !self.isFullscreen else { return self.playlistPanel.show() }
+        self.delegate?.playerDidPressPlaylist()
+      }
+    )
+    controls.update(rate: playbackRate)
+    controls.update(muted: player.isMuted)
+    controls.update(fullscreen: false)
   }
 
+  private func togglePlay() {
+    let ended = duration > 0 && player.currentTime().seconds >= duration - 0.25
+    if ended { player.seek(to: .zero) }
+    player.timeControlStatus == .paused ? play() : pause()
+  }
+
+  /// List position for the playlist pill (`count` 0 hides it).
+  @objc public func setPlaylist(index: Int, count: Int) {
+    controls.update(playlistIndex: index, count: count)
+    playlistPanel.set(index: index)
+  }
+
+  /// The entries (`[{ title, image }]` as JSON) for the fullscreen carousel.
+  @objc public func setPlaylistItems(_ json: String) {
+    playlistPanel.set(json: json)
+  }
+
+  // MARK: - Picture in picture
+
+  private func configurePictureInPicture() {
+    let supported = AVPictureInPictureController.isPictureInPictureSupported()
+    controls.update(pictureInPictureSupported: supported, active: false)
+    guard supported, let pip = AVPictureInPictureController(playerLayer: surface.playerLayer) else { return }
+    pictureInPicture = pip
+    pip.canStartPictureInPictureAutomaticallyFromInline = false
+    pipObservations = [
+      pip.observe(\.isPictureInPictureActive, options: [.new]) { [weak self] pip, _ in
+        DispatchQueue.main.async { self?.controls.update(pictureInPictureSupported: true, active: pip.isPictureInPictureActive) }
+      },
+    ]
+  }
+
+  private func togglePictureInPicture() {
+    guard let pip = pictureInPicture else { return }
+    pip.isPictureInPictureActive ? pip.stopPictureInPicture() : pip.startPictureInPicture()
+  }
+
+  // MARK: - Hierarquia de view controllers
+
+  /// O view controller que mostra o player (apresenta a tela cheia).
   private var parentViewController: UIViewController? {
     var responder: UIResponder? = self
     while let next = responder?.next {
@@ -167,7 +251,7 @@ public final class OmniVideoPlayer: UIView {
   }
 
   @objc public func setControls(_ value: Bool) {
-    controller.showsPlaybackControls = value
+    controls.enabled = value
   }
 
   @objc public func setAutoPlay(_ value: Bool) {
@@ -180,6 +264,7 @@ public final class OmniVideoPlayer: UIView {
 
   @objc public func setMuted(_ value: Bool) {
     if player.isMuted != value { player.isMuted = value }
+    controls.update(muted: player.isMuted)
   }
 
   @objc public func setVolume(_ value: Float) {
@@ -193,6 +278,7 @@ public final class OmniVideoPlayer: UIView {
     playbackRate = rate
     if #available(iOS 16.0, *) { player.defaultRate = rate }
     if isPlaying { player.rate = rate }
+    controls.update(rate: rate)
   }
 
   // MARK: - Comandos
@@ -210,34 +296,22 @@ public final class OmniVideoPlayer: UIView {
     player.seek(to: CMTime(seconds: max(0, seconds), preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
   }
 
-  /// O AVKit não tem API pública para abrir a própria tela cheia: apresentamos um
-  /// segundo `AVPlayerViewController` em tela cheia com o MESMO `AVPlayer`.
+  /// Fullscreen with Apple's zoom transition (`OmniVideoFullscreen`): the player itself
+  /// grows from its place to the whole screen, and a landscape video turns to landscape.
   @objc public func setFullscreen(_ value: Bool) {
-    // referência antiga de uma tela cheia que já foi fechada
-    if presentedController?.presentingViewController == nil { presentedController = nil }
-
-    if value {
-      guard presentedController == nil, !isFullscreen, let parent = parentViewController else { return }
-      let fullscreen = AVPlayerViewController()
-      fullscreen.player = player
-      fullscreen.delegate = self // avisa quando o usuário fecha (botão ou gesto)
-      fullscreen.modalPresentationStyle = .fullScreen
-      presentedController = fullscreen
-      parent.present(fullscreen, animated: true) { [weak self] in self?.fullscreenChanged(true) }
-    } else if let presentedController {
-      presentedController.dismiss(animated: true) { [weak self] in
-        self?.presentedController = nil
-        self?.fullscreenChanged(false)
-      }
-    }
+    guard value != isFullscreen else { return }
+    guard value else { return fullscreen.dismiss() }
+    guard let presenter = parentViewController else { return }
+    let size = player.currentItem?.presentationSize ?? .zero
+    fullscreen.present(content, from: self, landscape: size.width > size.height, presenter: presenter)
+    fullscreenChanged(true)
   }
 
   /// Chamado quando o Fabric recicla a view para outro `Video`.
   @objc public func reset() {
     player.pause()
     player.replaceCurrentItem(with: nil)
-    presentedController?.dismiss(animated: false)
-    presentedController = nil
+    if isFullscreen { fullscreen.dismiss() }
     clearItemObservers()
     source = nil
     isPlaying = false
@@ -272,6 +346,7 @@ public final class OmniVideoPlayer: UIView {
     // play pelos controles nativos do AVKit não passa pelo nosso `play()`
     if status != .paused { prepareAudio() }
     let buffering = status == .waitingToPlayAtSpecifiedRate
+    controls.update(playing: status == .playing, buffering: buffering)
     if buffering != isBuffering {
       isBuffering = buffering
       delegate?.playerDidChangeBuffering(buffering)
@@ -317,6 +392,7 @@ public final class OmniVideoPlayer: UIView {
     let current = (player.volume, player.isMuted)
     if let last = lastVolume, last == current { return }
     lastVolume = current
+    controls.update(muted: player.isMuted)
     // ligou o som no meio do vídeo: passa a tocar mesmo no modo silencioso
     if player.rate > 0 { prepareAudio() }
     delegate?.playerDidChangeVolume(Double(player.volume), muted: player.isMuted)
@@ -325,6 +401,8 @@ public final class OmniVideoPlayer: UIView {
   private func fullscreenChanged(_ value: Bool) {
     guard value != isFullscreen else { return }
     isFullscreen = value
+    controls.update(fullscreen: value)
+    if !value { playlistPanel.hide() }
     delegate?.playerDidChangeFullscreen(value)
   }
 
@@ -339,29 +417,5 @@ public final class OmniVideoPlayer: UIView {
   private var duration: Double {
     guard let seconds = player.currentItem?.duration.seconds, seconds.isFinite else { return 0 }
     return seconds
-  }
-}
-
-// MARK: - Tela cheia (botão nativo do AVKit ou a aberta por `setFullscreen`)
-
-extension OmniVideoPlayer: AVPlayerViewControllerDelegate {
-  public func playerViewController(
-    _ playerViewController: AVPlayerViewController,
-    willBeginFullScreenPresentationWithAnimationCoordinator coordinator: UIViewControllerTransitionCoordinator
-  ) {
-    coordinator.animate(alongsideTransition: nil) { [weak self] context in
-      if !context.isCancelled { self?.fullscreenChanged(true) }
-    }
-  }
-
-  public func playerViewController(
-    _ playerViewController: AVPlayerViewController,
-    willEndFullScreenPresentationWithAnimationCoordinator coordinator: UIViewControllerTransitionCoordinator
-  ) {
-    coordinator.animate(alongsideTransition: nil) { [weak self] context in
-      guard let self, !context.isCancelled else { return }
-      if playerViewController === self.presentedController { self.presentedController = nil }
-      self.fullscreenChanged(false)
-    }
   }
 }

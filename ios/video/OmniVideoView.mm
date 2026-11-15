@@ -60,6 +60,8 @@ using namespace facebook::react;
   [_player setMuted:next.muted];
   [_player setRate:next.rate];
   [_player setVolume:next.volume];
+  [_player setPlaylistItems:[NSString stringWithUTF8String:next.playlistItems.c_str()]];
+  [_player setPlaylistWithIndex:next.playlistIndex count:next.playlistCount];
   [_player setSource:[NSString stringWithUTF8String:next.src.c_str()]];
 
   [super updateProps:props oldProps:oldProps];
@@ -165,6 +167,16 @@ using namespace facebook::react;
 - (void)playerDidChangeRate:(double)rate
 {
   if (auto emitter = [self emitter]) emitter->onPlayerRate({.rate = rate});
+}
+
+- (void)playerDidPressPlaylist
+{
+  if (auto emitter = [self emitter]) emitter->onPlayerPlaylist({});
+}
+
+- (void)playerDidSelectPlaylistItem:(NSInteger)index
+{
+  if (auto emitter = [self emitter]) emitter->onPlayerPlaylistSelect({.index = (int)index});
 }
 
 @end

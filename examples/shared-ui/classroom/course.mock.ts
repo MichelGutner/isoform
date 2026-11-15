@@ -18,6 +18,40 @@ const AUDIO = {
   cover: 'https://picsum.photos/seed/omnistyle-audio/600/600',
 };
 
+/** PDFs públicos para testar o leitor (servidos com CORS, então abrem também na web). */
+const PDF = {
+  /** Artigo do pdf.js (Mozilla): 14 páginas de texto, com links e sumário. */
+  paper: 'https://raw.githubusercontent.com/mozilla/pdf.js/master/web/compressed.tracemonkey-pldi-09.pdf',
+};
+
+/** Imagem de teste do Picsum (a mesma para a mesma "semente"). */
+const picture = (seed: string, width: number, height: number) => `https://picsum.photos/seed/${seed}/${width}/${height}`;
+
+/** Listas de exemplo: cada aula mostra um carrossel abaixo do player. */
+const LISTS = {
+  videos: [
+    { src: VIDEOS.bunny, title: 'Ciclo cardíaco: sístole', poster: picture('omni-v1', 640, 360) },
+    { src: VIDEOS.flower, title: 'Ciclo cardíaco: diástole', poster: picture('omni-v2', 640, 360) },
+    { src: VIDEOS.hls, title: 'Bulhas e sopros (HLS)', poster: picture('omni-v3', 640, 360) },
+    { src: VIDEOS.bunny, title: 'Revisão rápida', poster: picture('omni-v4', 640, 360) },
+  ],
+  audios: [1, 2, 3, 8].map((n, i) => ({
+    src: `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${n}.mp3`,
+    title: ['Ausculta: foco mitral', 'Ausculta: foco aórtico', 'Ausculta: foco tricúspide', 'Ausculta: foco pulmonar'][i],
+    artist: 'Cardiologia clínica',
+    artwork: picture(`omni-a${n}`, 600, 600),
+  })),
+  pdfs: [
+    { src: PDF.paper, title: 'Resumo: fisiologia cardíaca', thumbnail: picture('omni-p1', 300, 400) },
+    { src: 'https://raw.githubusercontent.com/mozilla/pdf.js/master/test/pdfs/TAMReview.pdf', title: 'Artigo de revisão', thumbnail: picture('omni-p2', 300, 400) },
+    { src: 'https://raw.githubusercontent.com/mozilla/pdf.js/master/examples/learning/helloworld.pdf', title: 'Folha de exercícios' },
+    {
+      src: "https://sanar-directus-prod.s3.amazonaws.com/8f3d535d-fe4a-4b45-a428-654f513cdc29.pdf?AWSAccessKeyId=AKIAWKT5HDXLSYTKHY4O&Expires=1794856274&Signature=HRxpygkf5Oto19D9s2kPFQ4jGGQ%3D",
+      title: 'Acidente Vascular Cerebral Isquêmico'
+    }
+  ],
+};
+
 /** Curso de exemplo (no app real viria da API). */
 export const course: Course = {
   title: 'Cardiologia clínica',
@@ -29,9 +63,9 @@ export const course: Course = {
       title: 'Fundamentos',
       assets: [
         { id: 'a1', title: 'Anatomia do coração', kind: 'video', detail: '14 min', src: VIDEOS.flower },
-        { id: 'a2', title: 'Ciclo cardíaco', kind: 'video', detail: '18 min', src: VIDEOS.bunny },
-        { id: 'a3', title: 'Podcast: ausculta cardíaca', kind: 'audio', detail: '6 min', src: AUDIO.song, cover: AUDIO.cover },
-        { id: 'a3b', title: 'Resumo: fisiologia cardíaca', kind: 'pdf', detail: '12 páginas' },
+        { id: 'a2', title: 'Ciclo cardíaco', kind: 'video', detail: '4 vídeos', items: LISTS.videos },
+        { id: 'a3', title: 'Podcast: ausculta cardíaca', kind: 'audio', detail: '4 episódios', items: LISTS.audios },
+        { id: 'a3b', title: 'Material de apoio', kind: 'pdf', detail: '3 PDFs', items: LISTS.pdfs },
       ],
     },
     {
@@ -48,7 +82,7 @@ export const course: Course = {
       title: 'Insuficiência cardíaca',
       assets: [
         { id: 'a7', title: 'Classificação e diagnóstico', kind: 'video', detail: '20 min', src: VIDEOS.bunny },
-        { id: 'a8', title: 'Tratamento medicamentoso', kind: 'pdf', detail: '9 páginas' },
+        { id: 'a8', title: 'Tratamento medicamentoso', kind: 'pdf', detail: '14 páginas', src: PDF.paper },
       ],
     },
   ],

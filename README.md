@@ -162,19 +162,20 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
-| `Video`, `Audio` | optional players, see [Optional modules](#optional-modules-video-and-audio) | native players |
+| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-and-pdf) | native players and viewer |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
 
-## Optional modules: `Video` and `Audio`
+## Optional modules: `Video`, `Audio` and `Pdf`
 
-The media players are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
+The media players and the PDF viewer are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
 
 ```json
 {
   "modules": {
     "video": { "enabled": true },
-    "audio": { "enabled": true, "mediaSession": false }
+    "audio": { "enabled": true, "mediaSession": false },
+    "pdf": { "enabled": true }
   }
 }
 ```
@@ -203,6 +204,7 @@ On iOS the file is read at `pod install`. If you change it, run `cd ios && pod i
 |---|---|---|---|---|
 | `video` | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + `AVPlayerViewController` | Media3 + Compose controls |
 | `audio` | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
+| `pdf` | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
 
 ```tsx
 const Player = engine('Audio', () => ({ width: '100%' }));
@@ -211,6 +213,48 @@ const Player = engine('Audio', () => ({ width: '100%' }));
 ```
 
 Both share the same props (`src`, `autoPlay`, `loop`, `muted`, `rate`, `volume`) and events (`onPlay`, `onPause`, `onEnded`, `onTimeUpdate`, `onLoad`, `onError`, `onSeek`, `onBuffering`, `onBufferedChange`, `onVolumeChange`, `onRateChange`). The `ref` gives `play()`, `pause()` and `seekTo(seconds)`. `Video` adds `poster`, `onFullscreenChange` and `setFullscreen()`; `Audio` adds `title`, `artist` and `artwork`.
+
+### PDF viewer (`pdf`)
+
+```tsx
+const Document = engine('Pdf', () => ({ width: '100%', height: 560 }));
+
+<Document
+  src="https://example.com/handout.pdf"
+  speechLanguage="pt-BR"
+  onPageChange={({ page, pageCount }) => console.log(page, pageCount)}
+  onSearch={({ query, total, current }) => console.log(query, current, total)}
+/>
+```
+
+The viewer has its own colorless toolbar: thumbnails, page counter (tap to go to a page), read aloud, search, fullscreen, table of contents and a menu (voice, night mode, fit width/page, download/print on the web, share on iOS).
+
+| Feature | Web | iOS | Android 15+, or 12–14 with system updates | Older Android |
+|---|---|---|---|---|
+| Pages, scroll, pinch/double-tap zoom, page counter, thumbnails, night mode, fullscreen | ✓ | ✓ | ✓ | ✓ |
+| Search with every match highlighted (case- and accent-insensitive) | ✓ | ✓ | ✓ | – |
+| Read aloud (word highlight on web and iOS) and voice picker | ✓ | ✓ | ✓ | – |
+| Links (pages and websites), password prompt | ✓ | ✓ | ✓ | – |
+| Text selection and copy, table of contents | ✓ | ✓ | – | – |
+| Download / print / share | ✓ | ✓ | – | – |
+
+"Android 12–14 with system updates" means SDK extension 13 (`PdfRendererPreV`, delivered by Google Play system updates). Older devices get the basic viewer: the search and read-aloud buttons are hidden and protected files show an error.
+
+Props: `src`, `password`, `initialPage`, `controls`, `nightMode`, `fit` (`'width'` | `'page'`), `maxZoom`, `speechLanguage` (e.g. `'pt-BR'`), `speechVoice`. Events: `onLoad({ pageCount })`, `onPageChange({ page, pageCount })`, `onSearch({ query, total, current })`, `onError(message)`, `onPasswordRequired()`, `onLinkPress(url)`, `onFullscreenChange(fullscreen)`, `onReadAloudChange(reading)`. The `ref` gives `goToPage(page)`, `search(query)`, `searchNext()`, `searchPrevious()`, `clearSearch()`, `setZoom(scale)`, `setFullscreen(on)`, `startReadAloud()` and `stopReadAloud()`.
+
+**Read aloud** uses the system voice (web `speechSynthesis`, iOS `AVSpeechSynthesizer`, Android `TextToSpeech`) and picks the most natural voice installed for the language: neural/"Natural" voices on the web (Edge, Chrome), Premium and Enhanced voices on iOS, the highest-quality voices on Android. Users can pick another in the menu ("Voice"); apps can set `speechVoice` (the voice `name` on the web, `AVSpeechSynthesisVoice.identifier` on iOS, `Voice.getName()` on Android). On iOS, better voices are downloaded in Settings › Accessibility › Spoken Content › Voices.
+
+**Web worker.** `pdfjs-dist` comes with omnistyle and is only downloaded by the browser when a `Pdf` renders. By default the PDF is parsed on the main thread (no setup). For very large files, serve the worker and pass its URL:
+
+```bash
+cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/
+```
+
+```json
+{ "modules": { "pdf": { "enabled": true, "workerSrc": "/pdf.worker.min.mjs" } } }
+```
+
+On the web the file must be same-origin or served with CORS. On mobile, `https://`, `file://` and (Android) `content://` addresses work; remote files are downloaded once to the cache.
 
 ### Background audio and notification controls (`mediaSession`)
 

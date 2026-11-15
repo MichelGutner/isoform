@@ -61,7 +61,10 @@ function volumeLevel({ volume, muted }: AudioState): VolumeLevel {
 const remaining = (state: AudioState, shown: number) =>
   state.duration > 0 ? `−${formatTime(state.duration - shown)}` : '';
 
-export function AudioControls({ state, actions, meta }: { state: AudioState; actions: AudioActions; meta: AudioMeta }) {
+/**
+ * @param extra Extra buttons for the top row, before the speed (e.g. the playlist button).
+ */
+export function AudioControls({ state, actions, meta, extra }: { state: AudioState; actions: AudioActions; meta: AudioMeta; extra?: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   // position while dragging the bar: the seek only happens on release
   const [scrubTime, setScrubTime] = useState<number | null>(null);
@@ -85,7 +88,7 @@ export function AudioControls({ state, actions, meta }: { state: AudioState; act
           <span className="oa-title">{meta.title ?? 'Audio'}</span>
           {meta.artist ? <span className="oa-artist">{meta.artist}</span> : null}
         </div>
-        <SpeedMenu rate={state.rate} open={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} onSelect={selectRate} />
+        {extra}
       </div>
 
       <div>
@@ -139,6 +142,7 @@ export function AudioControls({ state, actions, meta }: { state: AudioState; act
             />
           </div>
         </div>
+        <SpeedMenu rate={state.rate} open={menuOpen} onToggle={() => setMenuOpen(!menuOpen)} onSelect={selectRate} />
       </div>
     </>
   );

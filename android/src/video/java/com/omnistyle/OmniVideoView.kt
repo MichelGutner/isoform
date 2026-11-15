@@ -51,6 +51,10 @@ class OmniVideoView(private val reactContext: ThemedReactContext) : FrameLayout(
         onToggleMute = { setMuted(!muted) },
         onRateSelected = { rate -> setRate(rate) },
         onFullscreenChange = { value -> setFullscreen(value) },
+        // o carrossel abre na view do React Native: a tela cheia fecha antes
+        // inline: the React Native panel opens; fullscreen draws its own carousel (in OmniVideoControls)
+        onPlaylist = { emit(PLAYLIST) },
+        onPlaylistSelect = { index -> emit(PLAYLIST_SELECT, Arguments.createMap().apply { putInt("index", index) }) },
       )
     }
   }
@@ -80,7 +84,7 @@ class OmniVideoView(private val reactContext: ThemedReactContext) : FrameLayout(
   }
 
   init {
-    setBackgroundColor(Color.BLACK)
+    setBackgroundColor(Color.TRANSPARENT) // the poster sits under this view until the first frame
     addView(composeView)
 
     player.addListener(object : Player.Listener {
@@ -206,9 +210,24 @@ class OmniVideoView(private val reactContext: ThemedReactContext) : FrameLayout(
   fun pause() = player.pause()
 
   /** Abre ou fecha a tela cheia (botão dos controles ou comando do JS). */
+  val playlistIndex: Int get() = ui.playlistIndex
+  val playlistCount: Int get() = ui.playlistCount
+
+  /** Lista (`items`): mostra o botão de playlist com a posição (`count` 0 esconde). */
+  /** The entries (`[{ title, image }]` as JSON) for the fullscreen carousel. */
+  fun setPlaylistItems(json: String?) {
+    ui.playlistItems = VideoPlaylistItem.parse(json)
+  }
+
+  fun setPlaylist(index: Int, count: Int) {
+    ui.playlistIndex = index
+    ui.playlistCount = count
+  }
+
   fun setFullscreen(value: Boolean) {
     if (value == ui.fullscreen) return
     ui.fullscreen = value
+    if (!value) ui.playlistOpen = false
     emit(FULLSCREEN, Arguments.createMap().apply { putBoolean("fullscreen", value) })
   }
 
@@ -298,6 +317,8 @@ class OmniVideoView(private val reactContext: ThemedReactContext) : FrameLayout(
     const val FULLSCREEN = "topPlayerFullscreen"
     const val VOLUME = "topPlayerVolume"
     const val RATE = "topPlayerRate"
-    val EVENTS = listOf(PLAY, PAUSE, END, TIME, LOAD, ERROR, SEEK, BUFFERING, BUFFERED, FULLSCREEN, VOLUME, RATE)
+    const val PLAYLIST = "topPlayerPlaylist"
+    const val PLAYLIST_SELECT = "topPlayerPlaylistSelect"
+    val EVENTS = listOf(PLAY, PAUSE, END, TIME, LOAD, ERROR, SEEK, BUFFERING, BUFFERED, FULLSCREEN, VOLUME, RATE, PLAYLIST, PLAYLIST_SELECT)
   }
 }

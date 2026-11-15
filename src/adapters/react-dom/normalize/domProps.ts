@@ -36,6 +36,9 @@ const SCROLL = [
 // consumidas pelo próprio componente de vídeo (que traduz para o elemento)
 const PLAYBACK = ['src', 'autoPlay', 'loop', 'muted', 'rate', 'volume', 'controls'];
 
+// listas (`items`) com carrossel, aceitas por Video, Audio e Pdf
+const PLAYLIST = ['items', 'initialIndex', 'carousel', 'autoAdvance'];
+
 const ALLOWED: Record<string, Set<string>> = {
   Box: new Set(GLOBAL),
   Text: new Set(GLOBAL),
@@ -43,8 +46,9 @@ const ALLOWED: Record<string, Set<string>> = {
   Input: new Set([...GLOBAL, ...INPUT]),
   Image: new Set([...GLOBAL, ...IMAGE]),
   Scroll: new Set([...GLOBAL, ...SCROLL]),
-  Video: new Set([...GLOBAL, ...PLAYBACK, 'poster']),
-  Audio: new Set([...GLOBAL, ...PLAYBACK, 'title', 'artist', 'artwork']),
+  Video: new Set([...GLOBAL, ...PLAYBACK, ...PLAYLIST, 'poster']),
+  Audio: new Set([...GLOBAL, ...PLAYBACK, ...PLAYLIST, 'title', 'artist', 'artwork']),
+  Pdf: new Set([...GLOBAL, ...PLAYLIST, 'src', 'password', 'initialPage', 'controls', 'nightMode', 'fit', 'direction', 'maxZoom', 'speechLanguage', 'speechVoice']),
 };
 
 const ALWAYS = /^(data-|aria-|on[A-Z])/;

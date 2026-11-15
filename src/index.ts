@@ -13,6 +13,7 @@ export type { Keyframes } from './core/keyframes';
 export { configure, getProvider } from './config';
 export type {
   AudioModuleOptions,
+  PdfModuleOptions,
   ConfigureOptions,
   ModuleName,
   ModuleOptions,
@@ -49,6 +50,7 @@ export type {
   ScrollProps,
   VideoProps,
   AudioProps,
+  PdfProps,
 } from './core/primitives';
 export type {
   MediaHandle,
@@ -60,6 +62,25 @@ export type {
   VideoOwnProps,
   AudioOwnProps,
 } from './core/media';
+export type {
+  AudioItem,
+  MediaPlaylistProps,
+  PdfItem,
+  PlaylistChange,
+  PlaylistHandle,
+  PlaylistItem,
+  PlaylistProps,
+  VideoItem,
+} from './core/playlist';
+export type {
+  PdfDirection,
+  PdfFit,
+  PdfHandle,
+  PdfLoadInfo,
+  PdfOwnProps,
+  PdfPageInfo,
+  PdfSearchInfo,
+} from './core/pdf';
 export { useTheme, updateTheme, getTheme } from './theme';
 
 /**
