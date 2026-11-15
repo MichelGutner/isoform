@@ -25,7 +25,7 @@ const Layer = engine('Box', ({ theme }) => ({
   overflow: 'hidden',
   pointerEvents: 'none',
   backgroundColor: theme.color.background,
-})).when('web', { style: { position: 'fixed', zIndex: 0 } });
+})).when('platform:web', { style: { position: 'fixed', zIndex: 0 } });
 
 const Bubble = engine('Box', {
   position: 'absolute',

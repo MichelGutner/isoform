@@ -25,4 +25,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-module.exports = config;
+// Módulos desligados no omnistyle.config.json saem do bundle JS.
+const { withOmnistyle } = require('omnistyle/metro');
+
+module.exports = withOmnistyle(config);

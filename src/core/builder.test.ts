@@ -71,7 +71,7 @@ describe('StylizedBuilder', () => {
   it('applies when(...) attrs/style only when the condition is true', () => {
     const Component = new StylizedBuilder(Base)
       .style({ padding: 4 } as any)
-      .when('active', { style: { opacity: 1 }, testID: 'on' } as any)
+      .when('props:active', { style: { opacity: 1 }, testID: 'on' } as any)
       .build();
 
     const { captured: on } = renderAndCapture(Component, { active: true });
@@ -84,21 +84,21 @@ describe('StylizedBuilder', () => {
   });
 
   it("matches 'key:value' conditions exactly, not as a substring", () => {
-    const Component = new StylizedBuilder(Base).when('status:active', { testID: 'matched' } as any).build();
+    const Component = new StylizedBuilder(Base).when('props:status=active', { testID: 'matched' } as any).build();
     expect(renderAndCapture(Component, { status: 'active' }).captured.testID).toBe('matched');
     expect(renderAndCapture(Component, { status: 'inactive' }).captured.testID).toBeUndefined();
   });
 
   it('matches platform conditions statically', () => {
-    const Component = new StylizedBuilder(Base).when('ios', { style: { shadowOpacity: 0.2 } } as any).build();
+    const Component = new StylizedBuilder(Base).when('platform:ios', { style: { shadowOpacity: 0.2 } } as any).build();
     expect(renderAndCapture(Component).captured.style).toEqual({ shadowOpacity: 0.2 });
   });
 
   it("treats 'native' as any platform except web", () => {
     const build = () =>
       new StylizedBuilder(Base)
-        .when('native', { style: { elevation: 2 } } as any)
-        .when('web', { style: { cursor: 'pointer' } } as any)
+        .when('platform:native', { style: { elevation: 2 } } as any)
+        .when('platform:web', { style: { cursor: 'pointer' } } as any)
         .build();
 
     platform.os = 'android';
@@ -172,9 +172,9 @@ describe('StylizedBuilder', () => {
 
       const Component = new StylizedBuilder(Base)
         .style({ opacity: 1 } as any)
-        .when('hover', { style: { opacity: 0.9 } } as any)
-        .when('hover', (({ theme }: any) => ({ style: { color: theme?.color ?? 'red' } })) as any)
-        .when('pressed', { style: { opacity: 0.5 } } as any)
+        .when('state:hover', { style: { opacity: 0.9 } } as any)
+        .when('state:hover', (({ theme }: any) => ({ style: { color: theme?.color ?? 'red' } })) as any)
+        .when('state:pressed', { style: { opacity: 0.5 } } as any)
         .build();
       renderAndCapture(Component);
 
@@ -194,7 +194,7 @@ describe('StylizedBuilder', () => {
     });
 
     it('keeps a component with only state rules on the static fast path', () => {
-      const Component = new StylizedBuilder(Base).when('hover', { style: { opacity: 0.9 } } as any).build();
+      const Component = new StylizedBuilder(Base).when('state:hover', { style: { opacity: 0.9 } } as any).build();
       renderAndCapture(Component);
       expect(optimizedHash).not.toHaveBeenCalled();
     });
@@ -240,9 +240,9 @@ describe('StylizedBuilder', () => {
       const compileStyle = spy();
       const Component = new StylizedBuilder(Base)
         .style({ padding: 4 } as any)
-        .when('lg', { style: { padding: 24 } } as any)
-        .when('md', { style: { padding: 16 } } as any)
-        .when('md', (({ theme }: any) => ({ style: { margin: theme?.color ? 1 : 2 } })) as any)
+        .when('breakpoints:lg', { style: { padding: 24 } } as any)
+        .when('breakpoints:md', { style: { padding: 16 } } as any)
+        .when('breakpoints:md', (({ theme }: any) => ({ style: { margin: theme?.color ? 1 : 2 } })) as any)
         .build();
       renderAndCapture(Component);
 
@@ -257,8 +257,8 @@ describe('StylizedBuilder', () => {
       configure({ breakpoints: { tablet: 600, desktop: 1100 } });
       registerBundledProvider({ ...createFakeAdapter(Base, platform), compileStyle });
       const Component = new StylizedBuilder<any, object>(Base)
-        .when('tablet', { style: { padding: 10 } } as any)
-        .when('md', { style: { padding: 99 } } as any) // `md` já não é breakpoint: vira condição de prop
+        .when('breakpoints:tablet', { style: { padding: 10 } } as any)
+        .when('breakpoints:md', { style: { padding: 99 } } as any) // `md` já não é breakpoint: vira condição de prop
         .build();
       const { captured } = renderAndCapture(Component, { md: true });
       expect(compileStyle.mock.calls.at(-1)![2]).toEqual([{ name: 'tablet', min: 600, order: 2, style: { padding: 10 } }]);
@@ -268,9 +268,9 @@ describe('StylizedBuilder', () => {
     it("supports below ('<md') and range ('sm..lg') conditions, narrower ranges after broader ones", () => {
       const compileStyle = spy();
       const Component = new StylizedBuilder(Base)
-        .when('md', { style: { a: 1 } } as any)
-        .when('sm..lg', { style: { b: 2 } } as any)
-        .when('<md', { style: { c: 3 } } as any)
+        .when('breakpoints:md', { style: { a: 1 } } as any)
+        .when('breakpoints:sm..lg', { style: { b: 2 } } as any)
+        .when('breakpoints:<md', { style: { c: 3 } } as any)
         .build();
       renderAndCapture(Component);
       expect(compileStyle.mock.calls.at(-1)![2]).toEqual([
@@ -283,23 +283,23 @@ describe('StylizedBuilder', () => {
     it('ignores ranges that reference unknown names or are inverted (they become plain prop conditions)', () => {
       const compileStyle = spy();
       renderAndCapture(
-        new StylizedBuilder(Base).when('<nope', { style: { a: 1 } } as any).when('lg..sm', { style: { b: 1 } } as any).build(),
+        new StylizedBuilder(Base).when('breakpoints:<nope', { style: { a: 1 } } as any).when('breakpoints:lg..sm', { style: { b: 1 } } as any).build(),
       );
       expect(compileStyle.mock.calls.at(-1)![2]).toBeUndefined();
     });
 
     it('keeps a component with only breakpoint rules on the static fast path', () => {
       spy();
-      renderAndCapture(new StylizedBuilder(Base).when('md', { style: { padding: 1 } } as any).build());
+      renderAndCapture(new StylizedBuilder(Base).when('breakpoints:md', { style: { padding: 1 } } as any).build());
       expect(optimizedHash).not.toHaveBeenCalled();
     });
 
     it('ignores non-style attrs in breakpoint rules (with a dev warning)', () => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
       const compileStyle = spy();
-      renderAndCapture(new StylizedBuilder(Base).when('sm', { style: { opacity: 1 }, title: 'x' } as any).build());
+      renderAndCapture(new StylizedBuilder(Base).when('breakpoints:sm', { style: { opacity: 1 }, title: 'x' } as any).build());
       expect(compileStyle.mock.calls.at(-1)![2][0].style).toEqual({ opacity: 1 });
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('sm') só aceita { style }"));
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('breakpoints:sm') só aceita { style }"));
     });
   });
 

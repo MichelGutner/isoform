@@ -86,7 +86,7 @@ afterEach(() => jest.restoreAllMocks());
 
 describe('react-native · transition', () => {
   const Fade = engine<'Box', { dim?: boolean }>('Box', { opacity: 1, transition: 'opacity 200ms linear' } as any).when(
-    'dim',
+    'props:dim',
     { style: { opacity: 0.5 } },
   );
 
@@ -123,7 +123,7 @@ describe('react-native · transition', () => {
 
   it('interpolates colors and resumes them mid-flight', () => {
     const Tint = engine<'Box', { on?: boolean }>('Box', { backgroundColor: '#000000', transition: 'background-color 1s' } as any).when(
-      'on',
+      'props:on',
       { style: { backgroundColor: '#ffffff' } },
     );
     mount(<Tint />);
@@ -137,7 +137,7 @@ describe('react-native · transition', () => {
 
   it("'all' animates any interpolable property (JS driver) and leaves non-numeric ones alone", () => {
     const Box = engine<'Box', { big?: boolean }>('Box', { width: 10, alignSelf: 'flex-start', transition: 'all 100ms' } as any).when(
-      'big',
+      'props:big',
       { style: { width: 20, alignSelf: 'flex-end' } },
     );
     mount(<Box />);
@@ -149,7 +149,7 @@ describe('react-native · transition', () => {
   });
 
   it('only listed properties transition; the others change instantly', () => {
-    const Box = engine<'Box', { on?: boolean }>('Box', { opacity: 1, width: 10, transition: 'opacity 100ms' } as any).when('on', {
+    const Box = engine<'Box', { on?: boolean }>('Box', { opacity: 1, width: 10, transition: 'opacity 100ms' } as any).when('props:on', {
       style: { opacity: 0.2, width: 50 },
     });
     mount(<Box />);
@@ -161,7 +161,7 @@ describe('react-native · transition', () => {
 
   it('animates transform function by function, using the identity for missing ones', () => {
     const Pop = engine<'Box', { on?: boolean }>('Box', { transform: 'scale(1)', transition: 'transform 300ms ease-out' } as any).when(
-      'on',
+      'props:on',
       { style: { transform: 'scale(1.5) rotate(45deg)' } },
     );
     mount(<Pop />);
@@ -176,7 +176,7 @@ describe('react-native · transition', () => {
       opacity: 1,
       transform: 'translateY(0px)',
       transition: 'opacity 100ms linear, transform 400ms ease 80ms',
-    } as any).when('on', { style: { opacity: 0, transform: 'translateY(20px)' } });
+    } as any).when('props:on', { style: { opacity: 0, transform: 'translateY(20px)' } });
     mount(<Box />);
     update(<Box on />);
     const byDuration = Object.fromEntries(mockRuns.map((r) => [r.config.duration, r.config]));
@@ -185,7 +185,7 @@ describe('react-native · transition', () => {
   });
 
   it('warns and swaps instantly when the values cannot be interpolated', () => {
-    const Box = engine<'Box', { on?: boolean }>('Box', { width: 'auto', transition: 'width 100ms' } as any).when('on', {
+    const Box = engine<'Box', { on?: boolean }>('Box', { width: 'auto', transition: 'width 100ms' } as any).when('props:on', {
       style: { width: 100 },
     });
     mount(<Box />);
@@ -194,8 +194,8 @@ describe('react-native · transition', () => {
     expect(style().width).toBe(100);
   });
 
-  it("animates when('pressed') through onPressIn/onPressOut (the host tracks the press)", () => {
-    const Btn = engine('Pressable', { opacity: 1, transition: 'opacity 150ms' } as any).when('pressed', { style: { opacity: 0.6 } });
+  it("animates when('state:pressed') through onPressIn/onPressOut (the host tracks the press)", () => {
+    const Btn = engine('Pressable', { opacity: 1, transition: 'opacity 150ms' } as any).when('state:pressed', { style: { opacity: 0.6 } });
     mount(<Btn />);
     const P = (RN as any).Pressable;
     act(() => renderer.root.findByType(P).props.onPressIn({}));
@@ -206,8 +206,8 @@ describe('react-native · transition', () => {
     expect(mockRuns).toHaveLength(2);
   });
 
-  it("animates when('focus') on an Input", () => {
-    const Field = engine('Input', { borderColor: '#cccccc', transition: 'border-color 120ms' } as any).when('focus', {
+  it("animates when('state:focus') on an Input", () => {
+    const Field = engine('Input', { borderColor: '#cccccc', transition: 'border-color 120ms' } as any).when('state:focus', {
       style: { borderColor: '#0000ff' },
     });
     mount(<Field />);

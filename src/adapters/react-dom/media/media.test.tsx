@@ -3,8 +3,8 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createRef } from 'react';
-import { fireEvent, render } from '@testing-library/react';
-import { registerBundledProvider, resetProvider } from '../../../config';
+import { fireEvent, render, waitFor } from '@testing-library/react';
+import { configure, registerBundledProvider, resetProvider } from '../../../config';
 import { engine } from '../../../core/engine';
 import type { MediaHandle } from '../../../core/media';
 import { reactDomAdapter } from '../adapter';
@@ -22,6 +22,7 @@ let errorSpy: jest.SpyInstance;
 beforeEach(() => {
   resetProvider();
   registerBundledProvider(reactDomAdapter);
+  configure({ modules: { video: true } }); // módulos vêm desligados por padrão
   play.mockClear();
   pause.mockClear();
   errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -30,11 +31,18 @@ afterEach(() => errorSpy.mockRestore());
 
 const first = (container: HTMLElement) => container.querySelector('video') as HTMLMediaElement;
 
+/** O player é carregado sob demanda (`import()`): espera o <video> aparecer. */
+async function renderVideo(ui: React.ReactElement) {
+  const result = render(ui);
+  await waitFor(() => expect(first(result.container)).not.toBeNull());
+  return result;
+}
+
 describe('Video (web)', () => {
   const Clip = engine('Video', { aspectRatio: 16 / 9, borderRadius: 8 });
 
-  it('renders a container with the engine style, a <video> and the lib controls', () => {
-    const { container, getByLabelText } = render(<Clip src="a.mp4" poster="p.png" testID="clip" />);
+  it('renders a container with the engine style, a <video> and the lib controls', async () => {
+    const { container, getByLabelText } = await renderVideo(<Clip src="a.mp4" poster="p.png" testID="clip" />);
     const box = container.firstElementChild as HTMLElement;
     expect(box.getAttribute('data-testid')).toBe('clip');
     expect(box.className).toContain('o-video');
@@ -47,8 +55,8 @@ describe('Video (web)', () => {
     expect(getByLabelText('Reproduzir')).toBeTruthy();
   });
 
-  it('lets the controls be turned off and forwards loop, muted and autoPlay', () => {
-    const { container } = render(<Clip src="a.mp4" controls={false} loop muted autoPlay />);
+  it('lets the controls be turned off and forwards loop, muted and autoPlay', async () => {
+    const { container } = await renderVideo(<Clip src="a.mp4" controls={false} loop muted autoPlay />);
     const el = first(container);
     expect(container.querySelector('button')).toBeNull();
     expect(el.loop).toBe(true);
@@ -56,14 +64,14 @@ describe('Video (web)', () => {
     expect(el.autoplay).toBe(true);
   });
 
-  it('translates DOM events to the omnistyle contract', () => {
+  it('translates DOM events to the omnistyle contract', async () => {
     const onPlay = jest.fn();
     const onPause = jest.fn();
     const onEnded = jest.fn();
     const onTimeUpdate = jest.fn();
     const onLoad = jest.fn();
     const onError = jest.fn();
-    const { container } = render(
+    const { container } = await renderVideo(
       <Clip
         src="a.mp4"
         onPlay={onPlay}
@@ -93,16 +101,16 @@ describe('Video (web)', () => {
     expect(onError).toHaveBeenCalledWith('Falha ao carregar a mídia.');
   });
 
-  it('reports duration 0 while it is unknown (NaN in the browser)', () => {
+  it('reports duration 0 while it is unknown (NaN in the browser)', async () => {
     const onTimeUpdate = jest.fn();
-    const { container } = render(<Clip src="a.mp4" onTimeUpdate={onTimeUpdate} />);
+    const { container } = await renderVideo(<Clip src="a.mp4" onTimeUpdate={onTimeUpdate} />);
     fireEvent.timeUpdate(first(container));
     expect(onTimeUpdate).toHaveBeenCalledWith({ currentTime: 0, duration: 0 });
   });
 
-  it('exposes play, pause and seekTo through the ref', () => {
+  it('exposes play, pause and seekTo through the ref', async () => {
     const ref = createRef<MediaHandle>();
-    const { container } = render(<Clip ref={ref} src="a.mp4" />);
+    const { container } = await renderVideo(<Clip ref={ref} src="a.mp4" />);
     ref.current!.play();
     ref.current!.pause();
     ref.current!.seekTo(33);
@@ -111,8 +119,8 @@ describe('Video (web)', () => {
     expect(first(container).currentTime).toBe(33);
   });
 
-  it('applies rate and volume (they are not HTML attributes) and updates them', () => {
-    const { container, rerender } = render(<Clip src="a.mp4" rate={1.5} volume={0.3} />);
+  it('applies rate and volume (they are not HTML attributes) and updates them', async () => {
+    const { container, rerender } = await renderVideo(<Clip src="a.mp4" rate={1.5} volume={0.3} />);
     expect(first(container).playbackRate).toBe(1.5);
     expect(first(container).volume).toBeCloseTo(0.3);
     rerender(<Clip src="a.mp4" rate={2} volume={1} />);
@@ -120,8 +128,8 @@ describe('Video (web)', () => {
     expect(first(container).volume).toBe(1);
   });
 
-  it('does not leak omnistyle props to the DOM (no React warnings)', () => {
-    render(<Clip src="a.mp4" rate={2} volume={1} onTimeUpdate={() => {}} onLoad={() => {}} />);
+  it('does not leak omnistyle props to the DOM (no React warnings)', async () => {
+    await renderVideo(<Clip src="a.mp4" rate={2} volume={1} onTimeUpdate={() => {}} onLoad={() => {}} />);
     expect(errorSpy).not.toHaveBeenCalled();
   });
 });

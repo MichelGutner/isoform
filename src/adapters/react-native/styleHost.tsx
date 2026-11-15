@@ -18,7 +18,7 @@ const hosts = new Map<string, WeakMap<React.ComponentType<any>, React.ComponentT
  * Envolve um componente RN num host que rastreia largura da janela, `pressed`
  * e `focus`, e pede ao adapter o estilo final (`__omniStyleFor(width, pressed,
  * focused)`). Só entram aqui os componentes que precisam (breakpoints,
- * `when('focus')`, `pressed` + transition); os demais seguem no caminho estático.
+ * `when('state:focus')`, `pressed` + transition); os demais seguem no caminho estático.
  *
  * Um host por combinação de flags e por componente: a mesma entrada devolve
  * sempre o mesmo host, e a ordem dos hooks é fixa dentro de cada host.

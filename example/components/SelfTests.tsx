@@ -25,28 +25,28 @@ const flat = (style: any): any =>
 const T_static = engine(Probe, { padding: 4 } as any);
 const T_themeFn = engine(Probe, (({ theme }: any) => ({ color: theme.color.primary })) as any);
 const T_propValue: any = engine(Probe);
-T_propValue.when('status:active', { matched: true });
+T_propValue.when('props:status=active', { matched: true });
 const T_boolean: any = engine(Probe);
-T_boolean.when('flag', { hit: true });
+T_boolean.when('props:flag', { hit: true });
 const T_fn: any = engine(Probe);
 T_fn.when(({ props }: any) => props.n > 3, { big: true });
 const T_platform: any = engine(Probe);
-T_platform.when('ios', { isIos: true });
-T_platform.when('android', { isAndroid: true });
+T_platform.when('platform:ios', { isIos: true });
+T_platform.when('platform:android', { isAndroid: true });
 const T_attrs: any = engine(Probe);
 T_attrs.attrs({ testID: 'fixed', accessibilityLabel: 'fixed-label' });
 const T_order: any = engine(Probe);
 T_order.style({ margin: 1 }).style({ margin: 2 });
 const T_whenStyle: any = engine(Probe);
-T_whenStyle.when('on', { style: { borderWidth: 3 } });
+T_whenStyle.when('props:on', { style: { borderWidth: 3 } });
 const T_whenFnAttrs: any = engine(Probe);
-T_whenFnAttrs.when('on', ({ props }: any) => ({ echoed: props.level * 2 }));
+T_whenFnAttrs.when('props:on', ({ props }: any) => ({ echoed: props.level * 2 }));
 const T_base: any = engine(Probe, { padding: 10 } as any);
 const T_extended: any = T_base.extend().style({ margin: 20 });
 const T_compose: any = engine(T_static as any, { margin: 7 } as any);
 const T_chain: any = engine(Probe)
   .style({ gap: 1 })
-  .when('x', { gotX: true })
+  .when('props:x', { gotX: true })
   .attrs({ fixed: 1 });
 
 /** Cada caso: o que renderizar e como validar o que a lib entregou. */
@@ -70,25 +70,25 @@ const cases: {
   },
   {
     key: 'valueMatch',
-    name: "when('status:active') aplica com valor igual",
+    name: "when('props:status=active') aplica com valor igual",
     render: r => <T_propValue status="active" report={r} />,
     check: p => p.matched === true,
   },
   {
     key: 'valueExact',
-    name: "when('status:active') NÃO aplica em 'inactive' (match exato)",
+    name: "when('props:status=active') NÃO aplica em 'inactive' (match exato)",
     render: r => <T_propValue status="inactive" report={r} />,
     check: p => p.matched === undefined,
   },
   {
     key: 'boolOn',
-    name: "when('flag') aplica quando a prop é truthy",
+    name: "when('props:flag') aplica quando a prop é truthy",
     render: r => <T_boolean flag report={r} />,
     check: p => p.hit === true,
   },
   {
     key: 'boolOff',
-    name: "when('flag') não aplica quando ausente",
+    name: "when('props:flag') não aplica quando ausente",
     render: r => <T_boolean report={r} />,
     check: p => p.hit === undefined,
   },
@@ -106,7 +106,7 @@ const cases: {
   },
   {
     key: 'platform',
-    name: `when('ios'|'android') só na plataforma atual (${Platform.OS})`,
+    name: `when('platform:ios'|'android') só na plataforma atual (${Platform.OS})`,
     render: r => <T_platform report={r} />,
     check: p =>
       (p.isIos === true) === (Platform.OS === 'ios') &&

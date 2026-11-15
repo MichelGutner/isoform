@@ -52,7 +52,7 @@ const Swatch = engine<'TouchableOpacity', { selected?: boolean; color: string }>
     borderColor: 'transparent',
   }),
 );
-Swatch.when('selected', ({ theme }: any) => ({
+Swatch.when('props:selected', ({ theme }: any) => ({
   style: { borderColor: theme.color.text },
 }));
 
@@ -84,13 +84,13 @@ const StatusDot = engine<'View', { status: 'active' | 'inactive' | 'pending' }>(
   'View',
   { width: 12, height: 12, borderRadius: 6 },
 );
-StatusDot.when('status:active', ({ theme }: any) => ({
+StatusDot.when('props:status=active', ({ theme }: any) => ({
   style: { backgroundColor: theme.color.success },
 }));
-StatusDot.when('status:inactive', ({ theme }: any) => ({
+StatusDot.when('props:status=inactive', ({ theme }: any) => ({
   style: { backgroundColor: theme.color.error },
 }));
-StatusDot.when('status:pending', ({ theme }: any) => ({
+StatusDot.when('props:status=pending', ({ theme }: any) => ({
   style: { backgroundColor: theme.color.warning },
 }));
 
@@ -133,7 +133,7 @@ const Tab = engine<'TouchableOpacity', { active?: boolean }>('TouchableOpacity',
   alignItems: 'center',
   borderRadius: theme.borderRadius?.md ?? 14,
 }));
-Tab.when('active', ({ theme }: any) => ({
+Tab.when('props:active', ({ theme }: any) => ({
   style: { backgroundColor: theme.color.primary },
 }));
 
@@ -198,7 +198,7 @@ function VisualTab() {
         </Card>
       </Section>
 
-      <Section n="2" title="Match exato por valor" hint="when('status:active') não pode casar com 'inactive' (antes era substring).">
+      <Section n="2" title="Match exato por valor" hint="when('props:status=active') não pode casar com 'inactive' (antes era substring).">
         <Card>
           {(['active', 'inactive', 'pending'] as const).map(s => (
             <Row key={s}>
@@ -232,7 +232,7 @@ function VisualTab() {
         </Card>
       </Section>
 
-      <Section n="4" title="Inputs, ref e attrs" hint="attrs() fixos (autoCapitalize), when('invalid'), ref encaminhado.">
+      <Section n="4" title="Inputs, ref e attrs" hint="attrs() fixos (autoCapitalize), when('props:invalid'), ref encaminhado.">
         <Card>
           <Input
             ref={inputRef as any}
@@ -290,7 +290,7 @@ function VisualTab() {
         </Card>
       </Section>
 
-      <Section n="8" title="Plataforma" hint="when('ios' | 'android' | 'web') — só a regra da plataforma atual deve valer.">
+      <Section n="8" title="Plataforma" hint="when('platform:ios' | 'android' | 'web') — só a regra da plataforma atual deve valer.">
         <Card accent>
           <Row between>
             <Body>Rodando em</Body>

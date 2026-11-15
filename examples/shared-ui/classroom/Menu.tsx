@@ -11,7 +11,7 @@ const Card = engine('Box', ({ theme }) => ({
   backgroundColor: theme.color.surface,
   overflow: 'hidden',
   boxShadow: '0 4px 24px rgba(17, 18, 18, 0.1)',
-})).when('lg', { style: { width: 320 } });
+})).when('breakpoints:lg', { style: { width: 320 } });
 
 const Header = engine('Box', ({ theme }) => ({
   padding: theme.spacing.lg,
@@ -39,9 +39,9 @@ const CollapseButton = engine('Pressable', {
   justifyContent: 'center',
   backgroundColor: 'rgba(255, 255, 255, 0.2)',
 })
-  .when('lg', { style: { display: 'flex' } })
-  .when('hover', { style: { backgroundColor: 'rgba(255, 255, 255, 0.35)' } })
-  .when('web', { style: { cursor: 'pointer' } });
+  .when('breakpoints:lg', { style: { display: 'flex' } })
+  .when('state:hover', { style: { backgroundColor: 'rgba(255, 255, 255, 0.35)' } })
+  .when('platform:web', { style: { cursor: 'pointer' } });
 
 const CollapseIcon = engine('Text', { color: '#ffffff', fontSize: 18 });
 

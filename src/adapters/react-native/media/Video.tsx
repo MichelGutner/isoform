@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
+import { isModuleEnabled } from '../../../config';
 import type { VideoHandle, VideoOwnProps } from '../../../core/media';
+import { warnModuleDisabled } from '../../../core/modules';
 
 declare const require: (id: string) => any;
 
@@ -16,11 +18,25 @@ const nativeSpec = (): Spec => (spec ??= require('./native/OmniVideoViewNativeCo
 type Props = Partial<VideoOwnProps> & { style?: any; testID?: string };
 
 /**
- * `Video` no mobile: o componente nativo da lib (AVPlayer no iOS, Media3 no
- * Android). Aqui só traduzimos o contrato do omnistyle para as props e os
- * eventos nativos, e mostramos o `poster` até o primeiro play.
+ * Porta de entrada do `Video` no mobile. Com `modules.video` desligado, nem a
+ * spec nativa é carregada: fica só um espaço vazio com o mesmo estilo (e um
+ * aviso em dev), em vez do erro "componente nativo não encontrado".
  */
-export const Video = forwardRef<VideoHandle, Props>(
+export const Video = forwardRef<VideoHandle, Props>((props, ref) => {
+  if (!isModuleEnabled('video')) {
+    warnModuleDisabled('video');
+    return <View style={[styles.container, props.style]} testID={props.testID} />;
+  }
+  return <VideoPlayer ref={ref} {...props} />;
+});
+Video.displayName = 'Video';
+
+/**
+ * O player: o componente nativo da lib (AVPlayer no iOS, Media3 no Android).
+ * Aqui só traduzimos o contrato do omnistyle para as props e os eventos
+ * nativos, e mostramos o `poster` até o primeiro play.
+ */
+const VideoPlayer = forwardRef<VideoHandle, Props>(
   (
     {
       src,
@@ -101,6 +117,6 @@ export const Video = forwardRef<VideoHandle, Props>(
     );
   },
 );
-Video.displayName = 'Video';
+VideoPlayer.displayName = 'VideoPlayer';
 
 const styles = StyleSheet.create({ container: { backgroundColor: '#000', overflow: 'hidden' } });

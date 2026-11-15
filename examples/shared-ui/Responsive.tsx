@@ -2,8 +2,8 @@ import { engine } from 'omnistyle';
 import { Body, Card, Heading, themeFade } from './ui';
 
 /**
- * Layout responsivo mobile-first: `when('md')` vale de 768px para cima,
- * `when('lg')` de 1024px — `@media (min-width)` na web e a largura da janela no mobile
+ * Layout responsivo mobile-first: `when('breakpoints:md')` vale de 768px para cima,
+ * `when('breakpoints:lg')` de 1024px — `@media (min-width)` na web e a largura da janela no mobile
  * (gire o aparelho ou redimensione o navegador).
  */
 
@@ -12,7 +12,7 @@ const Grid = engine('Box', ({ theme }) => ({
   flexDirection: 'column',
   gap: theme.spacing.sm,
 }))
-  .when('md', { style: { flexDirection: 'row' } });
+  .when('breakpoints:md', { style: { flexDirection: 'row' } });
 
 const Tile = engine('Box', ({ theme }) => ({
   transition: themeFade(),
@@ -23,7 +23,7 @@ const Tile = engine('Box', ({ theme }) => ({
   borderWidth: 1,
   borderColor: theme.color.border,
 }))
-  .when('lg', { style: { padding: 28 } });
+  .when('breakpoints:lg', { style: { padding: 28 } });
 
 /** O fundo e o texto mudam a cada faixa: base → sm → md → lg → xl (o maior que valer, vence). */
 const Meter = engine('Box', ({ theme }) => ({
@@ -33,10 +33,10 @@ const Meter = engine('Box', ({ theme }) => ({
   alignItems: 'center',
   backgroundColor: '#e5e7eb',
 }))
-  .when('sm', { style: { backgroundColor: '#fde68a' } })
-  .when('md', { style: { backgroundColor: '#a7f3d0' } })
-  .when('lg', { style: { backgroundColor: '#bfdbfe' } })
-  .when('xl', { style: { backgroundColor: '#ddd6fe' } });
+  .when('breakpoints:sm', { style: { backgroundColor: '#fde68a' } })
+  .when('breakpoints:md', { style: { backgroundColor: '#a7f3d0' } })
+  .when('breakpoints:lg', { style: { backgroundColor: '#bfdbfe' } })
+  .when('breakpoints:xl', { style: { backgroundColor: '#ddd6fe' } });
 
 /** Só um rótulo aparece por vez: cada um se esconde fora da sua faixa. */
 const Label = engine<'Text', { from: 'base' | 'sm' | 'md' | 'lg' | 'xl' }>('Text', ({ theme, props }) => ({
@@ -47,23 +47,23 @@ const Label = engine<'Text', { from: 'base' | 'sm' | 'md' | 'lg' | 'xl' }>('Text
   display: props.from === 'base' ? 'flex' : 'none',
 }))
   // mobile-first: cada faixa mostra o seu rótulo e esconde o da faixa anterior
-  .when('sm', ({ props }) => ({ style: { display: props.from === 'sm' ? 'flex' : 'none' } }))
-  .when('md', ({ props }) => ({ style: { display: props.from === 'md' ? 'flex' : 'none' } }))
-  .when('lg', ({ props }) => ({ style: { display: props.from === 'lg' ? 'flex' : 'none' } }))
-  .when('xl', ({ props }) => ({ style: { display: props.from === 'xl' ? 'flex' : 'none' } }));
+  .when('breakpoints:sm', ({ props }) => ({ style: { display: props.from === 'sm' ? 'flex' : 'none' } }))
+  .when('breakpoints:md', ({ props }) => ({ style: { display: props.from === 'md' ? 'flex' : 'none' } }))
+  .when('breakpoints:lg', ({ props }) => ({ style: { display: props.from === 'lg' ? 'flex' : 'none' } }))
+  .when('breakpoints:xl', ({ props }) => ({ style: { display: props.from === 'xl' ? 'flex' : 'none' } }));
 
 /** `'<md'` e `'sm..lg'`: faixas (max-width / intervalo), além do mobile-first `'md'`. */
 const OnlyBelowMd = engine('Box', { display: 'none', paddingBlock: 6, paddingInline: 12, borderRadius: 8, backgroundColor: '#fecaca' })
-  .when('<md', { style: { display: 'flex' } });
+  .when('breakpoints:<md', { style: { display: 'flex' } });
 
 const OnlyTablet = engine('Box', { display: 'none', paddingBlock: 6, paddingInline: 12, borderRadius: 8, backgroundColor: '#fed7aa' })
-  .when('md..lg', { style: { display: 'flex' } });
+  .when('breakpoints:md..lg', { style: { display: 'flex' } });
 
 export function ResponsiveDemo() {
   return (
     <Card testID="responsive-demo">
       <Heading>Responsivo (breakpoints)</Heading>
-      <Body muted>when('sm' | 'md' | 'lg' | 'xl') — mobile-first. Redimensione o navegador ou gire o aparelho.</Body>
+      <Body muted>when('breakpoints:sm' | 'md' | 'lg' | 'xl') — mobile-first. Redimensione o navegador ou gire o aparelho.</Body>
 
       <Meter testID="bp-meter">
         <Label from="base" testID="bp-base">abaixo de 480px · base</Label>
@@ -75,10 +75,10 @@ export function ResponsiveDemo() {
 
       <Body muted>Faixas: <Body style={{ fontWeight: '700' }}>{'<md'}</Body> e <Body style={{ fontWeight: '700' }}>md..lg</Body></Body>
       <OnlyBelowMd testID="bp-below-md">
-        <Body>{"só abaixo de 768px · when('<md')"}</Body>
+        <Body>{"só abaixo de 768px · when('breakpoints:<md')"}</Body>
       </OnlyBelowMd>
       <OnlyTablet testID="bp-tablet">
-        <Body>só entre 768px e 1024px · when('md..lg')</Body>
+        <Body>só entre 768px e 1024px · when('breakpoints:md..lg')</Body>
       </OnlyTablet>
 
       <Grid testID="bp-grid">

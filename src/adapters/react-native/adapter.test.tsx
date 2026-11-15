@@ -91,13 +91,13 @@ describe('react-native adapter', () => {
     expect(withUser).toEqual([{ padding: 4 }, { margin: 1 }]);
   });
 
-  it("resolves when('ios' | 'android' | 'native' | 'web') from Platform.OS", () => {
+  it("resolves when('platform:ios' | 'android' | 'native' | 'web') from Platform.OS", () => {
     mockPlatform.OS = 'android';
     const Tag = engine('Box')
-      .when('android', { style: { elevation: 2 } })
-      .when('native', { style: { opacity: 0.9 } })
-      .when('ios', { style: { shadowOpacity: 1 } })
-      .when('web', { style: { cursor: 'pointer' } });
+      .when('platform:android', { style: { elevation: 2 } })
+      .when('platform:native', { style: { opacity: 0.9 } })
+      .when('platform:ios', { style: { shadowOpacity: 1 } })
+      .when('platform:web', { style: { cursor: 'pointer' } });
     expect(renderProps(<Tag />, (RN as any).View).style).toEqual({ elevation: 2, opacity: 0.9 });
   });
 

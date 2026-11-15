@@ -1,5 +1,11 @@
-// Componente nativo de vídeo do omnistyle: Media3 ExoPlayer + controles em Jetpack Compose.
-// O plugin `com.facebook.react` roda o Codegen a partir do `codegenConfig` do package.json.
+// Parte nativa do omnistyle. O plugin `com.facebook.react` roda o Codegen a partir
+// do `codegenConfig` do package.json.
+//
+// Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
+// (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
+//   { "modules": { "video": true } }
+// Módulo fora do arquivo (ou `false`) não é compilado: sem Media3 nem Compose no APK.
+// Sem o arquivo, tudo é compilado e só o `configure` decide em runtime.
 
 buildscript {
   ext.safeExtGet = { prop, fallback ->
@@ -17,10 +23,19 @@ buildscript {
   }
 }
 
+// `android/` do app → a raiz do app é a pasta de cima
+def omnistyleConfigFile = new File(rootProject.projectDir.parentFile, "omnistyle.config.json")
+def omnistyleConfig = omnistyleConfigFile.exists() ? new groovy.json.JsonSlurper().parse(omnistyleConfigFile) : null
+def omnistyleModule = { String name -> omnistyleConfig == null || omnistyleConfig.modules?.get(name) == true }
+
+def videoEnabled = omnistyleModule("video")
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "org.jetbrains.kotlin.plugin.compose"
 apply plugin: "com.facebook.react"
+// Compose só é usado pelos controles do vídeo
+if (videoEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
  * Media3 1.10.x: a linha mais nova publicada com Kotlin 2.0 e Compose 1.7,
@@ -37,10 +52,19 @@ android {
   defaultConfig {
     minSdkVersion safeExtGet("minSdkVersion", 24)
     targetSdkVersion safeExtGet("targetSdkVersion", 35)
+    // as views dos módulos são criadas por reflexão: o R8 do app precisa mantê-las
+    consumerProguardFiles "consumer-rules.pro"
   }
 
   buildFeatures {
-    compose true
+    compose videoEnabled
+  }
+
+  // cada módulo ligado acrescenta a sua pasta de código
+  sourceSets {
+    main {
+      if (videoEnabled) java.srcDirs += "src/video/java"
+    }
   }
 
   compileOptions {
@@ -61,16 +85,18 @@ repositories {
 dependencies {
   implementation "com.facebook.react:react-android"
 
-  implementation "androidx.media3:media3-exoplayer:$media3Version"
-  implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
-  implementation "androidx.media3:media3-ui-compose:$media3Version"
-  // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
-  implementation "androidx.annotation:annotation-experimental:1.4.1"
-  // tela cheia: esconder as barras do sistema (WindowInsetsControllerCompat)
-  implementation "androidx.core:core:1.13.1"
+  if (videoEnabled) {
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+    implementation "androidx.media3:media3-ui-compose:$media3Version"
+    // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
+    implementation "androidx.annotation:annotation-experimental:1.4.1"
+    // tela cheia: esconder as barras do sistema (WindowInsetsControllerCompat)
+    implementation "androidx.core:core:1.13.1"
 
-  implementation platform("androidx.compose:compose-bom:$composeBomVersion")
-  implementation "androidx.compose.ui:ui"
-  implementation "androidx.compose.foundation:foundation"
-  implementation "androidx.compose.animation:animation"
+    implementation platform("androidx.compose:compose-bom:$composeBomVersion")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.foundation:foundation"
+    implementation "androidx.compose.animation:animation"
+  }
 }

@@ -28,11 +28,11 @@ export const Card = engine<'View', { flat?: boolean; accent?: boolean }>(
     ...(theme.shadows?.md ?? {}),
   }),
 );
-Card.when('flat', {
+Card.when('props:flat', {
   style: { shadowOpacity: 0, elevation: 0 },
 });
 Card.when(
-  'accent',
+  'props:accent',
   ({ theme }) =>
     ({
       style: {
@@ -50,8 +50,8 @@ export const Row = engine<'View', { wrap?: boolean; between?: boolean }>(
     gap: theme.spacing.sm,
   }),
 );
-Row.when('wrap', { style: { flexWrap: 'wrap' } });
-Row.when('between', { style: { justifyContent: 'space-between' } });
+Row.when('props:wrap', { style: { flexWrap: 'wrap' } });
+Row.when('props:between', { style: { justifyContent: 'space-between' } });
 
 // ───────────────────────── Tipografia ─────────────────────────
 
@@ -76,7 +76,7 @@ export const Body = engine<'Text', { muted?: boolean; mono?: boolean }>(
     color: props.muted ? palette(theme).muted : theme.color.text,
   }),
 );
-Body.when('mono', { style: { fontFamily: 'Courier', fontSize: 12 } });
+Body.when('props:mono', { style: { fontFamily: 'Courier', fontSize: 12 } });
 
 export const Caption = engine('Text', ({ theme }) => ({
   fontSize: (theme.typography?.fontSize?.xs as number) ?? 11,
@@ -116,20 +116,20 @@ export const Button = engine<
   gap: theme.spacing.sm,
 }));
 Button.attrs({ accessibilityRole: 'button', activeOpacity: 0.75 });
-Button.when('outlined', ({ theme, props }: any) => ({
+Button.when('props:outlined', ({ theme, props }: any) => ({
   style: {
     backgroundColor: 'transparent',
     borderColor: variantColor(theme, props.variant),
   },
 }));
-Button.when('size:sm', { style: { paddingVertical: 6, paddingHorizontal: 12 } });
-Button.when('size:lg', { style: { paddingVertical: 18 } });
-Button.when('pill', ({ theme }: any) => ({
+Button.when('props:size=sm', { style: { paddingVertical: 6, paddingHorizontal: 12 } });
+Button.when('props:size=lg', { style: { paddingVertical: 18 } });
+Button.when('props:pill', ({ theme }: any) => ({
   style: { borderRadius: theme.borderRadius?.full ?? 999 },
 }));
-Button.when('disabled', { style: { opacity: 0.4 } });
-Button.when('ios', { style: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 3 } } });
-Button.when('android', { style: { elevation: 2 } });
+Button.when('props:disabled', { style: { opacity: 0.4 } });
+Button.when('platform:ios', { style: { shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 3 } } });
+Button.when('platform:android', { style: { elevation: 2 } });
 
 export const ButtonLabel = engine<
   'Text',
@@ -168,7 +168,7 @@ export const Pill = engine<'TouchableOpacity', { active?: boolean }>(
     backgroundColor: 'transparent',
   }),
 );
-Pill.when('active', ({ theme }: any) => ({
+Pill.when('props:active', ({ theme }: any) => ({
   style: {
     backgroundColor: theme.color.primary,
     borderColor: theme.color.primary,
@@ -235,7 +235,7 @@ export const Input = engine<'TextInput', { invalid?: boolean }>(
   }),
 );
 Input.attrs({ autoCapitalize: 'none', autoCorrect: false });
-Input.when('invalid', ({ theme }: any) => ({
+Input.when('props:invalid', ({ theme }: any) => ({
   style: { borderColor: theme.color.error },
 }));
 

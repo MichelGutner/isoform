@@ -181,8 +181,8 @@ describe('react-native · keyframes + animation', () => {
 });
 
 describe('react-native · interaction states', () => {
-  it("when('pressed') becomes a Pressable style function", () => {
-    const Button = engine('Pressable', { opacity: 1 }).when('pressed', { style: { opacity: 0.5 } });
+  it("when('state:pressed') becomes a Pressable style function", () => {
+    const Button = engine('Pressable', { opacity: 1 }).when('state:pressed', { style: { opacity: 0.5 } });
     mount(<Button />);
     const style = propsOf((RN as any).Pressable).style;
     expect(typeof style).toBe('function');
@@ -190,15 +190,15 @@ describe('react-native · interaction states', () => {
     expect(style({ pressed: true })).toEqual([{ opacity: 1 }, { opacity: 0.5 }]);
   });
 
-  it("when('pressed') still merges the user style on top", () => {
-    const Button = engine('Pressable', { opacity: 1 }).when('pressed', { style: { opacity: 0.5 } });
+  it("when('state:pressed') still merges the user style on top", () => {
+    const Button = engine('Pressable', { opacity: 1 }).when('state:pressed', { style: { opacity: 0.5 } });
     mount(<Button style={{ margin: 2 }} />);
     const style = propsOf((RN as any).Pressable).style;
     expect(style({ pressed: true })).toEqual([{ opacity: 1 }, { opacity: 0.5 }, { margin: 2 }]);
   });
 
-  it("when('focus') applies the focus style to Input while focused", () => {
-    const Field = engine('Input', { borderColor: 'gray' }).when('focus', { style: { borderColor: 'blue' } });
+  it("when('state:focus') applies the focus style to Input while focused", () => {
+    const Field = engine('Input', { borderColor: 'gray' }).when('state:focus', { style: { borderColor: 'blue' } });
     const onFocus = jest.fn();
     mount(<Field onFocus={onFocus} />);
     const input = () => renderer.root.findByType((RN as any).TextInput).props;
@@ -211,15 +211,15 @@ describe('react-native · interaction states', () => {
     expect(input().style).toEqual({ borderColor: 'gray' });
   });
 
-  it("ignores when('hover') on mobile without warnings", () => {
-    const Box = engine('Box', { opacity: 1 }).when('hover', { style: { opacity: 0.8 } });
+  it("ignores when('state:hover') on mobile without warnings", () => {
+    const Box = engine('Box', { opacity: 1 }).when('state:hover', { style: { opacity: 0.8 } });
     mount(<Box />);
     expect(propsOf((RN as any).View).style).toEqual({ opacity: 1 });
     expect(console.warn).not.toHaveBeenCalled();
   });
 
   it('a prop named like a state does not trigger the state rule', () => {
-    const Box = engine<'Box', { pressed?: boolean }>('Box', { opacity: 1 }).when('pressed', {
+    const Box = engine<'Box', { pressed?: boolean }>('Box', { opacity: 1 }).when('state:pressed', {
       style: { opacity: 0.5 },
     });
     mount(<Box pressed />);
@@ -239,8 +239,8 @@ describe('react-native · breakpoints', () => {
     mockWindowListeners.clear(); // restos de árvores montadas em testes anteriores
   });
 
-  it("applies when('md') only from 768 up, and re-composes when the window changes", () => {
-    const Panel = engine('Box', { padding: 8 }).when('md', { style: { padding: 16 } });
+  it("applies when('breakpoints:md') only from 768 up, and re-composes when the window changes", () => {
+    const Panel = engine('Box', { padding: 8 }).when('breakpoints:md', { style: { padding: 16 } });
     mount(<Panel />);
     expect(propsOf((RN as any).View).style).toEqual({ padding: 8 }); // 400 < 768
 
@@ -253,8 +253,8 @@ describe('react-native · breakpoints', () => {
 
   it('is mobile-first: larger breakpoints stack on top of smaller ones, in width order', () => {
     const Panel = engine('Box', { gap: 1 })
-      .when('lg', { style: { gap: 3 } })
-      .when('md', { style: { gap: 2 } });
+      .when('breakpoints:lg', { style: { gap: 3 } })
+      .when('breakpoints:md', { style: { gap: 2 } });
     mockWindow.width = 1100;
     mount(<Panel />);
     expect(propsOf((RN as any).View).style).toEqual([{ gap: 1 }, { gap: 2 }, { gap: 3 }]);
@@ -263,14 +263,14 @@ describe('react-native · breakpoints', () => {
   });
 
   it('the user style still wins over breakpoint styles', () => {
-    const Panel = engine('Box', { padding: 8 }).when('md', { style: { padding: 16 } });
+    const Panel = engine('Box', { padding: 8 }).when('breakpoints:md', { style: { padding: 16 } });
     mockWindow.width = 900;
     mount(<Panel style={{ padding: 1 }} />);
     expect(propsOf((RN as any).View).style).toEqual([{ padding: 8 }, { padding: 16 }, { padding: 1 }]);
   });
 
   it('converts CSS values inside breakpoint styles (rem → number)', () => {
-    const Panel = engine('Box').when('md', { style: { paddingInline: '2rem', cursor: 'pointer' } });
+    const Panel = engine('Box').when('breakpoints:md', { style: { paddingInline: '2rem', cursor: 'pointer' } });
     mockWindow.width = 900;
     mount(<Panel />);
     expect(propsOf((RN as any).View).style).toEqual([{}, { paddingInline: 32 }]);
@@ -279,7 +279,7 @@ describe('react-native · breakpoints', () => {
   it('honours configure({ breakpoints }) with custom names', () => {
     configure({ breakpoints: { tablet: 600 } });
     registerBundledProvider(reactNativeAdapter);
-    const Cell = engine('Box', { width: 10 }).when('tablet', { style: { width: 20 } });
+    const Cell = engine('Box', { width: 10 }).when('breakpoints:tablet', { style: { width: 20 } });
     mockWindow.width = 650;
     mount(<Cell />);
     expect(propsOf((RN as any).View).style).toEqual([{ width: 10 }, { width: 20 }]);
@@ -287,8 +287,8 @@ describe('react-native · breakpoints', () => {
 
   it('composes with when(pressed) on a Pressable: the host tracks pressed via onPressIn/onPressOut', () => {
     const Btn = engine('Pressable', { opacity: 1 })
-      .when('md', { style: { opacity: 0.9 } })
-      .when('pressed', { style: { opacity: 0.5 } });
+      .when('breakpoints:md', { style: { opacity: 0.9 } })
+      .when('state:pressed', { style: { opacity: 0.5 } });
     const onPressIn = jest.fn();
     mockWindow.width = 900;
     mount(<Btn onPressIn={onPressIn} />);
@@ -304,7 +304,7 @@ describe('react-native · breakpoints', () => {
 
   it('composes with animations: the animated host still receives the responsive style', () => {
     const fade = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
-    const Box = engine('Box', { padding: 4, animation: `${fade} 100ms` }).when('md', { style: { padding: 8 } });
+    const Box = engine('Box', { padding: 4, animation: `${fade} 100ms` }).when('breakpoints:md', { style: { padding: 8 } });
     mockWindow.width = 900;
     mount(<Box />);
     act(() => jest.runOnlyPendingTimers());
@@ -316,8 +316,8 @@ describe('react-native · breakpoints', () => {
 
   it("supports below ('<md') and range ('sm..lg') on the window width", () => {
     const Panel = engine('Box', { gap: 0 })
-      .when('<md', { style: { gap: 1 } })
-      .when('sm..lg', { style: { gap: 2 } });
+      .when('breakpoints:<md', { style: { gap: 1 } })
+      .when('breakpoints:sm..lg', { style: { gap: 2 } });
     mockWindow.width = 400; // < sm
     mount(<Panel />);
     expect(propsOf((RN as any).View).style).toEqual([{ gap: 0 }, { gap: 1 }]);
@@ -333,7 +333,7 @@ describe('react-native · breakpoints', () => {
     const Plain = engine('Box', { padding: 4 });
     mount(<Plain />);
     expect(mockWindowListeners.size).toBe(0);
-    const Responsive = engine('Box').when('md', { style: { padding: 8 } });
+    const Responsive = engine('Box').when('breakpoints:md', { style: { padding: 8 } });
     mount(<Responsive />);
     expect(mockWindowListeners.size).toBe(1);
   });

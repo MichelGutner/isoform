@@ -8,10 +8,16 @@
     "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "lib": ["dom", "esnext"],
     "baseUrl": ".",
     "paths": {
-      "omnistyle": ["../../src/index.ts"]
+      "omnistyle": ["../../src/index.ts"],
+      // esta pasta não tem node_modules: o React vem do app web de exemplo
+      "react": ["../../example-web/node_modules/@types/react"],
+      "react/*": ["../../example-web/node_modules/@types/react/*"],
+      "react-dom": ["../../example-web/node_modules/@types/react-dom"],
+      "react-dom/*": ["../../example-web/node_modules/@types/react-dom/*"]
     },
     "types": []
   },

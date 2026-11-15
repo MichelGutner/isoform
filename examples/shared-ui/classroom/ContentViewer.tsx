@@ -19,7 +19,7 @@ const Fade = engine('Box', ({ theme }) => ({
 
 /** Título e botões: empilhados no celular, lado a lado a partir de `md`. */
 const Header = engine('Box', ({ theme }) => ({ gap: theme.spacing.md }))
-  .when('md', { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' } });
+  .when('breakpoints:md', { style: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' } });
 
 const TitleBlock = engine('Box', ({ theme }) => ({ gap: theme.spacing.xs, flexShrink: 1 }));
 

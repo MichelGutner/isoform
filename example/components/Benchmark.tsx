@@ -33,14 +33,14 @@ const S_props = engine<'View', { k: number }>('View', ({ theme, props }) => ({
   ...base,
   backgroundColor: props.k % 2 ? theme.color.primary : COLORS[props.k % 5],
 }));
-S_props.when('k:0', { style: { borderRadius: 6 } });
+S_props.when('props:k=0', { style: { borderRadius: 6 } });
 
 /** Pior caso: props únicas por item → todo render é cache miss. */
 const S_unique = engine<'View', { k: number }>('View', ({ theme, props }) => ({
   ...base,
   backgroundColor: props.k % 2 ? theme.color.primary : COLORS[props.k % 5],
 }));
-S_unique.when('k:0', { style: { borderRadius: 6 } });
+S_unique.when('props:k=0', { style: { borderRadius: 6 } });
 
 type Variant = {
   id: string;

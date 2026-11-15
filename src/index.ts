@@ -11,7 +11,7 @@ export type { Engine } from './core/engine';
 export { keyframes } from './core/keyframes';
 export type { Keyframes } from './core/keyframes';
 export { configure, getProvider } from './config';
-export type { ConfigureOptions, ProviderName } from './config';
+export type { ConfigureOptions, ModuleName, OmniModules, ProviderName } from './config';
 export type { PlatformAdapter, ApplyPropsInput, StateStyles } from './core/adapter';
 export type {
   Condition,
@@ -20,6 +20,15 @@ export type {
   StyleContext,
   Platform,
   StateName,
+  OmniBreakpointNames,
+  BreakpointName,
+  BreakpointCondition,
+  BreakpointRangeCondition,
+  DefaultBreakpointRange,
+  PlatformCondition,
+  StateCondition,
+  PropConditionKeys,
+  PseudoName,
 } from './core/types';
 export type { OmniStyle, StyleInput, LegacyRNStyle } from './core/style/types';
 export type {

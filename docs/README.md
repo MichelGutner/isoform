@@ -112,17 +112,17 @@ In the browser rules go into `<style data-omnistyle="client">`. On the server, `
 
 ## States, breakpoints, pseudo-elements and animations
 
-**States** (`when('hover' | 'focus' | 'focus-visible' | 'pressed')`) never reach `evaluateCondition`: the builder collects their `style` separately and calls `adapter.compileStyle(style, states)`.
+**States** (`when('state:hover' | 'focus' | 'focus-visible' | 'pressed')`) never reach `evaluateCondition`: the builder collects their `style` separately and calls `adapter.compileStyle(style, states)`.
 
 - Web: each declaration becomes `.o-x:hover{…}` / `:focus` / `:focus-visible` / `:active`. They sit in later rank blocks (hover → focus → focus-visible → pressed), so `:active` beats `:hover` when both set the same property. `hover` is wrapped in `@media (hover:hover)`.
 - Mobile: `pressed` turns the `Pressable` style into `({ pressed }) => …`; `focus` is handled by the `Input` primitive (a `TextInput` wrapper that tracks focus). `hover` is a silent no-op.
 
-**Breakpoints** (`when('sm' | 'md' | 'lg' | 'xl' | <your names>)`) are `min-width` variants, resolved by name from `configure({ breakpoints })` (defaults 480 / 768 / 1024 / 1280). Like states, they never reach `evaluateCondition`: the builder collects their `style` and calls `adapter.compileStyle(style, states, breakpoints)`, with the list sorted by width and each entry carrying its `order` among all configured breakpoints.
+**Breakpoints** (`when('breakpoints:sm' | 'breakpoints:md' | 'breakpoints:lg' | 'breakpoints:xl' | 'breakpoints:<your name>')`) are `min-width` variants, resolved by name from `configure({ breakpoints })` (defaults 480 / 768 / 1024 / 1280). Like states, they never reach `evaluateCondition`: the builder collects their `style` and calls `adapter.compileStyle(style, states, breakpoints)`, with the list sorted by width and each entry carrying its `order` among all configured breakpoints.
 
 - Web: each declaration becomes `@media (min-width:768px){.o-x{…}}`. Breakpoint rules live in rank blocks after base and state rules, ordered by width, so a larger breakpoint wins over a smaller one and shorthands still sit before longhands inside each block. Specificity note: a state rule such as `:hover` (class + pseudo-class) beats a breakpoint rule for the same property.
 - Mobile: when a compiled style has breakpoints, `resolveComponent` wraps the base component in a host (cached per component) that calls `useWindowDimensions()` and asks `applyProps` for the style of that width. The final order is: base < breakpoints (small → large) < `pressed` < the `style` prop. Only components with breakpoints get the host, so the static fast path of the rest is untouched; the host composes with the animation host.
 - Names that already mean something in `when()` (platforms, states) can't be used as breakpoint names, and `configure` throws a clear error. Names must match `[A-Za-z_][\w-]*` so they can't clash with the range syntax.
-- Syntax (`parseBreakpoint`): `'md'` (≥), `'<md'` (below, exclusive) and `'sm..lg'` (≥ sm and < lg). On the web the upper bound is emitted as `max-width: <px − 0.02>`; media rules are ordered by lower bound, with bounded ranges after unbounded ones at the same lower bound.
+- Syntax (`parseBreakpoint`): `'breakpoints:md'` (≥), `'breakpoints:<md'` (below, exclusive) and `'breakpoints:sm..lg'` (≥ sm and < lg). On the web the upper bound is emitted as `max-width: <px − 0.02>`; media rules are ordered by lower bound, with bounded ranges after unbounded ones at the same lower bound.
 
 **Pseudo-elements** (`when('::before' | '::after' | '::placeholder' | '::selection' | '::first-letter' | '::first-line' | '::marker' | '::scrollbar' | '::scrollbar-thumb' | '::scrollbar-track')`) are collected like states and passed as the 4th argument of `compileStyle`.
 
@@ -146,7 +146,7 @@ A provider implements `PlatformAdapter`:
 ```ts
 interface PlatformAdapter {
   name: string;                                   // matches configure({ provider })
-  os(): string;                                   // drives when('ios' | 'android' | 'web' | 'native')
+  os(): string;                                   // drives when('platform:ios' | 'android' | 'web' | 'native')
   primitives: Record<string, ComponentType<any>>; // 'Box' → real component
   compileStyle(style, states?: StateStyles, breakpoints?: BreakpointStyle[], pseudos?: PseudoStyles): unknown; // cached per (theme, props)
   resolveComponent?(component: ComponentType<any>, compiled: unknown): ComponentType<any>; // optional
@@ -180,6 +180,6 @@ For tests that need a specific provider regardless of bundling, pass an adapter 
 |---|---|
 | `nenhum provedor disponível` | The entry wasn't imported before rendering (a custom bundler skipped `providers/*`). Import `omnistyle` first, or pass `provider: <adapter>`. Make sure `sideEffects` isn't stripping `providers/*`. |
 | `provider "react-native" não está disponível neste bundle` | You forced a provider that the current bundle doesn't include. Use `'auto'`. |
-| `a primitiva "Switch" não existe no provedor "react"` | A mobile-only primitive was rendered on the web. Branch with `Platform`/`when('native')` or build the web variant. |
-| A CSS property has no effect on mobile | It has no React Native equivalent; check the dev warning. Scope it with `.when('web', …)`. |
+| `a primitiva "Switch" não existe no provedor "react"` | A mobile-only primitive was rendered on the web. Branch with `Platform`/`when('platform:native')` or build the web variant. |
+| A CSS property has no effect on mobile | It has no React Native equivalent; check the dev warning. Scope it with `.when('platform:web', …)`. |
 | `boxShadow`/`paddingInline` ignored on mobile | Needs React Native ≥ 0.76 (new architecture for `boxShadow`). |

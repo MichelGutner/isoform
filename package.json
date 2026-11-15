@@ -86,11 +86,14 @@
       "react-native": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./metro": "./metro.js"
   },
   "sideEffects": [
     "./dist/index.js",
-    "./dist/providers/*"
+    "./dist/providers/*",
+    "./src/index.ts",
+    "./src/providers/*"
   ],
   "files": [
     "dist/**/*.js",
@@ -102,9 +105,11 @@
     "src/adapters/react-native/media/native/**",
     "ios/**",
     "android/build.gradle",
+    "android/consumer-rules.pro",
     "android/src/**",
     "omnistyle.podspec",
-    "react-native.config.js"
+    "react-native.config.js",
+    "metro.js"
   ],
   "peerDependenciesMeta": {
     "react-dom": {

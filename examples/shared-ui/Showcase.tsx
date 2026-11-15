@@ -42,8 +42,8 @@ const Page = engine('Box', ({ theme }) => ({
 
 /** O mesmo `Card` com uma regra só da web e outra só do mobile. */
 const PlatformCard = engine(Card)
-  .when('web', { style: { borderStyle: 'dashed' } })
-  .when('native', { style: { borderStyle: 'solid' } });
+  .when('platform:web', { style: { borderStyle: 'dashed' } })
+  .when('platform:native', { style: { borderStyle: 'solid' } });
 
 export function Showcase() {
   const theme = useTheme();
@@ -131,7 +131,7 @@ export function Showcase() {
           <Heading>Estados e animação</Heading>
           <Row>
             <PulseDot testID="pulse" />
-            <Body muted>keyframes() + when('hover' | 'pressed' | 'focus'): passe o mouse/clique nos botões e foque o input.</Body>
+            <Body muted>keyframes() + when('state:hover' | 'pressed' | 'focus'): passe o mouse/clique nos botões e foque o input.</Body>
           </Row>
         </Card>
 
@@ -177,7 +177,7 @@ export function Showcase() {
         <AnimationLab />
 
         <PlatformCard>
-          <Heading>when('web') / when('native')</Heading>
+          <Heading>when('platform:web') / when('platform:native')</Heading>
           <Body muted>A borda deste card é tracejada na web e sólida no mobile (composição com engine(Card)).</Body>
         </PlatformCard>
       </Page>

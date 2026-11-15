@@ -20,7 +20,7 @@ import { themeStore } from './store';
  *
  * @example Basic Usage
  * ```tsx
- * import { useTheme } from 'react-native-stylish';
+ * import { useTheme } from 'omnistyle';
  * 
  * const MyComponent = () => {
  *   const theme = useTheme();

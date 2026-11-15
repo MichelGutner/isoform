@@ -1,4 +1,8 @@
 import { configure } from 'omnistyle';
+// Módulos opcionais (todos desligados por padrão). O MESMO arquivo é lido pelo
+// build nativo (Gradle/CocoaPods) e pelo Metro: o que está desligado nem entra no app.
+// Num app de verdade ele fica na raiz do app; aqui, na raiz do app mobile de exemplo.
+import omnistyle from '../../example/omnistyle.config.json';
 import { lightTokens } from './tokens';
 
 /**
@@ -12,4 +16,5 @@ import { lightTokens } from './tokens';
 configure({
   provider: 'auto',
   theme: lightTokens,
+  modules: omnistyle.modules,
 });

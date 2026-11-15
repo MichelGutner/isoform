@@ -20,7 +20,7 @@ export const Button = engine('Pressable', ({ theme }) => ({
   paddingInline: '1.25rem',
   borderRadius: 12,
   backgroundColor: theme.color.primary,
-})).when('web', { style: { cursor: 'pointer' } });
+})).when('platform:web', { style: { cursor: 'pointer' } });
 ```
 
 ## Documentation

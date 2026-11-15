@@ -46,7 +46,7 @@ describe('makeProxy', () => {
 
     const proxy = makeProxy(component as any, builder as any);
 
-    (proxy as any).style({ padding: 16 }).when('disabled', { opacity: 0.5 }).attrs({ testID: 'button' });
+    (proxy as any).style({ padding: 16 }).when('props:disabled', { opacity: 0.5 }).attrs({ testID: 'button' });
 
     expect(builder.style).toHaveBeenCalledWith({ padding: 16 });
     expect(builder.when).toHaveBeenCalledWith('disabled', { opacity: 0.5 });

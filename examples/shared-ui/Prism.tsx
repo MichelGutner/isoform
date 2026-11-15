@@ -4,7 +4,7 @@ import { engine, keyframes } from 'omnistyle';
  * @platform web — Prisma: cena 3D que SÓ existe na web (o React Native não tem `translateZ`,
  * `preserve-3d`, `backface-visibility`, `conic-gradient`, `backdrop-filter`, `mix-blend-mode`,
  * `clip-path` nem `filter` animado). Por isso `PrismScene` só é renderizada na web
- * (`getProvider().os() === 'web'` no Showcase) e todo estilo 3D fica em `.when('web')`.
+ * (`getProvider().os() === 'web'` no Showcase) e todo estilo 3D fica em `.when('platform:web')`.
  *
  *   · cubo grande + cubo interno girando ao contrário (preserve-3d aninhado);
  *   · 6 faces por cubo com `conic-gradient`, `backdrop-filter` e `mix-blend-mode: screen`;
@@ -57,15 +57,15 @@ const Panel = engine('Box', {
   borderRadius: 16,
   overflow: 'hidden',
   backgroundColor: '#05060f',
-}).when('web', {
+}).when('platform:web', {
   style: { backgroundImage: 'radial-gradient(circle at 50% 40%, #1e1b4b 0%, #05060f 70%)', perspective: '900px' },
 });
 
-const Bob = engine('Box', { width: 0, height: 0, alignItems: 'center', justifyContent: 'center' }).when('web', {
+const Bob = engine('Box', { width: 0, height: 0, alignItems: 'center', justifyContent: 'center' }).when('platform:web', {
   style: { transformStyle: 'preserve-3d', animation: `${bob} 4s ease-in-out infinite` },
 });
 
-const Ground = engine('Box', { position: 'absolute', width: 150, height: 150, borderRadius: 75 }).when('web', {
+const Ground = engine('Box', { position: 'absolute', width: 150, height: 150, borderRadius: 75 }).when('platform:web', {
   style: { backgroundColor: '#000', filter: 'blur(14px)', animation: `${shadow} 4s ease-in-out infinite` },
 });
 
@@ -73,7 +73,7 @@ const Cube = engine<'Box', { size: number; dur: number; back?: boolean }>('Box',
   position: 'absolute',
   width: props.size,
   height: props.size,
-})).when('web', ({ props }) => ({
+})).when('platform:web', ({ props }) => ({
   style: {
     transformStyle: 'preserve-3d',
     animation: `${props.back ? spinBack : spin} ${props.dur}ms linear infinite`,
@@ -88,7 +88,7 @@ const Face = engine<'Box', { size: number; i: number }>('Box', ({ props }) => ({
   height: props.size,
   borderWidth: 1,
   borderColor: 'rgba(255,255,255,0.55)',
-})).when('web', ({ props }) => ({
+})).when('platform:web', ({ props }) => ({
   style: {
     transform: `${TRANSFORMS[props.i]} translateZ(${props.size / 2}px)`,
     backgroundImage: `conic-gradient(from ${props.i * 60}deg at 50% 50%, #22d3ee, #e879f9, #facc15, #22d3ee)`,
@@ -101,12 +101,12 @@ const Face = engine<'Box', { size: number; i: number }>('Box', ({ props }) => ({
   },
 }));
 
-const Ring = engine('Box', { position: 'absolute', width: 0, height: 0 }).when('web', {
+const Ring = engine('Box', { position: 'absolute', width: 0, height: 0 }).when('platform:web', {
   style: { transformStyle: 'preserve-3d', animation: `${orbit} 18s linear infinite` },
 });
 
 const Satellite = engine<'Box', { i: number }>('Box', { position: 'absolute', width: 34, height: 34, left: -17, top: -17 }).when(
-  'web',
+  'platform:web',
   ({ props }) => ({
     style: {
       transform: `rotateZ(${props.i * 36}deg) translateX(165px) rotateZ(${-props.i * 36}deg)`,

@@ -91,9 +91,9 @@ describe('react-dom adapter · styles', () => {
 
   it('applies when() conditions by prop and platform (web = true, native = false)', () => {
     const Tag = engine<'Box', { tone?: 'a' | 'b' }>('Box')
-      .when('tone:a', { style: { color: 'tomato' } })
-      .when('web', { style: { cursor: 'help' } })
-      .when('native', { style: { elevation: 9 } });
+      .when('props:tone=a', { style: { color: 'tomato' } })
+      .when('platform:web', { style: { cursor: 'help' } })
+      .when('platform:native', { style: { elevation: 9 } });
     render(<Tag tone="a" />);
     expect(css()).toContain('color:tomato');
     expect(css()).toContain('cursor:help');
@@ -117,12 +117,12 @@ describe('react-dom adapter · styles', () => {
 });
 
 describe('react-dom adapter · states and animations', () => {
-  it("compiles when('hover' | 'focus' | 'focus-visible' | 'pressed') into pseudo-class rules", () => {
+  it("compiles when('state:hover' | 'focus' | 'focus-visible' | 'pressed') into pseudo-class rules", () => {
     const Button = engine('Pressable', { backgroundColor: 'navy' })
-      .when('hover', { style: { backgroundColor: 'blue' } })
-      .when('focus', { style: { outlineColor: 'gold' } })
-      .when('focus-visible', { style: { outlineWidth: 3 } })
-      .when('pressed', { style: { transform: 'scale(0.98)' } });
+      .when('state:hover', { style: { backgroundColor: 'blue' } })
+      .when('state:focus', { style: { outlineColor: 'gold' } })
+      .when('state:focus-visible', { style: { outlineWidth: 3 } })
+      .when('state:pressed', { style: { transform: 'scale(0.98)' } });
     const { container } = render(<Button />);
 
     expect(css()).toMatch(/@media \(hover:hover\)\{\.o-[a-z0-9]+:hover\{background-color:blue\}\}/);
@@ -137,18 +137,18 @@ describe('react-dom adapter · states and animations', () => {
 
   it('orders pressed after hover so :active wins over :hover', () => {
     const B = engine('Pressable')
-      .when('pressed', { style: { color: 'crimson' } })
-      .when('hover', { style: { color: 'coral' } });
+      .when('state:pressed', { style: { color: 'crimson' } })
+      .when('state:hover', { style: { color: 'coral' } });
     render(<B />);
     expect(idx('color:coral')).toBeLessThan(idx('color:crimson'));
   });
 
   it('state rules ignore non-style attrs (with a dev warning)', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const B = engine('Box').when('hover', { style: { opacity: 0.9 }, title: 'x' } as any);
+    const B = engine('Box').when('state:hover', { style: { opacity: 0.9 }, title: 'x' } as any);
     const { container } = render(<B />);
     expect((container.firstElementChild as HTMLElement).hasAttribute('title')).toBe(false);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('hover') só aceita { style }"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('state:hover') só aceita { style }"));
     warn.mockRestore();
   });
 
@@ -189,7 +189,7 @@ describe('react-dom adapter · states and animations', () => {
 
   it('emits @keyframes used only inside a state variant (hover)', () => {
     const wiggle = keyframes({ '0%, 100%': { transform: 'rotate(0deg)' }, '50%': { transform: 'rotate(8deg)' } });
-    const B = engine('Box').when('hover', { style: { animation: `${wiggle} 400ms ease` } });
+    const B = engine('Box').when('state:hover', { style: { animation: `${wiggle} 400ms ease` } });
     render(<B />);
     expect(css()).toContain(`@keyframes ${wiggle}{0%,100%{transform:rotate(0deg)}50%{transform:rotate(8deg)}}`);
     expect(css()).toMatch(/:hover\{animation:o-kf-[a-z0-9]+ 400ms ease\}/);
@@ -296,10 +296,10 @@ describe('react-dom adapter · pseudo-elements', () => {
 });
 
 describe('react-dom adapter · breakpoints', () => {
-  it("compiles when('md' | 'lg') into mobile-first @media (min-width) rules", () => {
+  it("compiles when('breakpoints:md' | 'lg') into mobile-first @media (min-width) rules", () => {
     const Panel = engine('Box', { padding: 8, flexDirection: 'column' })
-      .when('lg', { style: { padding: 32 } })
-      .when('md', { style: { padding: 16, flexDirection: 'row' } });
+      .when('breakpoints:lg', { style: { padding: 32 } })
+      .when('breakpoints:md', { style: { padding: 16, flexDirection: 'row' } });
     const { container } = render(<Panel />);
 
     expect(css()).toMatch(/@media \(min-width:768px\)\{\.o-[a-z0-9]+\{padding:16px\}\}/);
@@ -317,8 +317,8 @@ describe('react-dom adapter · breakpoints', () => {
 
   it("compiles below ('<md') and range ('sm..lg') into max-width / combined media queries", () => {
     const Box = engine('Box')
-      .when('<md', { style: { padding: 4 } })
-      .when('sm..lg', { style: { margin: 8 } });
+      .when('breakpoints:<md', { style: { padding: 4 } })
+      .when('breakpoints:sm..lg', { style: { margin: 8 } });
     render(<Box />);
     expect(css()).toMatch(/@media \(max-width:767\.98px\)\{\.o-[a-z0-9]+\{padding:4px\}\}/);
     expect(css()).toMatch(/@media \(min-width:480px\) and \(max-width:1023\.98px\)\{\.o-[a-z0-9]+\{margin:8px\}\}/);
@@ -326,7 +326,7 @@ describe('react-dom adapter · breakpoints', () => {
 
   it('honours configure({ breakpoints }) with custom names', () => {
     configure({ breakpoints: { tablet: 600 } });
-    const Cell = engine('Box').when('tablet', { style: { width: '50%' } });
+    const Cell = engine('Box').when('breakpoints:tablet', { style: { width: '50%' } });
     render(<Cell />);
     expect(css()).toMatch(/@media \(min-width:600px\)\{\.o-[a-z0-9]+\{width:50%\}\}/);
   });
@@ -334,8 +334,8 @@ describe('react-dom adapter · breakpoints', () => {
   it('works together with states and keyframes inside a breakpoint', () => {
     const slide = keyframes({ from: { opacity: 0 }, to: { opacity: 1 } });
     const Card = engine('Box')
-      .when('hover', { style: { opacity: 0.9 } })
-      .when('md', { style: { animation: `${slide} 300ms ease-out` } });
+      .when('state:hover', { style: { opacity: 0.9 } })
+      .when('breakpoints:md', { style: { animation: `${slide} 300ms ease-out` } });
     render(<Card />);
     expect(css()).toContain(`@keyframes ${slide}{from{opacity:0}to{opacity:1}}`);
     expect(css()).toMatch(/@media \(min-width:768px\)\{\.o-[a-z0-9]+\{animation:o-kf-[a-z0-9]+ 300ms ease-out\}\}/);
@@ -343,7 +343,7 @@ describe('react-dom adapter · breakpoints', () => {
   });
 
   it('does not forward a prop named like a breakpoint to the DOM', () => {
-    const Box = engine<'Box', { md?: boolean }>('Box').when('md', { style: { opacity: 0.5 } });
+    const Box = engine<'Box', { md?: boolean }>('Box').when('breakpoints:md', { style: { opacity: 0.5 } });
     const { container } = render(<Box md />);
     expect((container.firstElementChild as HTMLElement).hasAttribute('md')).toBe(false);
   });
@@ -449,8 +449,8 @@ describe('react-dom adapter · props', () => {
   it('does not leak style-driving props (variant, outlined, wrap…) to the DOM nor make React complain', () => {
     const errors = jest.spyOn(console, 'error').mockImplementation(() => {});
     const Row = engine<'Box', { wrap?: boolean; variant?: string; accent?: boolean; size?: string }>('Box')
-      .when('wrap', { style: { flexWrap: 'wrap' } })
-      .when('accent', { style: { borderColor: 'red' } });
+      .when('props:wrap', { style: { flexWrap: 'wrap' } })
+      .when('props:accent', { style: { borderColor: 'red' } });
     render(<Row wrap accent variant="primary" size="lg" testID="r" aria-label="ok" />);
     const el = screen.getByTestId('r');
 

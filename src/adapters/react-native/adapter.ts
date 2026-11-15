@@ -256,7 +256,7 @@ export const reactNativeAdapter: PlatformAdapter = {
       if (hasTransition) transitionProps = take(TRANSITION_KEYS);
     }
 
-    // `transition` declarada num estado ou breakpoint (ex.: `.when('lg', { style: { transition } })`)
+    // `transition` declarada num estado ou breakpoint (ex.: `.when('breakpoints:lg', { style: { transition } })`)
     // também vale: no mobile ela passa a valer para o elemento, se o base não declarar a sua.
     const withoutTransition = (st: Record<string, any>) => {
       if (!TRANSITION_KEYS.some((k) => k in st)) return st;
@@ -306,7 +306,7 @@ export const reactNativeAdapter: PlatformAdapter = {
       if (out.type === 'password') out.secureTextEntry = true;
       delete out.type;
     } else if (c.focus) {
-      warnOnce(`focus:${primitive}`, `when('focus') no mobile só vale para Input.`);
+      warnOnce(`focus:${primitive}`, `when('state:focus') no mobile só vale para Input.`);
     }
     const focusStyle = isInput ? c.focus : undefined;
 
@@ -322,8 +322,8 @@ export const reactNativeAdapter: PlatformAdapter = {
       warnOnce(
         `pressed:${primitive}`,
         c.animation
-          ? "when('pressed') e animation no mesmo Pressable: no mobile o pressed é ignorado."
-          : "when('pressed') no mobile só vale para Pressable.",
+          ? "when('state:pressed') e animation no mesmo Pressable: no mobile o pressed é ignorado."
+          : "when('state:pressed') no mobile só vale para Pressable.",
       );
     }
 

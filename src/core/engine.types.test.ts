@@ -16,8 +16,8 @@ describe('engine() typing', () => {
     const D = engine<'Box', { tone?: 'a' | 'b' }>('Box', () => ({ flexDirection: 'column' }));
     const E = engine('Box')
       .style(() => ({ flexDirection: 'column' }))
-      .when('md', { style: { flexDirection: 'row' } })
-      .when('hover', { style: { opacity: 0.5 } });
+      .when('breakpoints:md', { style: { flexDirection: 'row' } })
+      .when('state:hover', { style: { opacity: 0.5 } });
     const F = engine('Pressable', () => ({ alignItems: 'center', justifyContent: 'space-between' }));
     // array e valores compostos no estilo estático continuam aceitos
     const G = engine('Box', [{ padding: 1 }, false, { margin: 2 }] as any);

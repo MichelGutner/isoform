@@ -7,7 +7,7 @@ import { optimizedHash } from '../hash/optimizedHash';
 import { useTheme } from '../theme';
 import type { BreakpointStyle, PlatformAdapter, PseudoStyles, StateStyles } from './adapter';
 import { getBreakpoints } from '../config';
-import { evaluateCondition, isPseudoCondition, isStateCondition, isStaticCondition, parseBreakpoint } from './conditions';
+import { evaluateCondition, isPseudoCondition, isStaticCondition, parseBreakpoint, stateOf } from './conditions';
 import { warnOnce } from './dev';
 import { flattenStyle } from './flatten';
 import { keyframes } from './keyframes';
@@ -93,8 +93,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   /**
    * Adiciona uma regra condicional.
    *
-   * @example when('ios', { style: { shadowOpacity: 0.2 } })
-   * @example when('variant:primary', { style: { backgroundColor: 'blue' } })
+   * @example when('platform:ios', { style: { shadowOpacity: 0.2 } })
+   * @example when('props:variant=primary', { style: { backgroundColor: 'blue' } })
    * @example when(({ props }) => props.size > 40, { style: { opacity: 0.5 } })
    */
   when(
@@ -140,15 +140,15 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         props: { ...mergedAttrs, ...props } as P,
       };
 
-      if (rule.kind === 'when' && isStateCondition(rule.condition)) {
+      const state = rule.kind === 'when' ? stateOf(rule.condition) : null;
+      if (rule.kind === 'when' && state) {
         // estados viram variantes compiladas pelo adapter (`:hover`, estado do Pressable…)
-        const state = rule.condition;
         const ruleAttrs = typeof rule.attrs === 'function' ? rule.attrs(ctx) : rule.attrs;
         if (ruleAttrs) {
           const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
           if (ruleStyle) (stateStyles[state] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
           if (Object.keys(restAttrs).length) {
-            warnOnce(`state-attrs:${state}`, `when('${state}') só aceita { style }; as demais props foram ignoradas.`);
+            warnOnce(`state-attrs:${state}`, `when('state:${state}') só aceita { style }; as demais props foram ignoradas.`);
           }
         }
         continue;

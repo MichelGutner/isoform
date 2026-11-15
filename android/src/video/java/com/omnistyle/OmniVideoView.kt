@@ -246,6 +246,24 @@ class OmniVideoView(private val reactContext: ThemedReactContext) : FrameLayout(
     post(measureAndLayout)
   }
 
+  /**
+   * A Fabric pode medir a view ANTES de ela entrar na janela (ex.: ao montar ou
+   * reciclar). A `ComposeView` quebra se for medida sem janela ("Cannot locate
+   * windowRecomposer"), então até lá a view só guarda o tamanho pedido.
+   */
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    if (!isAttachedToWindow) {
+      return setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getSize(heightMeasureSpec))
+    }
+    super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+  }
+
+  /** Entrou na janela: agora a `ComposeView` pode ser medida e desenhada. */
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    requestLayout()
+  }
+
   // ── eventos → JS ──
 
   private fun durationSeconds(): Double =

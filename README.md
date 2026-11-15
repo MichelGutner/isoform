@@ -18,8 +18,8 @@ export const Button = engine<'Pressable', { variant?: 'primary' | 'ghost' }>(
     boxShadow: '0 4px 12px rgba(0,0,0,.12)',   // same shadow on both platforms
   }),
 )
-  .when('variant:ghost', { style: { backgroundColor: 'transparent' } })
-  .when('web', { style: { cursor: 'pointer', transition: 'opacity .15s' } });
+  .when('props:variant=ghost', { style: { backgroundColor: 'transparent' } })
+  .when('platform:web', { style: { cursor: 'pointer', transition: 'opacity .15s' } });
 ```
 
 The same `Button` renders a `<div role="button">` with atomic CSS classes on the web and a React Native `Pressable` on iOS/Android.
@@ -170,48 +170,59 @@ React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) st
 ```tsx
 const Tag = engine<'Box', { tone?: 'ok' | 'bad'; dense?: boolean }>('Box')
   .style({ padding: 12 })
-  .when('tone:ok', { style: { backgroundColor: '#dcfce7' } })      // exact value match
-  .when('dense', { style: { padding: 6 } })                         // truthy prop
+  .when('props:tone=ok', { style: { backgroundColor: '#dcfce7' } })      // exact value match
+  .when('props:dense', { style: { padding: 6 } })                         // truthy prop
   .when(({ props, theme }) => props.tone === 'bad', ({ theme }) => ({ // function condition
     style: { backgroundColor: theme.color.error },
   }))
-  .when('ios', { style: { shadowOpacity: 0.2 } })                   // platform
-  .when('native', { style: { elevation: 2 } })                      // any non-web platform
-  .when('web', { style: { cursor: 'pointer' } });
+  .when('platform:ios', { style: { shadowOpacity: 0.2 } })                   // platform
+  .when('platform:native', { style: { elevation: 2 } })                      // any non-web platform
+  .when('platform:web', { style: { cursor: 'pointer' } });
 ```
 
-Conditions: `'ios' | 'android' | 'web' | 'native'`, `'prop'`, `'prop:value'`, `(ctx) => boolean`, `boolean`, and the interaction states below.
+Every string condition has a prefix that says what it checks, so it always reads unambiguously:
+
+| Kind | Syntax | Example |
+|---|---|---|
+| Platform | `'platform:<ios \| android \| web \| native>'` | `'platform:web'`, `'platform:native'` (iOS and Android) |
+| Interaction state | `'state:<hover \| focus \| focus-visible \| pressed>'` | `'state:pressed'` |
+| Breakpoint | `'breakpoints:<name>'`, `'breakpoints:<<name>'`, `'breakpoints:<a>..<b>'` | `'breakpoints:md'`, `'breakpoints:<md'` |
+| Prop (truthy) | `'props:<prop>'` | `'props:disabled'` |
+| Prop (value) | `'props:<prop>=<value>'` | `'props:variant=ghost'` |
+| Pseudo-element | the CSS name | `'::before'`, `'::placeholder'` |
+
+Plus `(ctx) => boolean` and `boolean`. An unknown condition (a typo, or the old unprefixed syntax such as `'web'`) never matches and logs a development warning.
 `attrs(...)` adds fixed props, `extend()` clones a component's rules, and `engine(OtherEngineComponent, style)` composes.
 
 ### Interaction states
 
 ```tsx
 const Button = engine('Pressable', { backgroundColor: '#6366f1' })
-  .when('hover', { style: { opacity: 0.85 } })
-  .when('pressed', { style: { transform: 'scale(0.97)' } })
-  .when('web', { style: { transition: 'opacity .15s, transform .1s' } });
+  .when('state:hover', { style: { opacity: 0.85 } })
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } })
+  .when('platform:web', { style: { transition: 'opacity .15s, transform .1s' } });
 
 const Field = engine('Input', { borderColor: '#e4e7ee' })
-  .when('focus', { style: { borderColor: '#6366f1' } });
+  .when('state:focus', { style: { borderColor: '#6366f1' } });
 ```
 
 | State | Web | Mobile |
 |---|---|---|
-| `'hover'` | `:hover` (inside `@media (hover: hover)`, so touch devices never get a stuck hover) | ignored |
-| `'focus'` | `:focus` | `Input` only (focus state of the `TextInput`) |
-| `'focus-visible'` | `:focus-visible` | same as `focus` on `Input` |
-| `'pressed'` | `:active` | `Pressable` only (its `pressed` state) |
+| `'state:hover'` | `:hover` (inside `@media (hover: hover)`, so touch devices never get a stuck hover) | ignored |
+| `'state:focus'` | `:focus` | `Input` only (focus state of the `TextInput`) |
+| `'state:focus-visible'` | `:focus-visible` | same as `focus` on `Input` |
+| `'state:pressed'` | `:active` | `Pressable` only (its `pressed` state) |
 
-State rules only take `{ style }` (other attrs are ignored with a dev warning). They are compiled once as variants, not evaluated per render, so they don't re-render anything. If your component has a prop with the same name (`pressed`, `focus`…), the state wins.
+State rules only take `{ style }` (other attrs are ignored with a dev warning). They are compiled once as variants, not evaluated per render, so they don't re-render anything. A prop with the same name (`pressed`, `focus`…) never clashes: it is checked with `'props:pressed'`.
 
 ### Breakpoints
 
-Mobile-first: `when('md')` applies from 768px **up**, and larger breakpoints stack on top of smaller ones.
+Mobile-first: `when('breakpoints:md')` applies from 768px **up**, and larger breakpoints stack on top of smaller ones.
 
 ```tsx
 const Grid = engine('Box', { flexDirection: 'column', gap: 8 })
-  .when('md', { style: { flexDirection: 'row' } })   // ≥ 768px
-  .when('lg', { style: { gap: 24 } });               // ≥ 1024px
+  .when('breakpoints:md', { style: { flexDirection: 'row' } })   // ≥ 768px
+  .when('breakpoints:lg', { style: { gap: 24 } });               // ≥ 1024px
 ```
 
 | Name | Default min width |
@@ -225,19 +236,19 @@ const Grid = engine('Box', { flexDirection: 'column', gap: 8 })
 
 | Condition | Applies when |
 |---|---|
-| `'md'` | width ≥ md |
-| `'<md'` | width < md |
-| `'sm..lg'` | width ≥ sm **and** < lg |
+| `'breakpoints:md'` | width ≥ md |
+| `'breakpoints:<md'` | width < md |
+| `'breakpoints:sm..lg'` | width ≥ sm **and** < lg |
 
 ```tsx
-engine('Box').when('<md', { style: { display: 'none' } }).when('md..lg', { style: { gap: 12 } });
+engine('Box').when('breakpoints:<md', { style: { display: 'none' } }).when('breakpoints:md..lg', { style: { gap: 12 } });
 ```
 
 Change or add your own (this **replaces** the defaults); names can't collide with platforms or states (`ios`, `web`, `native`, `hover`…):
 
 ```ts
 configure({ breakpoints: { tablet: 600, desktop: 1100 } });
-// engine('Box').when('tablet', { style: { … } })
+// engine('Box').when('breakpoints:tablet', { style: { … } })
 ```
 
 - **Web**: a real `@media (min-width: …)` rule in the atomic sheet. No JavaScript, so it works with SSR and never flashes the wrong layout.
@@ -314,10 +325,10 @@ const Card = engine<'Box', { open?: boolean }>('Box', {
   width: 120,
   backgroundColor: '#6366f1',
   transition: 'background-color 500ms ease, width 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 300ms',
-}).when('open', { style: { width: 260, backgroundColor: '#16a34a' } });
+}).when('props:open', { style: { width: 260, backgroundColor: '#16a34a' } });
 
 const Press = engine('Pressable', { transition: 'transform 160ms ease-out' })
-  .when('pressed', { style: { transform: 'scale(0.94)' } });
+  .when('state:pressed', { style: { transform: 'scale(0.94)' } });
 ```
 
 - **Web**: plain CSS `transition` (declared in the atomic sheet).

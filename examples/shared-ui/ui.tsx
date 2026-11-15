@@ -31,8 +31,8 @@ export const Card = engine<'Box', { flat?: boolean; accent?: boolean }>(
     boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08)',
   }),
 )
-  .when('flat', { style: { boxShadow: 'none' } })
-  .when('accent', ({ theme }) => ({
+  .when('props:flat', { style: { boxShadow: 'none' } })
+  .when('props:accent', ({ theme }) => ({
     style: { borderColor: theme.color.primary, borderLeftWidth: 4 },
   }));
 
@@ -41,8 +41,8 @@ export const Row = engine<'Box', { wrap?: boolean; between?: boolean }>('Box', (
   alignItems: 'center',
   gap: theme.spacing.sm,
 }))
-  .when('wrap', { style: { flexWrap: 'wrap' } })
-  .when('between', { style: { justifyContent: 'space-between' } });
+  .when('props:wrap', { style: { flexWrap: 'wrap' } })
+  .when('props:between', { style: { justifyContent: 'space-between' } });
 
 export const Title = engine('Text', ({ theme }) => ({
   transition: themeFade(),
@@ -87,18 +87,18 @@ export const Button = engine<
   gap: theme.spacing.sm,
 }))
   .attrs({ role: 'button' })
-  .when('outlined', ({ theme, props }) => ({
+  .when('props:outlined', ({ theme, props }) => ({
     style: { backgroundColor: 'transparent', borderColor: variantColor(theme, props.variant) },
   }))
-  .when('size:sm', { style: { paddingBlock: 6, paddingInline: '0.75rem' } })
-  .when('size:lg', { style: { paddingBlock: 16 } })
-  .when('disabled', { style: { opacity: 0.4 } })
+  .when('props:size=sm', { style: { paddingBlock: 6, paddingInline: '0.75rem' } })
+  .when('props:size=lg', { style: { paddingBlock: 16 } })
+  .when('props:disabled', { style: { opacity: 0.4 } })
   // estados de interação: :hover/:active na web, estado do Pressable no mobile
-  .when('hover', { style: { opacity: 0.85 } })
-  .when('pressed', { style: { transform: 'scale(0.97)' } })
+  .when('state:hover', { style: { opacity: 0.85 } })
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } })
   // escape hatches por plataforma
-  .when('web', { style: { cursor: 'pointer' } })
-  .when('native', { style: { elevation: 1 } });
+  .when('platform:web', { style: { cursor: 'pointer' } })
+  .when('platform:native', { style: { elevation: 1 } });
 
 export const ButtonLabel = engine<'Text', { outlined?: boolean; variant?: Variant }>(
   'Text',
@@ -121,8 +121,8 @@ export const Field = engine<'Input', { invalid?: boolean }>('Input', ({ theme })
   paddingInline: theme.spacing.md,
   fontSize: 15,
 }))
-  .when('focus', ({ theme }) => ({ style: { borderColor: theme.color.primary } }))
-  .when('invalid', ({ theme }) => ({ style: { borderColor: theme.color.error } }));
+  .when('state:focus', ({ theme }) => ({ style: { borderColor: theme.color.primary } }))
+  .when('props:invalid', ({ theme }) => ({ style: { borderColor: theme.color.error } }));
 
 const pulse = keyframes({
   from: { opacity: 1, transform: 'scale(1)' },
@@ -145,7 +145,7 @@ export const Chip = engine<'Pressable', { active?: boolean }>('Pressable', ({ th
   borderWidth: 1,
   borderColor: theme.color.border,
   backgroundColor: 'transparent',
-})).when('active', ({ theme }) => ({
+})).when('props:active', ({ theme }) => ({
   style: { backgroundColor: theme.color.primary, borderColor: theme.color.primary },
 }));
 

@@ -56,7 +56,7 @@ const FancyField = engine('Input', ({ theme }) => ({
   fontSize: 15,
   transition: themeFade(),
 }))
-  .when('focus', ({ theme }) => ({ style: { borderColor: theme.color.secondary } }))
+  .when('state:focus', ({ theme }) => ({ style: { borderColor: theme.color.secondary } }))
   .when('::placeholder', { style: { color: '#f59e0b' } })
   .when('::selection', { style: { backgroundColor: '#fde68a' } });
 
@@ -93,7 +93,7 @@ const Morph = engine<'Box', { on?: boolean }>('Box', ({ theme }) => ({
   // opacity e transform rodam no driver nativo; backgroundColor e width, no JS
   transition: 'background-color 500ms ease, width 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 500ms, transform 500ms ease-out',
 }))
-  .when('on', ({ theme }) => ({
+  .when('props:on', ({ theme }) => ({
     style: { backgroundColor: theme.color.success, width: 260, opacity: 1, transform: 'translateY(-6px) rotate(2deg)' },
   }));
 
@@ -105,7 +105,7 @@ const PressCard = engine('Pressable', ({ theme }) => ({
   alignItems: 'center',
   transition: 'transform 160ms ease-out, opacity 160ms',
 }))
-  .when('pressed', { style: { transform: 'scale(0.94)', opacity: 0.8 } });
+  .when('state:pressed', { style: { transform: 'scale(0.94)', opacity: 0.8 } });
 
 export function TransitionLab() {
   const [on, setOn] = useState(false);

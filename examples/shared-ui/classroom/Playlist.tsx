@@ -15,9 +15,9 @@ const Row = engine<'Pressable', { active?: boolean }>('Pressable', ({ theme }) =
   backgroundColor: 'transparent',
   transition: 'background-color 150ms',
 }))
-  .when('hover', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
-  .when('active', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
-  .when('web', { style: { cursor: 'pointer' } });
+  .when('state:hover', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
+  .when('props:active', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
+  .when('platform:web', { style: { cursor: 'pointer' } });
 
 const KindIcon = engine('Box', ({ theme }) => ({
   width: 32,
@@ -86,7 +86,7 @@ const ModuleButton = engine('Pressable', ({ theme }) => ({
   padding: theme.spacing.sm,
   paddingBlock: theme.spacing.md,
 }))
-  .when('web', { style: { cursor: 'pointer' } });
+  .when('platform:web', { style: { cursor: 'pointer' } });
 
 const ModuleTitle = engine('Text', ({ theme }) => ({
   flex: 1,

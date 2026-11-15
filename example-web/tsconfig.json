@@ -8,11 +8,17 @@
     "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "omnistyle": ["../src/index.ts"]
+      "omnistyle": ["../src/index.ts"],
+      // a shared-ui e a lib ficam fora desta pasta: o React vem daqui
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"]
     }
   },
   "include": ["src", "../examples/shared-ui"]

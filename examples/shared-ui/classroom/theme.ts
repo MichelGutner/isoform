@@ -1,5 +1,5 @@
 /** Tokens do Dende (default theme) no formato do tema do omnistyle. */
-export const dendeTokens = {
+export const tokens = {
   color: {
     background: '#ffffff',
     surface: '#ffffff',

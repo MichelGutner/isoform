@@ -145,11 +145,11 @@ const Choice = engine<'Pressable', { selected?: boolean }>('Pressable', ({ theme
   borderColor: theme.color.border,
   transition: 'background-color 150ms, border-color 150ms',
 }))
-  .when('hover', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
-  .when('selected', ({ theme }) => ({
+  .when('state:hover', ({ theme }) => ({ style: { backgroundColor: theme.color.brandSurface } }))
+  .when('props:selected', ({ theme }) => ({
     style: { borderColor: theme.color.primary, backgroundColor: theme.color.brandSurface },
   }))
-  .when('web', { style: { cursor: 'pointer' } });
+  .when('platform:web', { style: { cursor: 'pointer' } });
 
 const ChoiceText = engine('Text', ({ theme }) => ({ color: theme.color.text, fontSize: theme.typography?.fontSize?.md }));
 const QuizBox = engine('Box', ({ theme }) => ({ width: '100%', gap: theme.spacing.sm }));
