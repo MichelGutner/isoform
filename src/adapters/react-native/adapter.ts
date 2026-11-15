@@ -12,6 +12,7 @@ import { styleHost, type StyleHostFlags } from './styleHost';
 import { transitionHost } from './transitionHost';
 import { parseTransition, TRANSITION_KEYS, usesNativeDriver, type ResolvedTransition } from './transition';
 import { parseContent, WEB_ONLY_PSEUDOS, type NativePseudos } from './pseudo';
+import { Audio, Embed, Pdf, Video } from './media';
 
 /** Nome omnistyle → nome do componente no `react-native`. */
 const PRIMITIVES: Record<string, string> = {
@@ -52,9 +53,12 @@ for (const name of Object.keys(PRIMITIVES)) {
   });
 }
 
+// mídia: componentes nossos (carregam a dependência nativa opcional sob demanda)
+Object.assign(primitives, { Video, Audio, Pdf, Embed });
+
 const PRESSABLE = new Set(['Pressable']);
 /** Primitivas sem `children`: não recebem `::before`/`::after`. */
-const NO_CHILDREN = new Set(['Input', 'TextInput', 'Image']);
+const NO_CHILDREN = new Set(['Input', 'TextInput', 'Image', 'Video', 'Audio', 'Pdf', 'Embed']);
 const INPUT = new Set(['Input', 'TextInput']);
 
 /** Saída de `compileStyle` no mobile. */

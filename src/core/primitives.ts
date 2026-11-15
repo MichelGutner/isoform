@@ -7,6 +7,7 @@ import type {
   TextareaHTMLAttributes,
 } from 'react';
 import type { StyleInput } from './style/types';
+import type { AudioOwnProps, EmbedOwnProps, PdfOwnProps, VideoOwnProps } from './media';
 
 /**
  * Props que existem nas duas plataformas. As demais props do DOM
@@ -109,6 +110,17 @@ export type ScrollProps = Dom<HTMLAttributes<HTMLDivElement>> &
     onScroll?: (event: any) => void;
   };
 
+/**
+ * Primitivas de mídia: props próprias (`src`, `onPlay`…) + o que é comum a todas.
+ * As props do DOM que colidem com as nossas (`onPlay`, `onError`…) são omitidas.
+ */
+type Media<Own> = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Own> & Own & CommonProps & OmniNativeProps;
+
+export type VideoProps = Media<VideoOwnProps>;
+export type AudioProps = Media<AudioOwnProps>;
+export type PdfProps = Media<PdfOwnProps>;
+export type EmbedProps = Media<EmbedOwnProps>;
+
 /** Componentes só-mobile (ou legados): tipados de forma frouxa. */
 type NativeLoose = BoxProps & { [key: string]: any };
 
@@ -123,6 +135,15 @@ export interface OmniPrimitives {
   Input: InputProps;
   Image: ImageProps;
   Scroll: ScrollProps;
+
+  /** Vídeo. Web: `<video>`. Mobile: `expo-video` (opcional). `ref` → `MediaHandle`. */
+  Video: VideoProps;
+  /** Áudio. Web: `<audio>`. Mobile: `expo-audio` (opcional). `ref` → `MediaHandle`. */
+  Audio: AudioProps;
+  /** PDF. Web: visualizador do navegador. Mobile: `react-native-pdf` (opcional). */
+  Pdf: PdfProps;
+  /** Página ou HTML embutido. Web: `<iframe>`. Mobile: `react-native-webview` (opcional). */
+  Embed: EmbedProps;
 
   /** @deprecated use `Box` */
   View: BoxProps;

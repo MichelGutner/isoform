@@ -33,6 +33,9 @@ const SCROLL = [
   'horizontal', 'contentContainerStyle', 'showsVerticalScrollIndicator', 'showsHorizontalScrollIndicator',
 ];
 
+// consumidas pelos próprios componentes de mídia (que traduzem para o elemento)
+const PLAYBACK = ['src', 'autoPlay', 'loop', 'muted', 'rate', 'volume', 'controls'];
+
 const ALLOWED: Record<string, Set<string>> = {
   Box: new Set(GLOBAL),
   Text: new Set(GLOBAL),
@@ -40,6 +43,10 @@ const ALLOWED: Record<string, Set<string>> = {
   Input: new Set([...GLOBAL, ...INPUT]),
   Image: new Set([...GLOBAL, ...IMAGE]),
   Scroll: new Set([...GLOBAL, ...SCROLL]),
+  Video: new Set([...GLOBAL, ...PLAYBACK, 'poster']),
+  Audio: new Set([...GLOBAL, ...PLAYBACK]),
+  Pdf: new Set([...GLOBAL, 'src', 'page']),
+  Embed: new Set([...GLOBAL, 'src', 'html', 'allow', 'allowFullScreen', 'sandbox', 'referrerPolicy', 'loading']),
 };
 
 const ALWAYS = /^(data-|aria-|on[A-Z])/;

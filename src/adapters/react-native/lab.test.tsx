@@ -23,6 +23,11 @@ jest.mock('react-native', () => {
     interpolate(config: any) {
       return { interpolated: config };
     }
+    addListener() {
+      return '';
+    }
+    removeAllListeners() {}
+    stopAnimation() {}
   }
   // componentes falsos que renderizam os filhos (senão a árvore some)
   const host = (props: any) => props.children ?? null;

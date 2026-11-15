@@ -2,11 +2,16 @@
 import { stringHash } from '../hash/stringHash';
 import type { OmniStyle } from './style/types';
 
-/** Seletor de quadro: `'from'`, `'to'`, `'50%'` ou lista (`'0%, 100%'`). */
-export type KeyframeSelector = 'from' | 'to' | `${number}%` | (string & {});
-
-/** Quadros de uma animação, com o mesmo vocabulário de estilo do resto da lib. */
-export type Keyframes = Partial<Record<KeyframeSelector, OmniStyle>>;
+/**
+ * Quadros de uma animação, com o mesmo vocabulário de estilo do resto da lib.
+ * A chave é `'from'`, `'to'` ou uma porcentagem (`'50%'`); lista: `'0%, 100%'`.
+ */
+export type Keyframes = {
+  from?: OmniStyle;
+  to?: OmniStyle;
+  [percent: `${number}%`]: OmniStyle;
+  [list: `${number}%, ${string}`]: OmniStyle;
+};
 
 /** Prefixo dos nomes gerados (`o-kf-<hash>`). */
 export const KEYFRAMES_PREFIX = 'o-kf-';
@@ -22,7 +27,7 @@ const registry = new Map<string, Keyframes>();
  * chamada no topo do módulo, antes de `configure()`.
  *
  * @example
- * const pulse = keyframes({ from: { opacity: 1 }, to: { opacity: 0.3 } });
+ * const pulse = keyframes({ '0%': { opacity: 1 }, '50%': { opacity: 0.3 }, '100%': { opacity: 1 } });
  * const Dot = engine('Box', { animation: `${pulse} 1s ease-in-out infinite alternate` });
  *
  * O nome é derivado do conteúdo (determinístico, seguro para SSR).

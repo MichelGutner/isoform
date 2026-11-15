@@ -9,7 +9,7 @@ import { getProvider } from './config';
 export { engine } from './core/engine';
 export type { Engine } from './core/engine';
 export { keyframes } from './core/keyframes';
-export type { Keyframes, KeyframeSelector } from './core/keyframes';
+export type { Keyframes } from './core/keyframes';
 export { configure, getProvider } from './config';
 export type { ConfigureOptions, ProviderName } from './config';
 export type { PlatformAdapter, ApplyPropsInput, StateStyles } from './core/adapter';
@@ -31,7 +31,20 @@ export type {
   InputProps,
   ImageProps,
   ScrollProps,
+  VideoProps,
+  AudioProps,
+  PdfProps,
+  EmbedProps,
 } from './core/primitives';
+export type {
+  MediaHandle,
+  MediaTime,
+  PlaybackProps,
+  VideoOwnProps,
+  AudioOwnProps,
+  PdfOwnProps,
+  EmbedOwnProps,
+} from './core/media';
 export { useTheme, updateTheme, getTheme } from './theme';
 
 /**
