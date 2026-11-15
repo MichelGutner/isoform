@@ -8,8 +8,9 @@ import {
   SkipIcon,
   VolumeIcon,
   type VolumeLevel,
-} from './icons';
-import { Track } from './Track';
+} from '../shared/icons';
+import { SPEEDS, formatTime, rateLabel } from '../shared/helpers';
+import { Track } from '../shared/Track';
 
 /**
  * Controles do `Video` na web, no mesmo desenho do Android/iOS da lib:
@@ -47,21 +48,7 @@ export interface PlayerActions {
   togglePictureInPicture(): void;
 }
 
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 const IDLE_MS = 2500;
-
-const pad = (n: number) => String(n).padStart(2, '0');
-
-/** 75 → "1:15"; 3725 → "1:02:05". */
-export function formatTime(seconds: number): string {
-  const total = Math.max(0, Math.floor(seconds || 0));
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = pad(total % 60);
-  return h ? `${h}:${pad(m)}:${s}` : `${m}:${s}`;
-}
-
-const rateLabel = (rate: number) => `${rate}x`;
 
 function volumeLevel({ volume, muted }: PlayerState): VolumeLevel {
   if (muted || volume === 0) return 'muted';

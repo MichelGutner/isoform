@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef } from 'react';
 import { View } from 'react-native';
-import type { VideoHandle } from '../../../core/media';
-import { warnModuleDisabled } from '../../../core/modules';
+import type { VideoHandle } from '../../../../core/media';
+import { warnModuleDisabled } from '../../../../core/modules';
 
 /**
  * `Video` sem player: o `omnistyle/metro` usa este arquivo no lugar de

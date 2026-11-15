@@ -16,10 +16,11 @@ const CONFIG_FILE = 'omnistyle.config.json';
 
 /** Arquivo de cada módulo → versão vazia (mesmo nome + `.disabled`, mesma extensão). */
 const MODULE_FILES = {
-  video: /[\\/]adapters[\\/]react-native[\\/]media[\\/]Video\.(tsx|js)$/,
+  video: /[\\/]adapters[\\/]react-native[\\/]media[\\/]video[\\/]Video\.(tsx|js)$/,
+  audio: /[\\/]adapters[\\/]react-native[\\/]media[\\/]audio[\\/]Audio\.(tsx|js)$/,
 };
 
-/** `{ video: true }` do arquivo, ou `null` se o app não tem o arquivo. */
+/** `{ video: true, audio: false }` do arquivo, ou `null` se o app não tem o arquivo. */
 function readModules(projectRoot) {
   const file = path.join(projectRoot, CONFIG_FILE);
   if (!fs.existsSync(file)) return null;

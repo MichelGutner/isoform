@@ -1,5 +1,6 @@
 {
   "modules": {
-    "video": true
+    "video": true,
+    "audio": true
   }
 }

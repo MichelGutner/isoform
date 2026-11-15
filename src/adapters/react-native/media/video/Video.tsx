@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { isModuleEnabled } from '../../../config';
-import type { VideoHandle, VideoOwnProps } from '../../../core/media';
-import { warnModuleDisabled } from '../../../core/modules';
+import { isModuleEnabled } from '../../../../config';
+import type { VideoHandle, VideoOwnProps } from '../../../../core/media';
+import { warnModuleDisabled } from '../../../../core/modules';
 
 declare const require: (id: string) => any;
 

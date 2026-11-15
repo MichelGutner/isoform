@@ -4,7 +4,7 @@ package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 # Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 # (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-#   { "modules": { "video": true } }
+#   { "modules": { "video": true, "audio": true } }
 # Módulo fora do arquivo (ou `false`) não é compilado. Sem o arquivo, tudo é
 # compilado e só o `configure` decide em runtime. Depois de mudar: `pod install`.
 #
@@ -15,7 +15,8 @@ omnistyle_config = File.exist?(config_file) ? JSON.parse(File.read(config_file))
 omnistyle_module = ->(name) { omnistyle_config.nil? || omnistyle_config.dig("modules", name) == true }
 
 video = omnistyle_module.call("video")
-Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}"
+audio = omnistyle_module.call("audio")
+Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}"
 
 Pod::Spec.new do |s|
   s.name         = "omnistyle"
@@ -28,9 +29,14 @@ Pod::Spec.new do |s|
   s.source       = { :git => package["repository"]["url"], :tag => s.version.to_s }
   s.swift_version = "5.9"
 
-  # vídeo ligado: AVPlayer (Swift) + casca Fabric; desligado: só uma casca vazia com o mesmo nome
-  s.source_files = video ? "ios/video/**/*.{h,m,mm,swift}" : "ios/stubs/**/*.{h,m,mm}"
-  s.frameworks   = video ? %w[AVFoundation AVKit] : []
+  # módulo ligado: o player (Swift) + a casca Fabric; desligado: só uma casca vazia com o mesmo nome.
+  # `ios/shared` (sessão de áudio) entra se qualquer um dos dois estiver ligado.
+  sources = []
+  sources << (video ? "ios/video/**/*.{h,m,mm,swift}" : "ios/stubs/video/**/*.{h,m,mm}")
+  sources << (audio ? "ios/audio/**/*.{h,m,mm,swift}" : "ios/stubs/audio/**/*.{h,m,mm}")
+  sources << "ios/shared/**/*.swift" if video || audio
+  s.source_files = sources
+  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : [])
 
   # Gera o header `omnistyle-Swift.h` importado pelo .mm do vídeo.
   s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES" }
@@ -43,9 +49,10 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; puts(File.exist?(p) ? JSON.parse(File.read(p)).dig("modules", "video") == true : true)' "$CONFIG")
-      if [ "$ACTUAL" != "#{video}" ]; then
-        echo "error: [omnistyle] omnistyle.config.json mudou (video: $ACTUAL), mas o pod install foi feito com video: #{video}. Rode: cd ios && pod install"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; puts(m.nil? ? "video:true,audio:true" : "video:" + (m["video"] == true).to_s + ",audio:" + (m["audio"] == true).to_s)' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio}"
+      if [ "$ACTUAL" != "$EXPECTED" ]; then
+        echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1
       fi
     SH

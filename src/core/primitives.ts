@@ -7,7 +7,7 @@ import type {
   TextareaHTMLAttributes,
 } from 'react';
 import type { StyleInput } from './style/types';
-import type { VideoOwnProps } from './media';
+import type { AudioOwnProps, VideoOwnProps } from './media';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -181,6 +181,12 @@ type Media<Own> = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Own> & Own & Comm
  */
 export type VideoProps = Media<VideoOwnProps>;
 
+/**
+ * Props of `Audio`: an audio player with the lib's own controls (see {@link AudioOwnProps}).
+ * Requires `configure({ modules: { audio: true } })`.
+ */
+export type AudioProps = Media<AudioOwnProps>;
+
 /** Native-only (or legacy) components: loosely typed (any prop is accepted). */
 type NativeLoose = BoxProps & { [key: string]: any };
 
@@ -209,6 +215,14 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { video: true } })`.
    */
   Video: VideoProps;
+
+  /**
+   * Audio player. Web: `<audio>` with the lib's controls. Native: the lib's
+   * native player (AVPlayer on iOS, Media3 on Android) with a card-style UI.
+   * The `ref` is an `AudioHandle` (`play`, `pause`, `seekTo`).
+   * Requires `configure({ modules: { audio: true } })`.
+   */
+  Audio: AudioProps;
 
   /** @deprecated Use `Box`. */
   View: BoxProps;

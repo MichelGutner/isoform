@@ -1,9 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import type { VideoHandle, VideoOwnProps } from '../../../core/media';
+import type { VideoHandle, VideoOwnProps } from '../../../../core/media';
 import { setFullscreen, watchFullscreen } from './fullscreen';
 import { isPictureInPictureSupported, togglePictureInPicture, watchPictureInPicture } from './pictureInPicture';
 import { VideoControls, type PlayerActions, type PlayerState } from './VideoControls';
+import {
+  bufferedEnd,
+  changeVolume,
+  classNames,
+  finite,
+  playSafely,
+  seek,
+  togglePlayback,
+  useLatest,
+} from '../shared/helpers';
 import { ensureVideoStyles } from './videoStyles';
 
 /**
@@ -38,30 +48,6 @@ const INITIAL_STATE: PlayerState = {
 /** O buffer só é avisado a cada meio segundo novo (evita uma enxurrada de eventos). */
 const BUFFER_STEP = 0.5;
 
-const ignore = () => undefined;
-const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
-/** `duration` é `NaN` enquanto desconhecida e `Infinity` em transmissões ao vivo. */
-const finite = (n: number | undefined) => (n !== undefined && Number.isFinite(n) ? n : 0);
-
-const playSafely = (v: HTMLMediaElement) => void v.play().catch(ignore);
-const togglePlayback = (v: HTMLMediaElement) => (v.paused ? playSafely(v) : v.pause());
-const seek = (v: HTMLMediaElement, seconds: number) => {
-  v.currentTime = clamp(seconds, 0, finite(v.duration) || seconds);
-};
-const changeVolume = (v: HTMLMediaElement, volume: number) => {
-  v.volume = volume;
-  v.muted = volume === 0;
-};
-
-/** Fim do trecho já baixado que contém a posição atual (ou o último trecho). */
-function bufferedEnd(v: HTMLMediaElement): number {
-  const ranges = v.buffered;
-  for (let i = 0; i < ranges.length; i++) {
-    if (ranges.start(i) <= v.currentTime && v.currentTime <= ranges.end(i)) return ranges.end(i);
-  }
-  return ranges.length ? ranges.end(ranges.length - 1) : 0;
-}
-
 /** O que o player mostra, lido direto do elemento. */
 const readElement = (v: HTMLVideoElement): Partial<PlayerState> => ({
   current: v.currentTime,
@@ -70,15 +56,6 @@ const readElement = (v: HTMLVideoElement): Partial<PlayerState> => ({
   muted: v.muted,
   rate: v.playbackRate,
 });
-
-const classNames = (...names: Array<string | undefined>) => names.filter(Boolean).join(' ');
-
-/** Sempre a versão mais recente de um callback, sem refazer efeitos. */
-function useLatest<T>(value: T) {
-  const ref = useRef(value);
-  ref.current = value;
-  return ref;
-}
 
 export const Video = forwardRef<VideoHandle, VideoElementProps>(
   (

@@ -102,7 +102,7 @@
     "!dist/**/jest.config.*",
     "README.md",
     "LICENSE",
-    "src/adapters/react-native/media/native/**",
+    "src/adapters/react-native/media/**/native/**",
     "ios/**",
     "android/build.gradle",
     "android/consumer-rules.pro",
@@ -122,13 +122,14 @@
   "codegenConfig": {
     "name": "OmnistyleSpec",
     "type": "components",
-    "jsSrcsDir": "src/adapters/react-native/media/native",
+    "jsSrcsDir": "src/adapters/react-native/media",
     "android": {
       "javaPackageName": "com.omnistyle"
     },
     "ios": {
       "componentProvider": {
-        "OmniVideoView": "OmniVideoView"
+        "OmniVideoView": "OmniVideoView",
+        "OmniAudioView": "OmniAudioView"
       }
     }
   }

@@ -44,6 +44,7 @@ const ALLOWED: Record<string, Set<string>> = {
   Image: new Set([...GLOBAL, ...IMAGE]),
   Scroll: new Set([...GLOBAL, ...SCROLL]),
   Video: new Set([...GLOBAL, ...PLAYBACK, 'poster']),
+  Audio: new Set([...GLOBAL, ...PLAYBACK, 'title', 'artist', 'artwork']),
 };
 
 const ALWAYS = /^(data-|aria-|on[A-Z])/;

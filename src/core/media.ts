@@ -1,6 +1,6 @@
 /**
- * Contract of the `Video` primitive: the same on every platform.
- * Web: the browser's `<video>` with the lib's controls. Native: the lib's own
+ * Contract of the `Video` and `Audio` primitives: the same on every platform.
+ * Web: the browser's `<video>` / `<audio>` with the lib's controls. Native: the lib's own
  * native player (AVPlayer on iOS, Media3 ExoPlayer on Android), with no external dependencies.
  */
 
@@ -22,7 +22,7 @@ export interface MediaInfo {
   height: number;
 }
 
-/** Imperative control shared by every media primitive (base for future ones, such as audio). */
+/** Imperative control shared by every media primitive (`Video` and `Audio`). */
 export interface MediaHandle {
   /** Starts or resumes playback. */
   play(): void;
@@ -42,9 +42,9 @@ export interface VideoHandle extends MediaHandle {
   setFullscreen(fullscreen: boolean): void;
 }
 
-/** Playback props shared by every media primitive (base for future ones, such as audio). */
+/** Playback props shared by every media primitive (`Video` and `Audio`). */
 export interface PlaybackProps {
-  /** Media URL: a file (`.mp4`, `.webm`…) or an HLS stream (`.m3u8`). HLS on the web needs Safari. */
+  /** Media URL: a file (`.mp4`, `.mp3`, `.webm`…) or an HLS stream (`.m3u8`). HLS on the web needs Safari. */
   src: string;
   /** Starts playing as soon as the media is ready. Default `false`. Browsers only allow it when `muted`. */
   autoPlay?: boolean;
@@ -103,4 +103,19 @@ export interface VideoOwnProps extends PlaybackProps {
    * @platform web — picture-in-picture is not implemented on native yet.
    */
   onPictureInPictureChange?: (active: boolean) => void;
+}
+
+/** Imperative control of an `Audio`, obtained through its `ref`. Same as {@link MediaHandle}. */
+export type AudioHandle = MediaHandle;
+
+/** Props of the `Audio` primitive (on top of {@link PlaybackProps}). */
+export interface AudioOwnProps extends PlaybackProps {
+  /** Shows the player controls (play/pause, ±10 s, seek bar, speed, mute). Default `true`. */
+  controls?: boolean;
+  /** Track title shown above the seek bar (e.g. the episode or song name). */
+  title?: string;
+  /** Artist, show or author shown under the title. */
+  artist?: string;
+  /** Cover image URL shown at the left of the player. */
+  artwork?: string;
 }

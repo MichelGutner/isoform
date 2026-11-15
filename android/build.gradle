@@ -3,7 +3,7 @@
 //
 // Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
 // (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
-//   { "modules": { "video": true } }
+//   { "modules": { "video": true, "audio": true } }
 // Módulo fora do arquivo (ou `false`) não é compilado: sem Media3 nem Compose no APK.
 // Sem o arquivo, tudo é compilado e só o `configure` decide em runtime.
 
@@ -29,41 +29,47 @@ def omnistyleConfig = omnistyleConfigFile.exists() ? new groovy.json.JsonSlurper
 def omnistyleModule = { String name -> omnistyleConfig == null || omnistyleConfig.modules?.get(name) == true }
 
 def videoEnabled = omnistyleModule("video")
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+def audioEnabled = omnistyleModule("audio")
+// player e interface (Media3 + Compose) são comuns aos dois módulos
+def mediaEnabled = videoEnabled || audioEnabled
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-// Compose só é usado pelos controles do vídeo
-if (videoEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
+// Compose só é usado pelos controles do vídeo e do áudio
+if (mediaEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
- * Media3 1.10.x: a linha mais nova publicada com Kotlin 2.0 e Compose 1.7,
- * compatível com o Kotlin 2.1 do React Native 0.81. O app pode sobrescrever
- * com `ext.omnistyleMedia3Version` / `ext.omnistyleComposeBomVersion`.
+ * Sempre as versões estáveis mais novas que o React Native 0.81 aceita
+ * (Kotlin 2.1, compileSdk 36, AGP 8.11):
+ *  · Media3 1.11.1 (compileSdk 36);
+ *  · Compose BOM 2026.06.01 = Compose 1.11.4 (o 1.12 já exige compileSdk 37).
+ * O app pode sobrescrever com `ext.omnistyleMedia3Version` / `ext.omnistyleComposeBomVersion`.
  */
-def media3Version = safeExtGet("omnistyleMedia3Version", "1.10.1")
-def composeBomVersion = safeExtGet("omnistyleComposeBomVersion", "2024.12.01")
+def media3Version = safeExtGet("omnistyleMedia3Version", "1.11.1")
+def composeBomVersion = safeExtGet("omnistyleComposeBomVersion", "2026.06.01")
 
 android {
   namespace "com.omnistyle"
-  compileSdkVersion safeExtGet("compileSdkVersion", 35)
+  compileSdkVersion safeExtGet("compileSdkVersion", 36)
 
   defaultConfig {
     minSdkVersion safeExtGet("minSdkVersion", 24)
-    targetSdkVersion safeExtGet("targetSdkVersion", 35)
+    targetSdkVersion safeExtGet("targetSdkVersion", 36)
     // as views dos módulos são criadas por reflexão: o R8 do app precisa mantê-las
     consumerProguardFiles "consumer-rules.pro"
   }
 
   buildFeatures {
-    compose videoEnabled
+    compose mediaEnabled
   }
 
   // cada módulo ligado acrescenta a sua pasta de código
   sourceSets {
     main {
       if (videoEnabled) java.srcDirs += "src/video/java"
+      if (audioEnabled) java.srcDirs += "src/audio/java"
     }
   }
 
@@ -85,18 +91,22 @@ repositories {
 dependencies {
   implementation "com.facebook.react:react-android"
 
-  if (videoEnabled) {
+  if (mediaEnabled) {
     implementation "androidx.media3:media3-exoplayer:$media3Version"
     implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
-    implementation "androidx.media3:media3-ui-compose:$media3Version"
     // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
-    implementation "androidx.annotation:annotation-experimental:1.4.1"
-    // tela cheia: esconder as barras do sistema (WindowInsetsControllerCompat)
-    implementation "androidx.core:core:1.13.1"
+    implementation "androidx.annotation:annotation-experimental:1.6.0"
+    // tela cheia do vídeo: esconder as barras do sistema (WindowInsetsControllerCompat)
+    implementation "androidx.core:core:1.18.0"
 
     implementation platform("androidx.compose:compose-bom:$composeBomVersion")
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.foundation:foundation"
     implementation "androidx.compose.animation:animation"
+  }
+
+  // a superfície do vídeo dentro do Compose (`ContentFrame`) só é usada pelo vídeo
+  if (videoEnabled) {
+    implementation "androidx.media3:media3-ui-compose:$media3Version"
   }
 }

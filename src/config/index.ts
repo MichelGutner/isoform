@@ -55,13 +55,20 @@ export interface OmniModules {
    * Default `false`.
    */
   video?: boolean;
+  /**
+   * `engine('Audio')`: an audio player with title, artist and cover. Web: `<audio>`
+   * with the lib's controls (loaded on demand). iOS: AVPlayer with a UIKit card.
+   * Android: Media3 ExoPlayer with Jetpack Compose controls.
+   * Default `false`.
+   */
+  audio?: boolean;
 }
 
-/** Name of an optional module (`'video'`). */
+/** Name of an optional module (`'video'` | `'audio'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<Required<OmniModules>> = { video: false };
+export const DEFAULT_MODULES: Readonly<Required<OmniModules>> = { video: false, audio: false };
 let modules: Required<OmniModules> = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

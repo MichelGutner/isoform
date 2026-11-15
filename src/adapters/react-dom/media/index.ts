@@ -1,2 +1,3 @@
-// O player real (`MediaElement`) é carregado sob demanda: ver `LazyVideo`.
-export { Video } from './LazyVideo';
+// The real players (`VideoElement`, `AudioElement`) are loaded on demand: see `LazyVideo` and `LazyAudio`.
+export { Video } from './video/LazyVideo';
+export { Audio } from './audio/LazyAudio';

@@ -11,7 +11,7 @@ import com.facebook.react.viewmanagers.OmniVideoViewManagerInterface
 /**
  * Ponte entre o Fabric e o `OmniVideoView`: props, comandos e eventos.
  * `OmniVideoViewManagerInterface`/`Delegate` são gerados pelo Codegen a partir
- * de `src/adapters/react-native/media/native/OmniVideoViewNativeComponent.ts`.
+ * de `src/adapters/react-native/media/video/native/OmniVideoViewNativeComponent.ts`.
  */
 @ReactModule(name = OmniVideoViewManager.NAME)
 class OmniVideoViewManager :

@@ -12,6 +12,7 @@ import com.facebook.react.uimanager.ViewManager
  */
 private val MODULE_VIEW_MANAGERS = listOf(
   "com.omnistyle.OmniVideoViewManager", // omnistyle.video
+  "com.omnistyle.OmniAudioViewManager", // omnistyle.audio
 )
 
 private fun instantiate(className: String): ViewManager<*, *>? =

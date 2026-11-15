@@ -4,10 +4,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createRef } from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
-import { configure, registerBundledProvider, resetProvider } from '../../../config';
-import { engine } from '../../../core/engine';
-import type { MediaHandle } from '../../../core/media';
-import { reactDomAdapter } from '../adapter';
+import { configure, registerBundledProvider, resetProvider } from '../../../../config';
+import { engine } from '../../../../core/engine';
+import type { MediaHandle } from '../../../../core/media';
+import { reactDomAdapter } from '../../adapter';
 
 const play = jest.fn(() => Promise.resolve());
 const pause = jest.fn();

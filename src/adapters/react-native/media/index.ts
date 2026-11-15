@@ -1,1 +1,2 @@
-export { Video } from './Video';
+export { Video } from './video/Video';
+export { Audio } from './audio/Audio';

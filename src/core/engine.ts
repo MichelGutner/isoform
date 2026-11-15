@@ -22,7 +22,7 @@ type ExtractProps<T> = T extends { __engine: true; __props: infer P } ? P : {};
 export interface Engine {
   /**
    * Styles a universal primitive (`'Box'`, `'Text'`, `'Pressable'`, `'Input'`,
-   * `'Image'`, `'Scroll'`, `'Video'`) or a legacy React Native name (`'View'`…).
+   * `'Image'`, `'Scroll'`, `'Video'`, `'Audio'`) or a legacy React Native name (`'View'`…).
    * @param component The primitive name (see `OmniPrimitives`).
    * @param style An optional initial style: an object, or a function of `{ theme, props, platform }`.
    * @typeParam P Custom props of the new component (they become `when()` conditions such as `'props:variant=primary'`).

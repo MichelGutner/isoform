@@ -85,3 +85,10 @@ export const CheckIcon = () => (
     <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} strokeWidth={2.4} />
   </Svg>
 );
+
+/** Music note, the placeholder shown when an `Audio` has no `artwork`. */
+export const MusicNoteIcon = () => (
+  <Svg>
+    <path d="M9 4.6v10.9A3.6 3.6 0 1 0 11 18.7V8.3l7-1.6v6.8a3.6 3.6 0 1 0 2 3.2V3.4a.9.9 0 0 0-1.1-.9L9.9 3.7a.9.9 0 0 0-.9.9z" />
+  </Svg>
+);
