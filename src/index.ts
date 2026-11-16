@@ -14,6 +14,7 @@ export { configure, getProvider } from './config';
 export type {
   AudioModuleOptions,
   PdfModuleOptions,
+  CameraModuleOptions,
   ConfigureOptions,
   ModuleName,
   ModuleOptions,
@@ -54,6 +55,7 @@ export type {
   BottomSheetProps,
   SvgProps,
   SvgElementProps,
+  CameraProps,
 } from './core/primitives';
 export type {
   MediaHandle,
@@ -81,6 +83,19 @@ export type {
   SheetDetent,
   SheetDetentChange,
 } from './core/sheet';
+export type {
+  CameraCode,
+  CameraCodeType,
+  CameraFacing,
+  CameraFlash,
+  CameraHandle,
+  CameraOwnProps,
+  CameraPermission,
+  CameraPermissionStatus,
+  CameraPhoto,
+  CameraVideo,
+  TakePhotoOptions,
+} from './core/camera';
 export type {
   PdfDirection,
   PdfFit,

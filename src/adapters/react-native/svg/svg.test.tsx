@@ -60,6 +60,8 @@ function render(element: React.ReactElement) {
 describe('svg primitives (native)', () => {
   beforeEach(() => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
+    // react-test-renderer prints a deprecation notice
+    jest.spyOn(console, 'error').mockImplementation(() => {});
     resetProvider();
     registerBundledProvider(reactNativeAdapter);
   });

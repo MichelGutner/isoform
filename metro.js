@@ -21,6 +21,7 @@ const MODULE_FILES = {
   pdf: /[\\/]adapters[\\/]react-native[\\/]media[\\/]pdf[\\/]Pdf\.(tsx|js)$/,
   sheet: /[\\/]adapters[\\/]react-native[\\/]sheet[\\/]BottomSheet\.(tsx|js)$/,
   svg: /[\\/]adapters[\\/]react-native[\\/]svg[\\/]Svg\.(tsx|js)$/,
+  camera: /[\\/]adapters[\\/]react-native[\\/]camera[\\/]Camera\.(tsx|js)$/,
 };
 
 /** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */

@@ -25,6 +25,7 @@ export const CANONICAL: Record<string, string> = {
   Audio: 'Audio',
   Pdf: 'Pdf',
   BottomSheet: 'BottomSheet',
+  Camera: 'Camera',
   // SVG: each element is its own primitive (`Svg`, `Path`, `SvgLinearGradient`…)
   ...Object.fromEntries(Object.keys(SVG_ELEMENTS).map((name) => [name, name])),
 };
@@ -52,6 +53,9 @@ const BASE: Record<string, string> = {
   Pdf: 'box-sizing:border-box;max-width:100%;height:420px;flex-shrink:0',
   // bottom sheet: the `<dialog>` (`.os`) positions itself; nothing here may fight it
   BottomSheet: 'box-sizing:border-box',
+  // camera: the preview (`<video>`) covers this box; the children are drawn over it
+  Camera:
+    'border-style:solid;border-width:0;display:block;position:relative;overflow:hidden;box-sizing:border-box;max-width:100%;background-color:#000;flex-shrink:0',
   // SVG root: a block box that does not shrink in a flex column (shapes inside get no base rules)
   Svg: 'display:block;flex-shrink:0',
 };

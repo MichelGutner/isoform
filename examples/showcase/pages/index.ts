@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { AnimationsPage } from './AnimationsPage';
 import { AudioPage } from './AudioPage';
+import { CameraPage } from './CameraPage';
 import { ComponentsPage } from './ComponentsPage';
 import { PdfPage } from './PdfPage';
 import { PlatformPage } from './PlatformPage';
@@ -34,4 +35,5 @@ export const PAGES: PageEntry[] = [
   { id: 'pdf', title: 'Pdf', Component: PdfPage },
   { id: 'sheet', title: 'BottomSheet', Component: SheetPage },
   { id: 'svg', title: 'Svg', Component: SvgPage },
+  { id: 'camera', title: 'Camera', Component: CameraPage },
 ];

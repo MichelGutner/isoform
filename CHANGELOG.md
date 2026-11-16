@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — `Camera` (optional `camera` module)
+- `engine('Camera')`: the camera preview with the app's own interface on top (children are drawn over it). Android: CameraX 1.6 with the Jetpack Compose viewfinder (`CameraXViewfinder`); iOS: AVFoundation; web: `getUserMedia`.
+- Photos (`takePhoto`, flash, zero shutter lag where supported), torch, zoom with pinch (`onZoomChange`; `0.5` is the ultra wide where there is one), tap to focus, front/back, `active` to pause.
+- Sub-options that only enter the app when on: `camera.video` (recording with sound: CameraX `VideoCapture`, movie output, `MediaRecorder`) and `camera.codeScanner` (`onCodeScanned`: ML Kit, `AVCaptureMetadataOutput`, `BarcodeDetector`).
+- Permissions asked automatically, with `onPermissionChange` and a notice (`permissionMessage`, `permissionButtonLabel`) that asks again or opens the settings. The iOS build adds `NSCameraUsageDescription` / `NSMicrophoneUsageDescription` when missing; the Android manifest adds `CAMERA` / `RECORD_AUDIO`.
+- iOS 17+: rotation coordinator and responsive capture; iOS 18: Camera Control zoom slider.
+- Android: the lib's manifest is now generated from the enabled modules (so `mediaSession` and the camera permissions can be combined).
+
 ### Added — SVG (optional `svg` module)
 - Every SVG element is a primitive: `Svg`, `G`, `Path`, `Circle`, `Rect`, `Ellipse`, `Line`, `Polyline`, `Polygon`, `TSpan`, `Defs`, `Stop`, and, where the name clashes, `SvgText`, `SvgImage`, `SvgLinearGradient`, `SvgRadialGradient`, `SvgClipPath`, `SvgMask`, `SvgPattern`, `SvgSymbol`, `SvgUse`.
 - Presentation properties (`fill`, `stroke`, `strokeWidth`, `stopColor`…) go in the style, so they follow the theme and `when()`. Web: the browser's own SVG elements, styled with classes. iOS/Android: `react-native-svg`, with the style turned into the element's props.

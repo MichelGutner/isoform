@@ -35,19 +35,25 @@ def videoEnabled = omnistyleModule("video")
 def audioEnabled = omnistyleModule("audio")
 def pdfEnabled = omnistyleModule("pdf")
 def sheetEnabled = omnistyleModule("sheet")
+def cameraEnabled = omnistyleModule("camera")
+// camera features: each one only with the module on and its option `true` (all on without the file)
+def cameraSetting = omnistyleConfig?.modules?.get("camera")
+def cameraFeature = { String name -> cameraEnabled && (omnistyleConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
+def cameraVideoEnabled = cameraFeature("video")
+def cameraCodesEnabled = cameraFeature("codeScanner")
 // player e interface (Media3 + Compose) são comuns aos dois módulos
 def mediaEnabled = videoEnabled || audioEnabled
 // foreground service + controles na notificação: só com `audio.mediaSession: true` explícito
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
 def audioSetting = omnistyleConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-// Compose: controles do vídeo e do áudio, o leitor de PDF e o bottom sheet
-def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled
+// Compose: controles do vídeo e do áudio, o leitor de PDF, o bottom sheet e o viewfinder da câmera
+def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled
 if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
@@ -58,7 +64,31 @@ if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
  * O app pode sobrescrever com `ext.omnistyleMedia3Version` / `ext.omnistyleComposeBomVersion`.
  */
 def media3Version = safeExtGet("omnistyleMedia3Version", "1.11.1")
+// CameraX 1.6.2: the newest stable (compileSdk 36), with the Compose viewfinder (`camera-compose`)
+def cameraXVersion = safeExtGet("omnistyleCameraXVersion", "1.6.2")
+// ML Kit barcode scanning with the model inside the APK (works offline, no Play services download)
+def mlkitBarcodeVersion = safeExtGet("omnistyleMlkitBarcodeVersion", "17.3.0")
 def composeBomVersion = safeExtGet("omnistyleComposeBomVersion", "2026.06.01")
+
+/**
+ * One manifest with what the enabled modules need: the main one, plus the pieces of
+ * `mediaSession` (service, notification) and the camera (camera, microphone for video).
+ * Written to `build/` at configuration time; Gradle's merger then adds it to the app.
+ */
+def manifestBody = { File file ->
+  def xml = file.text
+  xml.substring(xml.indexOf(">", xml.indexOf("<manifest")) + 1, xml.lastIndexOf("</manifest>")).trim()
+}
+def manifestParts = [file("src/main/AndroidManifest.xml")]
+if (mediaSessionEnabled) manifestParts << file("src/mediaSession/AndroidManifest.xml")
+if (cameraEnabled) manifestParts << file("src/camera/AndroidManifest.xml")
+if (cameraVideoEnabled) manifestParts << file("src/cameraVideo/AndroidManifest.xml")
+def omnistyleManifest = new File(layout.buildDirectory.get().asFile, "generated/omnistyle/AndroidManifest.xml")
+omnistyleManifest.parentFile.mkdirs()
+omnistyleManifest.text = """<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+${manifestParts.collect(manifestBody).join("\n")}
+</manifest>
+"""
 
 android {
   namespace "com.omnistyle"
@@ -88,8 +118,16 @@ android {
       if (pdfEnabled) java.srcDirs += "src/pdf/java"
       // bottom sheet: Compose (drag, detents, scrim) hosting the React children
       if (sheetEnabled) java.srcDirs += "src/sheet/java"
-      // o manifest com o serviço e as permissões só entra com `mediaSession` ligado
-      if (mediaSessionEnabled) manifest.srcFile "src/mediaSession/AndroidManifest.xml"
+      // camera: CameraX + Compose; video and the code scanner add their code (or an empty
+      // stand-in with the same API) only when their option is on
+      if (cameraEnabled) {
+        java.srcDirs += "src/camera/java"
+        java.srcDirs += (cameraVideoEnabled ? "src/cameraVideo/java" : "src/cameraVideoOff/java")
+        java.srcDirs += (cameraCodesEnabled ? "src/cameraCodes/java" : "src/cameraCodesOff/java")
+      }
+      // permissions and services of the modules that are on, merged into one manifest
+      // (a source set takes a single manifest file)
+      manifest.srcFile omnistyleManifest
     }
   }
 
@@ -135,6 +173,22 @@ dependencies {
   // controles na notificação do sistema (MediaSession + foreground service)
   if (mediaSessionEnabled) {
     implementation "androidx.media3:media3-session:$media3Version"
+  }
+
+  // camera: CameraX with the Compose viewfinder (`CameraXViewfinder`)
+  if (cameraEnabled) {
+    implementation "androidx.camera:camera-camera2:$cameraXVersion"
+    implementation "androidx.camera:camera-lifecycle:$cameraXVersion"
+    implementation "androidx.camera:camera-compose:$cameraXVersion"
+    // photo size with the EXIF rotation applied (newest stable)
+    implementation "androidx.exifinterface:exifinterface:1.4.2"
+  }
+  if (cameraVideoEnabled) {
+    implementation "androidx.camera:camera-video:$cameraXVersion"
+  }
+  if (cameraCodesEnabled) {
+    implementation "androidx.camera:camera-mlkit-vision:$cameraXVersion"
+    implementation "com.google.mlkit:barcode-scanning:$mlkitBarcodeVersion"
   }
 
   // a superfície do vídeo dentro do Compose (`ContentFrame`) só é usada pelo vídeo

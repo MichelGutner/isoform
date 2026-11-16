@@ -11,6 +11,7 @@ import type { StyleInput } from './style/types';
 import type { AudioHandle, AudioOwnProps, VideoHandle, VideoOwnProps } from './media';
 import type { PdfHandle, PdfOwnProps } from './pdf';
 import type { BottomSheetHandle, BottomSheetOwnProps } from './sheet';
+import type { CameraHandle, CameraOwnProps } from './camera';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -210,6 +211,16 @@ export type BottomSheetProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Bott
   };
 
 /**
+ * Props of `Camera`: the live camera preview (see {@link CameraOwnProps}). The style sizes
+ * the preview, which fills its box (cropping, like `objectFit: 'cover'`).
+ * Requires `configure({ modules: { camera: true } })`.
+ */
+export type CameraProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof CameraOwnProps> &
+  CameraOwnProps &
+  CommonProps &
+  OmniNativeProps;
+
+/**
  * Props of an SVG primitive: the element's SVG attributes (`d`, `cx`, `viewBox`, `fill`…,
  * camelCase as in React) plus the common ones. Presentation attributes also work in the
  * style (`fill`, `stroke`, `strokeWidth`…), so they can come from the theme and `when()`.
@@ -245,6 +256,8 @@ export interface OmniPrimitiveHandles {
   Pdf: PdfHandle;
   /** `snapTo`. */
   BottomSheet: BottomSheetHandle;
+  /** `takePhoto`, `startRecording`, `stopRecording`. */
+  Camera: CameraHandle;
 }
 
 /**
@@ -296,6 +309,14 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { sheet: true } })`.
    */
   BottomSheet: BottomSheetProps;
+
+  /**
+   * Camera preview. Web: `getUserMedia` in a `<video>`. iOS: AVFoundation. Android:
+   * CameraX with the Jetpack Compose viewfinder. The app draws its own controls.
+   * The `ref` is a `CameraHandle` (`takePhoto`, `startRecording`, `stopRecording`).
+   * Requires `configure({ modules: { camera: true } })`.
+   */
+  Camera: CameraProps;
 
   /**
    * Root of an SVG drawing. Web: `<svg>`. Native: `react-native-svg`.

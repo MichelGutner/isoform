@@ -162,15 +162,16 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
-| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-bottomsheet-and-svg) | native players and viewer |
+| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-bottomsheet-svg-and-camera) | native players and viewer |
 | `BottomSheet` | optional `<dialog>` sheet, see [Bottom sheet](#bottom-sheet-sheet) | SwiftUI sheet (iOS), Compose sheet (Android) |
 | `Svg`, `Path`, `Circle`… | optional SVG elements, see [SVG](#svg-svg) | `react-native-svg` |
+| `Camera` | optional `getUserMedia` preview, see [Camera](#camera-camera) | CameraX + Compose (Android), AVFoundation (iOS) |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
 
-## Optional modules: `Video`, `Audio`, `Pdf`, `BottomSheet` and `Svg`
+## Optional modules: `Video`, `Audio`, `Pdf`, `BottomSheet`, `Svg` and `Camera`
 
-The media players, the PDF viewer, the bottom sheet and SVG are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
+The media players, the PDF viewer, the bottom sheet, SVG and the camera are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
 
 ```json
 {
@@ -179,7 +180,8 @@ The media players, the PDF viewer, the bottom sheet and SVG are **optional and o
     "audio": { "enabled": true, "mediaSession": false },
     "pdf": { "enabled": true },
     "sheet": { "enabled": true },
-    "svg": { "enabled": true }
+    "svg": { "enabled": true },
+    "camera": { "enabled": true, "video": true, "codeScanner": true }
   }
 }
 ```
@@ -211,6 +213,7 @@ On iOS the file is read at `pod install`. If you change it, run `cd ios && pod i
 | `pdf` | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
 | `sheet` | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
 | `svg` | `engine('Svg')`, `engine('Path')`… | the browser's `<svg>` elements | `react-native-svg` (installed by the app) | `react-native-svg` (installed by the app) |
+| `camera` | `engine('Camera')` | `getUserMedia`, `MediaRecorder`, `BarcodeDetector` | AVFoundation | CameraX + Jetpack Compose viewfinder, ML Kit |
 
 ```tsx
 const Player = engine('Audio', () => ({ width: '100%' }));
@@ -323,6 +326,37 @@ cd ios && pod install
 ```
 
 With the module off, `withOmnistyle` swaps the SVG code for an empty stub, so `react-native-svg` is neither in the bundle nor needed. With it on and the package missing, Metro stops at startup with a message saying what to install. Without `withOmnistyle` the SVG code always loads `react-native-svg`: Expo's Metro tolerates a missing package (the elements render nothing, with a dev warning), plain React Native's Metro fails the build.
+
+### Camera (`camera`)
+
+The camera preview with **your own interface on top**: the children of `Camera` are drawn over the preview, so the shutter, switches and overlays are regular omnistyle components. The `ref` takes photos and records.
+
+```tsx
+const Preview = engine('Camera', { width: '100%', height: 420, borderRadius: 20 });
+const camera = useRef<CameraHandle>(null);
+
+<Preview ref={camera} facing="back" flash="auto" zoom={zoom} onZoomChange={setZoom}
+  permissionMessage="We need the camera to scan your ticket."
+  onCodeScanned={(codes) => console.log(codes)}>
+  <Shutter onPress={async () => setPhoto(await camera.current!.takePhoto())} />
+</Preview>
+```
+
+Each feature only enters the app when it is on in `omnistyle.config.json`, so a photo-only app ships neither the video recorder nor the barcode model:
+
+| Option | What it adds | Android | iOS | Web |
+|---|---|---|---|---|
+| `"camera": true` | preview, `takePhoto`, flash, torch, zoom (pinch), tap to focus | CameraX 1.6 with the Compose viewfinder (`CameraXViewfinder`), zero-shutter-lag capture where supported | `AVCaptureSession`; lens switching on multi-camera iPhones (0.5× is the ultra wide), rotation coordinator and responsive capture on iOS 17+, the Camera Control zoom on iPhone 16 (iOS 18) | `getUserMedia` in a `<video>`; flash through `ImageCapture` (Chromium) |
+| `"video": true` | `startRecording` / `stopRecording`, microphone | CameraX `VideoCapture` (Full HD MP4), `RECORD_AUDIO` | movie output (MOV), `NSMicrophoneUsageDescription` | `MediaRecorder` (MP4 on Safari, WebM elsewhere) |
+| `"codeScanner": true` | `onCodeScanned` (QR, EAN, Code 128…) | ML Kit barcode scanning, model bundled (~2.4 MB) | `AVCaptureMetadataOutput` (no extra size) | `BarcodeDetector` (Chromium only) |
+
+Props: `facing` (`'back'` | `'front'`), `active` (stop it while hidden), `flash` (`'off'` | `'on'` | `'auto'`), `torch`, `zoom` + `onZoomChange` (1 = the main lens; pinching reports the new value), `zoomGesture`, `focusGesture`, `video`, `audio`, `onCodeScanned` + `codeTypes` (default `['qr']`), `onReady`, `onError`, `onPermissionChange({ camera, microphone })`, `permissionMessage` and `permissionButtonLabel`. The `ref` gives `takePhoto({ flash? })` → `{ uri, width, height }`, `startRecording()` and `stopRecording()` → `{ uri, duration }`. Files go to the app's cache folder (`omnistyle-camera/`): move them to keep them.
+
+**Permissions** are asked by the camera itself the first time it becomes active (and the microphone when `video` and `audio` are on). While the camera is not allowed, the preview shows `permissionMessage` with a button that asks again or, once the permission is blocked, opens the system settings. The system dialog uses the platform's text:
+
+- **iOS**: `NSCameraUsageDescription` (and `NSMicrophoneUsageDescription` with `video`) in Info.plist. The build adds a generic text when it is missing; set your own (in Expo, `ios.infoPlist` in `app.json`).
+- **Android**: the lib's manifest adds `CAMERA` (and `RECORD_AUDIO` with `video`); the dialog text is the system's.
+- **Web**: the browser asks; it needs `https` (or `localhost`).
 
 ### Background audio and notification controls (`mediaSession`)
 

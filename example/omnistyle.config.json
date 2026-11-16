@@ -1,9 +1,25 @@
 {
   "modules": {
-    "video": { "enabled": true },
-    "audio": { "enabled": true, "mediaSession": true },
-    "pdf": { "enabled": true },
-    "sheet": { "enabled": true },
-    "svg": { "enabled": true }
+    "video": {
+      "enabled": true
+    },
+    "audio": {
+      "enabled": true,
+      "mediaSession": true
+    },
+    "pdf": {
+      "enabled": true
+    },
+    "sheet": {
+      "enabled": true
+    },
+    "svg": {
+      "enabled": true
+    },
+    "camera": {
+      "enabled": true,
+      "video": true,
+      "codeScanner": true
+    }
   }
 }

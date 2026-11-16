@@ -67,6 +67,22 @@ export interface AudioModuleOptions extends ModuleOptions {
   mediaSession?: boolean;
 }
 
+/** Options of the `camera` module. Each feature only enters the app when it is on. */
+export interface CameraModuleOptions extends ModuleOptions {
+  /**
+   * Video recording (`startRecording`): CameraX `VideoCapture` on Android, the movie
+   * output on iOS, `MediaRecorder` on the web. Adds the microphone permission
+   * (Android manifest, iOS `NSMicrophoneUsageDescription`). Default `false`.
+   */
+  video?: boolean;
+  /**
+   * Code scanner (`onCodeScanned`): ML Kit barcode scanning on Android (bundled model,
+   * about 2.4 MB), `AVCaptureMetadataOutput` on iOS, `BarcodeDetector` on the web
+   * (Chromium browsers). Default `false`.
+   */
+  codeScanner?: boolean;
+}
+
 /** Options of the `pdf` module. */
 export interface PdfModuleOptions extends ModuleOptions {
   /**
@@ -123,9 +139,17 @@ export interface OmniModules {
    * Default `false`.
    */
   svg?: boolean | ModuleOptions;
+  /**
+   * `engine('Camera')`: the camera preview, photos, video and a code scanner. The app
+   * draws its own interface. Android: CameraX with the Jetpack Compose viewfinder.
+   * iOS: AVFoundation. Web: `getUserMedia`.
+   * Use an object for the extra features: `{ enabled: true, video: true, codeScanner: true }`.
+   * Default `false`.
+   */
+  camera?: boolean | CameraModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -133,7 +157,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false };
 let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */
@@ -172,6 +196,12 @@ export const isModuleEnabled = (name: ModuleName): boolean => isOn(modules[name]
 export const pdfWorkerSrc = (): string | undefined => {
   const setting = modules.pdf;
   return typeof setting === 'object' && setting !== null ? setting.workerSrc : undefined;
+};
+
+/** A feature of the `camera` module (`video`, `codeScanner`): on only with the module on and the option `true`. */
+export const isCameraFeatureEnabled = (feature: 'video' | 'codeScanner'): boolean => {
+  const setting = modules.camera;
+  return isOn(setting) && typeof setting === 'object' && setting !== null && setting[feature] === true;
 };
 
 /**

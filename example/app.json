@@ -10,7 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.rn-stylish"
+      "bundleIdentifier": "com.anonymous.rn-stylish",
+      "infoPlist": {
+        "NSCameraUsageDescription": "The showcase uses the camera to demo photos, video and code scanning.",
+        "NSMicrophoneUsageDescription": "The showcase records sound with demo videos."
+      }
     },
     "android": {
       "adaptiveIcon": {

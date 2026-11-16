@@ -20,10 +20,16 @@ video = omnistyle_module.call("video")
 audio = omnistyle_module.call("audio")
 pdf = omnistyle_module.call("pdf")
 sheet = omnistyle_module.call("sheet")
+camera = omnistyle_module.call("camera")
+# camera features: each one only with the module on and its option `true` (all on without the file)
+camera_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "camera")
+camera_feature = ->(name) { camera && (omnistyle_config.nil? || (camera_setting.is_a?(Hash) && camera_setting[name] == true)) }
+camera_video = camera_feature.call("video")
+camera_codes = camera_feature.call("codeScanner")
 # controles na tela de bloqueio: só com `audio.mediaSession: true` explícito (nunca por padrão)
 audio_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "audio")
 media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSession"] == true
-Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}"
+Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
 
 Pod::Spec.new do |s|
   s.name         = "omnistyle"
@@ -44,15 +50,22 @@ Pod::Spec.new do |s|
   sources << (pdf ? "ios/pdf/**/*.{h,m,mm,swift}" : "ios/stubs/pdf/**/*.{h,m,mm}")
   # bottom sheet: SwiftUI `.sheet` hosting the React children
   sources << (sheet ? "ios/sheet/**/*.{h,m,mm,swift}" : "ios/stubs/sheet/**/*.{h,m,mm}")
+  # camera: AVFoundation; video and the code scanner are compiled in only when on (Swift flags below)
+  sources << (camera ? "ios/camera/**/*.{h,m,mm,swift}" : "ios/stubs/camera/**/*.{h,m,mm}")
   sources << "ios/shared/**/*.swift" if video || audio
   # o áudio sempre usa `OmniNowPlaying`: a versão real (tela de bloqueio) ou a vazia
   sources << (media_session ? "ios/mediaSession/**/*.swift" : "ios/mediaSessionOff/**/*.swift") if audio
   s.source_files = sources
   # PDF: PDFKit for the viewer, AVFoundation for reading aloud (AVSpeechSynthesizer)
-  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : []) | (sheet ? %w[SwiftUI] : [])
+  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : []) | (sheet ? %w[SwiftUI] : []) | (camera ? %w[AVFoundation ImageIO] : [])
 
   # Gera o header `omnistyle-Swift.h` importado pelo .mm do vídeo.
-  s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES" }
+  # Camera features as Swift compilation conditions (`#if OMNI_CAMERA_VIDEO`…).
+  camera_flags = [("OMNI_CAMERA_VIDEO" if camera_video), ("OMNI_CAMERA_CODES" if camera_codes)].compact
+  s.pod_target_xcconfig = {
+    "DEFINES_MODULE" => "YES",
+    "SWIFT_ACTIVE_COMPILATION_CONDITIONS" => (["$(inherited)"] + camera_flags).join(" "),
+  }
 
   # O iOS só lê o omnistyle.config.json no `pod install`. Se o arquivo mudar depois,
   # o build para com um aviso claro (em vez de compilar o vídeo errado em silêncio).
@@ -62,8 +75,8 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true" else a = m["audio"]; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s end' "$CONFIG")
-      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet}"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true,camera:true,cameraVideo:true,cameraCodes:true" else a = m["audio"]; c = m["camera"]; f = ->(k) { (on.call(c) && c.is_a?(Hash) && c[k] == true).to_s }; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s + ",camera:" + on.call(c).to_s + ",cameraVideo:" + f.call("video") + ",cameraCodes:" + f.call("codeScanner") end' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet},camera:#{camera},cameraVideo:#{camera_video},cameraCodes:#{camera_codes}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1
@@ -85,6 +98,23 @@ Pod::Spec.new do |s|
           esac
         done
       fi
+
+      # camera: iOS closes the app on the first camera (or microphone) access without the
+      # usage text in Info.plist. The build adds a default one only when it is missing;
+      # set your own (it is the text of the system dialog) in Info.plist or app.json.
+      add_usage() {
+        KEY="$1"; TEXT="$2"
+        IOS_DIR=$(cd "${PODS_ROOT}/.." && pwd)
+        for PLIST in "$IOS_DIR"/*/Info.plist; do
+          [ -f "$PLIST" ] || continue
+          case "$PLIST" in */Pods/*|*/build/*) continue ;; esac
+          if ! /usr/bin/plutil -extract "$KEY" raw -o - "$PLIST" >/dev/null 2>&1; then
+            /usr/bin/plutil -insert "$KEY" -string "$TEXT" "$PLIST" && echo "note: [omnistyle] $KEY adicionado em $PLIST"
+          fi
+        done
+      }
+      if [ "#{camera}" = "true" ]; then add_usage NSCameraUsageDescription "This app uses the camera to take photos and scan codes."; fi
+      if [ "#{camera_video}" = "true" ]; then add_usage NSMicrophoneUsageDescription "This app uses the microphone to record sound with videos."; fi
     SH
   }
 

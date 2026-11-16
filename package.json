@@ -139,7 +139,8 @@
         "OmniVideoView": "OmniVideoView",
         "OmniAudioView": "OmniAudioView",
         "OmniPdfView": "OmniPdfView",
-        "OmniSheetView": "OmniSheetView"
+        "OmniSheetView": "OmniSheetView",
+        "OmniCameraView": "OmniCameraView"
       }
     }
   },
