@@ -114,9 +114,18 @@ export interface OmniModules {
    * Default `false`.
    */
   sheet?: boolean | ModuleOptions;
+  /**
+   * SVG primitives (`engine('Svg')`, `'Path'`, `'Circle'`, `'SvgLinearGradient'`…), styled
+   * like any other primitive (`fill`, `stroke`, `strokeWidth` in the style, from the theme).
+   * Web: the browser's own `<svg>` elements (no dependency). iOS and Android:
+   * [`react-native-svg`](https://github.com/software-mansion/react-native-svg), which the
+   * app installs only when this module is on (`npx expo install react-native-svg`).
+   * Default `false`.
+   */
+  svg?: boolean | ModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -124,7 +133,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false };
 let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

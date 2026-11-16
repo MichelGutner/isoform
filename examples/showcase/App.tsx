@@ -61,7 +61,8 @@ const NavLabel = engine<'Text', { active?: boolean }>(
 
 const Content = engine('Scroll', { flex: 1, backgroundColor: 'transparent' });
 
-const NATIVE_PASS_THROUGH = { pointerEvents: 'box-none' } as never;
+/** React Native reads `pointerEvents` as a prop (a style entry is ignored); the web strips it and uses the style below. */
+const BOX_NONE = { pointerEvents: 'box-none' } as object;
 
 /** Covers the screen above the content; touches pass through to what is behind. */
 const Overlay = engine('Box', {
@@ -70,13 +71,9 @@ const Overlay = engine('Box', {
   left: 0,
   right: 0,
   bottom: 0,
-})
-  // phones: the overlay itself takes no touches, its children do (`box-none` is not a CSS value)
-  .when('platform:ios', { style: NATIVE_PASS_THROUGH })
-  .when('platform:android', { style: NATIVE_PASS_THROUGH })
-  .when('platform:web', {
-    style: { pointerEvents: 'none' },
-  });
+}).when('platform:web', {
+  style: { pointerEvents: 'none' },
+});
 
 const Page = engine('Box', ({ theme }) => ({
   padding: theme.spacing.lg,
@@ -144,7 +141,7 @@ function Shell() {
             <Current />
           </Page>
         </Content>
-        <Overlay>{overlay}</Overlay>
+        {overlay ? <Overlay {...BOX_NONE}>{overlay}</Overlay> : null}
       </Layout>
     </OverlayProvider>
   );

@@ -20,6 +20,7 @@ const MODULE_FILES = {
   audio: /[\\/]adapters[\\/]react-native[\\/]media[\\/]audio[\\/]Audio\.(tsx|js)$/,
   pdf: /[\\/]adapters[\\/]react-native[\\/]media[\\/]pdf[\\/]Pdf\.(tsx|js)$/,
   sheet: /[\\/]adapters[\\/]react-native[\\/]sheet[\\/]BottomSheet\.(tsx|js)$/,
+  svg: /[\\/]adapters[\\/]react-native[\\/]svg[\\/]Svg\.(tsx|js)$/,
 };
 
 /** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */
@@ -34,9 +35,28 @@ const isEnabled = (setting) => setting === true || (typeof setting === 'object' 
 
 const disabledVersion = (filePath) => filePath.replace(/\.(tsx|js)$/, '.disabled.$1');
 
+/** Módulos que dependem de um pacote que o próprio app instala → nome do pacote. */
+const APP_PACKAGES = { svg: 'react-native-svg' };
+
+/** Erro claro já no início do Metro, em vez de "Unable to resolve module" no meio do bundle. */
+function checkAppPackages(modules, projectRoot) {
+  for (const [name, pkg] of Object.entries(APP_PACKAGES)) {
+    if (!isEnabled(modules[name])) continue;
+    try {
+      require.resolve(`${pkg}/package.json`, { paths: [projectRoot] });
+    } catch {
+      throw new Error(
+        `[omnistyle] o módulo "${name}" está ligado no ${CONFIG_FILE}, mas o pacote "${pkg}" não está instalado. ` +
+          `Rode \`npx expo install ${pkg}\` (ou \`yarn add ${pkg}\`) e, no iOS, \`pod install\`; ou desligue o módulo.`,
+      );
+    }
+  }
+}
+
 function withOmnistyle(config, { projectRoot = config.projectRoot ?? process.cwd() } = {}) {
   const modules = readModules(projectRoot);
   if (!modules) return config;
+  checkAppPackages(modules, projectRoot);
 
   const off = Object.entries(MODULE_FILES)
     .filter(([name]) => !isEnabled(modules[name]))

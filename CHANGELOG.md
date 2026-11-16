@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — SVG (optional `svg` module)
+- Every SVG element is a primitive: `Svg`, `G`, `Path`, `Circle`, `Rect`, `Ellipse`, `Line`, `Polyline`, `Polygon`, `TSpan`, `Defs`, `Stop`, and, where the name clashes, `SvgText`, `SvgImage`, `SvgLinearGradient`, `SvgRadialGradient`, `SvgClipPath`, `SvgMask`, `SvgPattern`, `SvgSymbol`, `SvgUse`.
+- Presentation properties (`fill`, `stroke`, `strokeWidth`, `stopColor`…) go in the style, so they follow the theme and `when()`. Web: the browser's own SVG elements, styled with classes. iOS/Android: `react-native-svg`, with the style turned into the element's props.
+- Turned on with `"svg": { "enabled": true }` in `omnistyle.config.json`. `react-native-svg` is an optional peer dependency the app installs only for this module; `omnistyle/metro` leaves the SVG code out of the bundle when it is off and stops with a clear message when it is on but the package is missing.
+
 ### Added — `BottomSheet` (optional `sheet` module)
 - `engine('BottomSheet')`: the platform's own sheet. Web: a native `<dialog>` with drag and snapping; iOS: SwiftUI `.sheet` with `presentationDetents` (Liquid Glass on iOS 26); Android: a Jetpack Compose sheet. The content is regular components.
 - Detents (`'fit'`, `'full'`, `'40%'`, a height), `detent` + `onDetentChange`, `dismissible`, non-modal sheets (`modal={false}`), `grabber`, `onClosed`, `label`, and `ref.snapTo(index)`.

@@ -52,6 +52,8 @@ export type {
   AudioProps,
   PdfProps,
   BottomSheetProps,
+  SvgProps,
+  SvgElementProps,
 } from './core/primitives';
 export type {
   MediaHandle,

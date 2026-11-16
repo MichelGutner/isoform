@@ -7,6 +7,7 @@ import { PlatformPage } from './PlatformPage';
 import { ResponsivePage } from './ResponsivePage';
 import { SheetPage } from './SheetPage';
 import { StatesPage } from './StatesPage';
+import { SvgPage } from './SvgPage';
 import { ThemePage } from './ThemePage';
 import { VideoPage } from './VideoPage';
 
@@ -32,4 +33,5 @@ export const PAGES: PageEntry[] = [
   { id: 'audio', title: 'Audio', Component: AudioPage },
   { id: 'pdf', title: 'Pdf', Component: PdfPage },
   { id: 'sheet', title: 'BottomSheet', Component: SheetPage },
+  { id: 'svg', title: 'Svg', Component: SvgPage },
 ];

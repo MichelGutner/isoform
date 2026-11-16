@@ -5,6 +5,7 @@ import { sheet } from '../css/sheet';
 import { filterDomProps } from './domProps';
 import { normalizeWebStyle } from './style';
 import { flattenStyle } from '../../../core/flatten';
+import { SVG_ELEMENTS } from '../../../core/svg';
 
 /** Nomes legados do RN → primitiva canônica. */
 export const CANONICAL: Record<string, string> = {
@@ -24,6 +25,8 @@ export const CANONICAL: Record<string, string> = {
   Audio: 'Audio',
   Pdf: 'Pdf',
   BottomSheet: 'BottomSheet',
+  // SVG: each element is its own primitive (`Svg`, `Path`, `SvgLinearGradient`…)
+  ...Object.fromEntries(Object.keys(SVG_ELEMENTS).map((name) => [name, name])),
 };
 
 /**
@@ -49,9 +52,12 @@ const BASE: Record<string, string> = {
   Pdf: 'box-sizing:border-box;max-width:100%;height:420px;flex-shrink:0',
   // bottom sheet: the `<dialog>` (`.os`) positions itself; nothing here may fight it
   BottomSheet: 'box-sizing:border-box',
+  // SVG root: a block box that does not shrink in a flex column (shapes inside get no base rules)
+  Svg: 'display:block;flex-shrink:0',
 };
 
-function baseClass(primitive: string): string {
+function baseClass(primitive: string): string | undefined {
+  if (!BASE[primitive]) return undefined;
   const cls = `o-${primitive.toLowerCase()}`;
   sheet.raw(`base:${primitive}`, cls, BASE[primitive], 0);
   if (primitive === 'Pressable') {
@@ -126,7 +132,8 @@ export function applyWebProps({
   }
 
   if (canon) {
-    classes.push(baseClass(canon));
+    const base = baseClass(canon);
+    if (base) classes.push(base);
 
     for (const name of NATIVE_ONLY_PROPS) if (name in out) delete out[name];
     translateAccessibility(out);

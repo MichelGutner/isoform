@@ -162,14 +162,15 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
-| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-and-bottomsheet) | native players and viewer |
+| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-bottomsheet-and-svg) | native players and viewer |
 | `BottomSheet` | optional `<dialog>` sheet, see [Bottom sheet](#bottom-sheet-sheet) | SwiftUI sheet (iOS), Compose sheet (Android) |
+| `Svg`, `Path`, `Circle`… | optional SVG elements, see [SVG](#svg-svg) | `react-native-svg` |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
 
-## Optional modules: `Video`, `Audio`, `Pdf` and `BottomSheet`
+## Optional modules: `Video`, `Audio`, `Pdf`, `BottomSheet` and `Svg`
 
-The media players, the PDF viewer and the bottom sheet are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
+The media players, the PDF viewer, the bottom sheet and SVG are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
 
 ```json
 {
@@ -177,7 +178,8 @@ The media players, the PDF viewer and the bottom sheet are **optional and off by
     "video": { "enabled": true },
     "audio": { "enabled": true, "mediaSession": false },
     "pdf": { "enabled": true },
-    "sheet": { "enabled": true }
+    "sheet": { "enabled": true },
+    "svg": { "enabled": true }
   }
 }
 ```
@@ -208,6 +210,7 @@ On iOS the file is read at `pod install`. If you change it, run `cd ios && pod i
 | `audio` | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
 | `pdf` | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
 | `sheet` | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
+| `svg` | `engine('Svg')`, `engine('Path')`… | the browser's `<svg>` elements | `react-native-svg` (installed by the app) | `react-native-svg` (installed by the app) |
 
 ```tsx
 const Player = engine('Audio', () => ({ width: '100%' }));
@@ -291,6 +294,35 @@ Each platform uses its own sheet, so it feels native everywhere:
 Props: `open`, `onOpenChange(open)`, `detents` (default `['fit']`), `detent` (index), `onDetentChange({ index })`, `dismissible` (default `true`), `modal` (default `true`), `grabber` (default `true`), `onClosed()` (after the closing animation; the content unmounts) and `label`. The `ref` gives `snapTo(index)`. The `style` styles the surface: `backgroundColor` and the top corner radius go to the native sheet, padding and gap to the content.
 
 The content is React children: on iOS and Android the native side moves them into the sheet (with React Native's touch handling attached, as its own `Modal` does), and JS lays them out to the size the sheet reports, so `flex: 1` lists fill it. Scrolling content scrolls inside the sheet; on touch screens a sheet with scrolling content is dragged by its top area.
+
+### SVG (`svg`)
+
+Every SVG element is a primitive, styled like the others: `fill`, `stroke`, `strokeWidth`, `stopColor`… go in the style, so they come from the theme and change with `when()`.
+
+```tsx
+const Icon = engine('Svg', ({ theme }) => ({ width: 24, height: 24, color: theme.color.text }));
+const Stroke = engine('Path', { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' });
+
+<Icon viewBox="0 0 24 24">
+  <Stroke d="M5 12.5l4.5 4.5L19 7.5" />
+</Icon>
+```
+
+Primitives: `Svg`, `G`, `Path`, `Circle`, `Rect`, `Ellipse`, `Line`, `Polyline`, `Polygon`, `TSpan`, `Defs`, `Stop`. Names that clash with other primitives or common libraries carry the `Svg` prefix: `SvgText`, `SvgImage`, `SvgLinearGradient`, `SvgRadialGradient`, `SvgClipPath`, `SvgMask`, `SvgPattern`, `SvgSymbol`, `SvgUse`. Attributes are the SVG ones, camelCase as in React (`viewBox`, `d`, `cx`, `strokeDasharray`, `fill="url(#id)"`…), and `onPress` works on every element.
+
+| | Web | iOS / Android |
+|---|---|---|
+| Elements | the browser's own `<svg>`, `<path>`… (no dependency) | [`react-native-svg`](https://github.com/software-mansion/react-native-svg) |
+| Style | CSS classes (SVG presentation properties are CSS) | the style becomes the element's props; the root `Svg` keeps its box style (size, margin…) and passes `color`, `fill`, `stroke`… down to the shapes |
+
+**`react-native-svg` is installed by the app, only when the module is on** (it is an optional peer dependency of omnistyle). Its native code is linked by the app's own autolinking, not by omnistyle's pod or Gradle module:
+
+```bash
+npx expo install react-native-svg   # or: yarn add react-native-svg
+cd ios && pod install
+```
+
+With the module off, `withOmnistyle` swaps the SVG code for an empty stub, so `react-native-svg` is neither in the bundle nor needed. With it on and the package missing, Metro stops at startup with a message saying what to install. Without `withOmnistyle` the SVG code always loads `react-native-svg`: Expo's Metro tolerates a missing package (the elements render nothing, with a dev warning), plain React Native's Metro fails the build.
 
 ### Background audio and notification controls (`mediaSession`)
 

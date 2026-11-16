@@ -4,6 +4,7 @@ import type {
   ImgHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  SVGProps,
   TextareaHTMLAttributes,
 } from 'react';
 import type { StyleInput } from './style/types';
@@ -208,6 +209,26 @@ export type BottomSheetProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Bott
     children?: ReactNode;
   };
 
+/**
+ * Props of an SVG primitive: the element's SVG attributes (`d`, `cx`, `viewBox`, `fill`…,
+ * camelCase as in React) plus the common ones. Presentation attributes also work in the
+ * style (`fill`, `stroke`, `strokeWidth`…), so they can come from the theme and `when()`.
+ * Requires `configure({ modules: { svg: true } })`.
+ */
+export type SvgElementProps<E extends SVGElement = SVGElement> = Omit<SVGProps<E>, 'style' | 'ref' | 'children'> &
+  CommonProps &
+  OmniNativeProps & {
+    /** Called on tap (native) or click (web). */
+    onPress?: (event?: any) => void;
+  };
+
+/**
+ * Props of `Svg`: the drawing's root. The style sizes and places the box (`width`,
+ * `height`, `margin`…); presentation keys (`color`, `fill`, `stroke`…) are inherited
+ * by the shapes inside. Native: `react-native-svg`'s `Svg` (fills its box by default).
+ */
+export type SvgProps = SvgElementProps<SVGSVGElement>;
+
 /** Native-only (or legacy) components: loosely typed (any prop is accepted). */
 type NativeLoose = BoxProps & { [key: string]: any };
 
@@ -275,6 +296,52 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { sheet: true } })`.
    */
   BottomSheet: BottomSheetProps;
+
+  /**
+   * Root of an SVG drawing. Web: `<svg>`. Native: `react-native-svg`.
+   * Requires `configure({ modules: { svg: true } })` (and, on iOS/Android, `react-native-svg` installed).
+   */
+  Svg: SvgProps;
+  /** SVG group (`<g>`): shares presentation and `transform` with its children. */
+  G: SvgElementProps<SVGGElement>;
+  /** SVG path (`<path d="…">`). */
+  Path: SvgElementProps<SVGPathElement>;
+  /** SVG circle (`<circle cx cy r>`). */
+  Circle: SvgElementProps<SVGCircleElement>;
+  /** SVG rectangle (`<rect x y width height rx>`). */
+  Rect: SvgElementProps<SVGRectElement>;
+  /** SVG ellipse (`<ellipse cx cy rx ry>`). */
+  Ellipse: SvgElementProps<SVGEllipseElement>;
+  /** SVG line (`<line x1 y1 x2 y2>`). */
+  Line: SvgElementProps<SVGLineElement>;
+  /** SVG open shape through `points` (`<polyline>`). */
+  Polyline: SvgElementProps<SVGPolylineElement>;
+  /** SVG closed shape through `points` (`<polygon>`). */
+  Polygon: SvgElementProps<SVGPolygonElement>;
+  /** A run of text inside `SvgText` (`<tspan>`). */
+  TSpan: SvgElementProps<SVGTSpanElement>;
+  /** Definitions referenced by `id` (gradients, clip paths, masks…), not drawn (`<defs>`). */
+  Defs: SvgElementProps<SVGDefsElement>;
+  /** A color stop of a gradient (`<stop offset stopColor>`). */
+  Stop: SvgElementProps<SVGStopElement>;
+  /** SVG text (`<text>`). */
+  SvgText: SvgElementProps<SVGTextElement>;
+  /** A picture inside the drawing (`<image href>`). */
+  SvgImage: SvgElementProps<SVGImageElement>;
+  /** Linear gradient, used with `fill="url(#id)"` (`<linearGradient>`). */
+  SvgLinearGradient: SvgElementProps<SVGLinearGradientElement>;
+  /** Radial gradient, used with `fill="url(#id)"` (`<radialGradient>`). */
+  SvgRadialGradient: SvgElementProps<SVGRadialGradientElement>;
+  /** Clipping shape, used with `clipPath="url(#id)"` (`<clipPath>`). */
+  SvgClipPath: SvgElementProps<SVGClipPathElement>;
+  /** Mask, used with `mask="url(#id)"` (`<mask>`). */
+  SvgMask: SvgElementProps<SVGMaskElement>;
+  /** Repeating fill, used with `fill="url(#id)"` (`<pattern>`). */
+  SvgPattern: SvgElementProps<SVGPatternElement>;
+  /** A reusable drawing, shown with `SvgUse` (`<symbol>`). */
+  SvgSymbol: SvgElementProps<SVGSymbolElement>;
+  /** Draws a `SvgSymbol` or another element by `href="#id"` (`<use>`). */
+  SvgUse: SvgElementProps<SVGUseElement>;
 
   /** @deprecated Use `Box`. */
   View: BoxProps;

@@ -14,6 +14,7 @@ import { parseTransition, TRANSITION_KEYS, usesNativeDriver, type ResolvedTransi
 import { parseContent, WEB_ONLY_PSEUDOS, type NativePseudos } from './pseudo';
 import { Audio, Pdf, Video } from './media';
 import { BottomSheet } from './sheet/BottomSheet';
+import { SvgPrimitives } from './svg/Svg';
 
 /** Nome omnistyle → nome do componente no `react-native`. */
 const PRIMITIVES: Record<string, string> = {
@@ -55,7 +56,7 @@ for (const name of Object.keys(PRIMITIVES)) {
 }
 
 // vídeo e áudio: componentes nativos da própria lib (ios/ e android/ na raiz do pacote)
-Object.assign(primitives, { Video, Audio, Pdf, BottomSheet });
+Object.assign(primitives, { Video, Audio, Pdf, BottomSheet }, SvgPrimitives);
 
 const PRESSABLE = new Set(['Pressable']);
 /** Primitivas sem `children`: não recebem `::before`/`::after`. */
