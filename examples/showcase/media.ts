@@ -8,6 +8,7 @@ export const VIDEOS = {
   bunny: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4',
   /** Apple's test stream. HLS: plays on iOS, Android and Safari (Chrome may not). */
   hls: 'https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8',
+  sintel: 'https://archive.org/download/TearsOfSteel_124/Content/tears_of_steel_720p.mp4'
 };
 
 /** A placeholder image from Picsum (the same seed always gives the same picture). */
@@ -31,6 +32,7 @@ export const LISTS = {
     { src: VIDEOS.flower, title: 'Flower', poster: picture('omni-v2', 640, 360) },
     { src: VIDEOS.hls, title: 'Apple bipbop (HLS)', poster: picture('omni-v3', 640, 360) },
     { src: VIDEOS.bunny, title: 'Big Buck Bunny again', poster: picture('omni-v4', 640, 360) },
+    { src: VIDEOS.sintel, title: 'Sintel' }
   ],
   audios: [1, 2, 3, 8].map((n) => ({
     src: song(n),

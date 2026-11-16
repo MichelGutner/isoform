@@ -162,20 +162,22 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
-| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-and-pdf) | native players and viewer |
+| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-and-bottomsheet) | native players and viewer |
+| `BottomSheet` | optional `<dialog>` sheet, see [Bottom sheet](#bottom-sheet-sheet) | SwiftUI sheet (iOS), Compose sheet (Android) |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
 
-## Optional modules: `Video`, `Audio` and `Pdf`
+## Optional modules: `Video`, `Audio`, `Pdf` and `BottomSheet`
 
-The media players and the PDF viewer are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
+The media players, the PDF viewer and the bottom sheet are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
 
 ```json
 {
   "modules": {
     "video": { "enabled": true },
     "audio": { "enabled": true, "mediaSession": false },
-    "pdf": { "enabled": true }
+    "pdf": { "enabled": true },
+    "sheet": { "enabled": true }
   }
 }
 ```
@@ -202,9 +204,10 @@ On iOS the file is read at `pod install`. If you change it, run `cd ios && pod i
 
 | Module | Primitive | Web | iOS | Android |
 |---|---|---|---|---|
-| `video` | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + `AVPlayerViewController` | Media3 + Compose controls |
+| `video` | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + the lib's UIKit controls | Media3 + Compose controls |
 | `audio` | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
 | `pdf` | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
+| `sheet` | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
 
 ```tsx
 const Player = engine('Audio', () => ({ width: '100%' }));
@@ -255,6 +258,39 @@ cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/
 ```
 
 On the web the file must be same-origin or served with CORS. On mobile, `https://`, `file://` and (Android) `content://` addresses work; remote files are downloaded once to the cache.
+
+### Bottom sheet (`sheet`)
+
+```tsx
+const Sheet = engine('BottomSheet', ({ theme }) => ({
+  backgroundColor: theme.color.surface, // leave it out for the system look (Liquid Glass on iOS 26)
+  padding: theme.spacing.lg,
+}));
+
+const [open, setOpen] = useState(false);
+
+<Sheet open={open} onOpenChange={setOpen}>
+  <Text>Any content: it stays regular omnistyle / React Native components.</Text>
+</Sheet>
+
+<Sheet open={open} onOpenChange={setOpen} detents={['40%', 'full']} onDetentChange={({ index }) => …} />
+
+<Sheet open modal={false} dismissible={false} detents={[160, '50%']} />  {/* the screen behind keeps working */}
+```
+
+Each platform uses its own sheet, so it feels native everywhere:
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Sheet | `<dialog>` in the top layer (`showModal`) | SwiftUI `.sheet` + `presentationDetents` | Compose (spring snapping, scrim, keyboard-aware) |
+| Detents | `'fit'`, `'full'`, `'40%'`, a height | `.height` / `.large` / `.fraction` (iOS 16+; full height on iOS 15) | same values |
+| Dismiss | drag down, backdrop, Escape | swipe down, tap outside | drag down, scrim, back button |
+| Non-modal (`modal={false}`) | `dialog.show()`, page stays usable | `presentationBackgroundInteraction(.enabled)` (iOS 16.4+) | drawn over its parent: put it at the screen root |
+| Focus and accessibility | focus moved in and restored, page made inert, `aria-label` from `label` | system | system |
+
+Props: `open`, `onOpenChange(open)`, `detents` (default `['fit']`), `detent` (index), `onDetentChange({ index })`, `dismissible` (default `true`), `modal` (default `true`), `grabber` (default `true`), `onClosed()` (after the closing animation; the content unmounts) and `label`. The `ref` gives `snapTo(index)`. The `style` styles the surface: `backgroundColor` and the top corner radius go to the native sheet, padding and gap to the content.
+
+The content is React children: on iOS and Android the native side moves them into the sheet (with React Native's touch handling attached, as its own `Modal` does), and JS lays them out to the size the sheet reports, so `flex: 1` lists fill it. Scrolling content scrolls inside the sheet; on touch screens a sheet with scrolling content is dragged by its top area.
 
 ### Background audio and notification controls (`mediaSession`)
 

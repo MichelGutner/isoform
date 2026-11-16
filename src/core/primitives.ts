@@ -7,8 +7,9 @@ import type {
   TextareaHTMLAttributes,
 } from 'react';
 import type { StyleInput } from './style/types';
-import type { AudioOwnProps, VideoOwnProps } from './media';
-import type { PdfOwnProps } from './pdf';
+import type { AudioHandle, AudioOwnProps, VideoHandle, VideoOwnProps } from './media';
+import type { PdfHandle, PdfOwnProps } from './pdf';
+import type { BottomSheetHandle, BottomSheetOwnProps } from './sheet';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -194,8 +195,36 @@ export type AudioProps = Media<AudioOwnProps>;
  */
 export type PdfProps = Media<PdfOwnProps>;
 
+/**
+ * Props of `BottomSheet`: a panel that slides up from the bottom (see {@link BottomSheetOwnProps}).
+ * The `style` styles the sheet surface: `backgroundColor` and the top corner radius go to the
+ * native sheet, the rest (padding, gap…) to the content. Requires `configure({ modules: { sheet: true } })`.
+ */
+export type BottomSheetProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof BottomSheetOwnProps> &
+  Omit<BottomSheetOwnProps, 'children'> &
+  CommonProps &
+  OmniNativeProps & {
+    /** The content of the sheet. */
+    children?: ReactNode;
+  };
+
 /** Native-only (or legacy) components: loosely typed (any prop is accepted). */
 type NativeLoose = BoxProps & { [key: string]: any };
+
+/**
+ * Primitive name → what its `ref` exposes, for the primitives that have methods.
+ * `engine('Video')` and friends get a `ref` typed with it.
+ */
+export interface OmniPrimitiveHandles {
+  /** `play`, `pause`, `seekTo`, `setFullscreen` (+ `next`/`previous`/`goTo` with `items`). */
+  Video: VideoHandle;
+  /** `play`, `pause`, `seekTo` (+ `next`/`previous`/`goTo` with `items`). */
+  Audio: AudioHandle;
+  /** `goToPage`, `search`, `setZoom`… (+ `next`/`previous`/`goTo` with `items`). */
+  Pdf: PdfHandle;
+  /** `snapTo`. */
+  BottomSheet: BottomSheetHandle;
+}
 
 /**
  * Primitive name → props. This is what `engine('Name')` accepts.
@@ -238,6 +267,14 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { pdf: true } })`.
    */
   Pdf: PdfProps;
+
+  /**
+   * Bottom sheet. Web: a native `<dialog>` with drag and snapping. iOS: a SwiftUI
+   * sheet (`presentationDetents`). Android: a Jetpack Compose sheet.
+   * The `ref` is a `BottomSheetHandle` (`snapTo`).
+   * Requires `configure({ modules: { sheet: true } })`.
+   */
+  BottomSheet: BottomSheetProps;
 
   /** @deprecated Use `Box`. */
   View: BoxProps;

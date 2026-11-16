@@ -106,9 +106,17 @@ export interface OmniModules {
    * Default `false`.
    */
   pdf?: boolean | PdfModuleOptions;
+  /**
+   * `engine('BottomSheet')`: a panel that slides up from the bottom, with detents,
+   * drag, backdrop and the platform's own feel. Web: a native `<dialog>` (top layer,
+   * focus trap, Escape). iOS: a SwiftUI sheet (`presentationDetents`). Android: a
+   * Jetpack Compose sheet. The content is regular omnistyle/React Native children.
+   * Default `false`.
+   */
+  sheet?: boolean | ModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -116,7 +124,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false };
 let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

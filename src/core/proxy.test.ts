@@ -49,7 +49,7 @@ describe('makeProxy', () => {
     (proxy as any).style({ padding: 16 }).when('props:disabled', { opacity: 0.5 }).attrs({ testID: 'button' });
 
     expect(builder.style).toHaveBeenCalledWith({ padding: 16 });
-    expect(builder.when).toHaveBeenCalledWith('disabled', { opacity: 0.5 });
+    expect(builder.when).toHaveBeenCalledWith('props:disabled', { opacity: 0.5 });
     expect(builder.attrs).toHaveBeenCalledWith({ testID: 'button' });
   });
 

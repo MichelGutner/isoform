@@ -51,6 +51,7 @@ export type {
   VideoProps,
   AudioProps,
   PdfProps,
+  BottomSheetProps,
 } from './core/primitives';
 export type {
   MediaHandle,
@@ -72,6 +73,12 @@ export type {
   PlaylistProps,
   VideoItem,
 } from './core/playlist';
+export type {
+  BottomSheetHandle,
+  BottomSheetOwnProps,
+  SheetDetent,
+  SheetDetentChange,
+} from './core/sheet';
 export type {
   PdfDirection,
   PdfFit,

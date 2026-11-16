@@ -247,8 +247,8 @@ describe('StylizedBuilder', () => {
       renderAndCapture(Component);
 
       expect(compileStyle).toHaveBeenLastCalledWith({ padding: 4 }, undefined, [
-        { name: 'md', min: 768, order: 4, style: { padding: 16, margin: expect.any(Number) } },
-        { name: 'lg', min: 1024, order: 6, style: { padding: 24 } },
+        { name: 'breakpoints:md', min: 768, order: 4, style: { padding: 16, margin: expect.any(Number) } },
+        { name: 'breakpoints:lg', min: 1024, order: 6, style: { padding: 24 } },
       ], undefined);
     });
 
@@ -261,7 +261,7 @@ describe('StylizedBuilder', () => {
         .when('breakpoints:md', { style: { padding: 99 } } as any) // `md` já não é breakpoint: vira condição de prop
         .build();
       const { captured } = renderAndCapture(Component, { md: true });
-      expect(compileStyle.mock.calls.at(-1)![2]).toEqual([{ name: 'tablet', min: 600, order: 2, style: { padding: 10 } }]);
+      expect(compileStyle.mock.calls.at(-1)![2]).toEqual([{ name: 'breakpoints:tablet', min: 600, order: 2, style: { padding: 10 } }]);
       expect(captured.style.breakpoints).toHaveLength(1);
     });
 
@@ -274,9 +274,9 @@ describe('StylizedBuilder', () => {
         .build();
       renderAndCapture(Component);
       expect(compileStyle.mock.calls.at(-1)![2]).toEqual([
-        { name: '<md', min: 0, max: 768, order: 1, style: { c: 3 } },
-        { name: 'sm..lg', min: 480, max: 1024, order: 3, style: { b: 2 } },
-        { name: 'md', min: 768, order: 4, style: { a: 1 } },
+        { name: 'breakpoints:<md', min: 0, max: 768, order: 1, style: { c: 3 } },
+        { name: 'breakpoints:sm..lg', min: 480, max: 1024, order: 3, style: { b: 2 } },
+        { name: 'breakpoints:md', min: 768, order: 4, style: { a: 1 } },
       ]);
     });
 

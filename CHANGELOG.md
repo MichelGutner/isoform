@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — `BottomSheet` (optional `sheet` module)
+- `engine('BottomSheet')`: the platform's own sheet. Web: a native `<dialog>` with drag and snapping; iOS: SwiftUI `.sheet` with `presentationDetents` (Liquid Glass on iOS 26); Android: a Jetpack Compose sheet. The content is regular components.
+- Detents (`'fit'`, `'full'`, `'40%'`, a height), `detent` + `onDetentChange`, `dismissible`, non-modal sheets (`modal={false}`), `grabber`, `onClosed`, `label`, and `ref.snapTo(index)`.
+- Turned on with `"sheet": { "enabled": true }` in `omnistyle.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
+- `engine('Video' | 'Audio' | 'Pdf' | 'BottomSheet')` now types its `ref` with the primitive's handle (`VideoHandle`, `BottomSheetHandle`…).
+
 ### Added — multi-platform (React + React Native)
 - **The package is now `omnistyle`** and runs on both React Native and React DOM from a single entry. Write a component once, use it on web and mobile.
 - **`configure({ provider, theme, native })`**: choose the platform once at startup, like `updateTheme`. `provider` is `'auto'` (default), `'react-native'`, `'react'` or a custom `PlatformAdapter`. `theme` is a shortcut for `updateTheme`.

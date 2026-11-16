@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ComponentType } from 'react';
+import type { ComponentType, ForwardRefExoticComponent, RefAttributes } from 'react';
 import { StylizedBuilder } from './builder';
-import type { OmniPrimitives } from './primitives';
+import type { OmniPrimitiveHandles, OmniPrimitives } from './primitives';
 import { makeProxy } from './proxy';
 import type { EngineComponent, StyleOrFn } from './types';
 
-type PrimitiveComponent<K extends keyof OmniPrimitives> = ComponentType<OmniPrimitives[K]>;
+/** The component behind a primitive name; primitives with a `ref` API get a typed `ref` (`VideoHandle`…). */
+type PrimitiveComponent<K extends keyof OmniPrimitives> = K extends keyof OmniPrimitiveHandles
+  ? ForwardRefExoticComponent<OmniPrimitives[K] & RefAttributes<OmniPrimitiveHandles[K]>>
+  : ComponentType<OmniPrimitives[K]>;
 
 type ExtractComponent<T> = T extends { __engine: true; __component: infer C }
   ? C extends ComponentType<any>

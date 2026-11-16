@@ -7,6 +7,7 @@ import { applyWebProps } from './normalize/props';
 import { normalizeWebStyle } from './normalize/style';
 import { Box, Image, Input, Pressable, Scroll, Text } from './primitives';
 import { Audio, Pdf, Video } from './media';
+import { BottomSheet } from './sheet/LazySheet';
 
 /** Seletores válidos de quadro: `from`, `to`, `50%`, `12.5%` (e listas separadas por vírgula). */
 const FRAME_SELECTOR = /^(from|to|\d+(\.\d+)?%)$/;
@@ -65,6 +66,7 @@ export const reactDomAdapter: PlatformAdapter = {
     Video,
     Audio,
     Pdf,
+    BottomSheet,
     // nomes legados do RN que têm equivalente na web
     View: Box,
     TextInput: Input,

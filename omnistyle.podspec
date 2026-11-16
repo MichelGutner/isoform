@@ -19,10 +19,11 @@ omnistyle_module = ->(name) { omnistyle_config.nil? || omnistyle_on.call(omnisty
 video = omnistyle_module.call("video")
 audio = omnistyle_module.call("audio")
 pdf = omnistyle_module.call("pdf")
+sheet = omnistyle_module.call("sheet")
 # controles na tela de bloqueio: só com `audio.mediaSession: true` explícito (nunca por padrão)
 audio_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "audio")
 media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSession"] == true
-Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}"
+Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}"
 
 Pod::Spec.new do |s|
   s.name         = "omnistyle"
@@ -41,12 +42,14 @@ Pod::Spec.new do |s|
   sources << (video ? "ios/video/**/*.{h,m,mm,swift}" : "ios/stubs/video/**/*.{h,m,mm}")
   sources << (audio ? "ios/audio/**/*.{h,m,mm,swift}" : "ios/stubs/audio/**/*.{h,m,mm}")
   sources << (pdf ? "ios/pdf/**/*.{h,m,mm,swift}" : "ios/stubs/pdf/**/*.{h,m,mm}")
+  # bottom sheet: SwiftUI `.sheet` hosting the React children
+  sources << (sheet ? "ios/sheet/**/*.{h,m,mm,swift}" : "ios/stubs/sheet/**/*.{h,m,mm}")
   sources << "ios/shared/**/*.swift" if video || audio
   # o áudio sempre usa `OmniNowPlaying`: a versão real (tela de bloqueio) ou a vazia
   sources << (media_session ? "ios/mediaSession/**/*.swift" : "ios/mediaSessionOff/**/*.swift") if audio
   s.source_files = sources
   # PDF: PDFKit for the viewer, AVFoundation for reading aloud (AVSpeechSynthesizer)
-  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : [])
+  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : []) | (sheet ? %w[SwiftUI] : [])
 
   # Gera o header `omnistyle-Swift.h` importado pelo .mm do vídeo.
   s.pod_target_xcconfig = { "DEFINES_MODULE" => "YES" }
@@ -59,8 +62,8 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true" else a = m["audio"]; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s end' "$CONFIG")
-      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf}"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true" else a = m["audio"]; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s end' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1

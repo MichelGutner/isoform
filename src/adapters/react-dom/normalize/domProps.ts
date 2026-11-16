@@ -48,6 +48,7 @@ const ALLOWED: Record<string, Set<string>> = {
   Scroll: new Set([...GLOBAL, ...SCROLL]),
   Video: new Set([...GLOBAL, ...PLAYBACK, ...PLAYLIST, 'poster']),
   Audio: new Set([...GLOBAL, ...PLAYBACK, ...PLAYLIST, 'title', 'artist', 'artwork']),
+  BottomSheet: new Set([...GLOBAL, 'open', 'detents', 'detent', 'dismissible', 'modal', 'grabber', 'label']),
   Pdf: new Set([...GLOBAL, ...PLAYLIST, 'src', 'password', 'initialPage', 'controls', 'nightMode', 'fit', 'direction', 'maxZoom', 'speechLanguage', 'speechVoice']),
 };
 

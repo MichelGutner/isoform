@@ -126,7 +126,7 @@
   "codegenConfig": {
     "name": "OmnistyleSpec",
     "type": "components",
-    "jsSrcsDir": "src/adapters/react-native/media",
+    "jsSrcsDir": "src/adapters/react-native",
     "android": {
       "javaPackageName": "com.omnistyle"
     },
@@ -134,7 +134,8 @@
       "componentProvider": {
         "OmniVideoView": "OmniVideoView",
         "OmniAudioView": "OmniAudioView",
-        "OmniPdfView": "OmniPdfView"
+        "OmniPdfView": "OmniPdfView",
+        "OmniSheetView": "OmniSheetView"
       }
     }
   },

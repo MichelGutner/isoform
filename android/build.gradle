@@ -34,19 +34,20 @@ def omnistyleModule = { String name -> omnistyleConfig == null || omnistyleOn(om
 def videoEnabled = omnistyleModule("video")
 def audioEnabled = omnistyleModule("audio")
 def pdfEnabled = omnistyleModule("pdf")
+def sheetEnabled = omnistyleModule("sheet")
 // player e interface (Media3 + Compose) são comuns aos dois módulos
 def mediaEnabled = videoEnabled || audioEnabled
 // foreground service + controles na notificação: só com `audio.mediaSession: true` explícito
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
 def audioSetting = omnistyleConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"} (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
-// Compose: controles do vídeo e do áudio e o leitor de PDF
-def composeEnabled = mediaEnabled || pdfEnabled
+// Compose: controles do vídeo e do áudio, o leitor de PDF e o bottom sheet
+def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled
 if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
@@ -85,6 +86,8 @@ android {
       }
       // PDF: o `PdfRenderer` do sistema + Compose (sem dependência extra)
       if (pdfEnabled) java.srcDirs += "src/pdf/java"
+      // bottom sheet: Compose (drag, detents, scrim) hosting the React children
+      if (sheetEnabled) java.srcDirs += "src/sheet/java"
       // o manifest com o serviço e as permissões só entra com `mediaSession` ligado
       if (mediaSessionEnabled) manifest.srcFile "src/mediaSession/AndroidManifest.xml"
     }

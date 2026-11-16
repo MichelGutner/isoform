@@ -25,6 +25,7 @@ jest.mock('react-native', () => {
   }
   return {
     Platform: { OS: 'ios' },
+    StyleSheet: { create: (styles: any) => styles, absoluteFill: {}, flatten: (style: any) => style },
     Dimensions: { get: () => ({ ...mockWindow }) },
     useWindowDimensions: () => {
       // re-renderiza o componente quando o teste muda a largura (como a rotação da tela)

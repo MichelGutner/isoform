@@ -6,7 +6,7 @@ import React, { createRef } from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import { configure, registerBundledProvider, resetProvider } from '../../../../config';
 import { engine } from '../../../../core/engine';
-import type { MediaHandle } from '../../../../core/media';
+import type { VideoHandle } from '../../../../core/media';
 import { reactDomAdapter } from '../../adapter';
 
 const play = jest.fn(() => Promise.resolve());
@@ -109,7 +109,7 @@ describe('Video (web)', () => {
   });
 
   it('exposes play, pause and seekTo through the ref', async () => {
-    const ref = createRef<MediaHandle>();
+    const ref = createRef<VideoHandle>();
     const { container } = await renderVideo(<Clip ref={ref} src="a.mp4" />);
     ref.current!.play();
     ref.current!.pause();

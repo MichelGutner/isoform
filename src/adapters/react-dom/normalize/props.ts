@@ -23,6 +23,7 @@ export const CANONICAL: Record<string, string> = {
   Video: 'Video',
   Audio: 'Audio',
   Pdf: 'Pdf',
+  BottomSheet: 'BottomSheet',
 };
 
 /**
@@ -46,6 +47,8 @@ const BASE: Record<string, string> = {
   Audio: 'box-sizing:border-box;max-width:100%;flex-shrink:0',
   // PDF: the viewer (`.op`) defines layout and colors; a default height keeps the pages scrolling inside it
   Pdf: 'box-sizing:border-box;max-width:100%;height:420px;flex-shrink:0',
+  // bottom sheet: the `<dialog>` (`.os`) positions itself; nothing here may fight it
+  BottomSheet: 'box-sizing:border-box',
 };
 
 function baseClass(primitive: string): string {

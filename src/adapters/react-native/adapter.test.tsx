@@ -13,6 +13,7 @@ jest.mock('react-native', () => {
   const TextInput = (props: any) => null;
   const rn: any = {
     Platform: mockPlatform,
+    StyleSheet: { create: (styles: any) => styles, absoluteFill: {}, flatten: (style: any) => style },
     Dimensions: { get: () => ({ width: 400, height: 800 }) },
     View,
     Text,

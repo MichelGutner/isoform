@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { updateTheme } from 'omnistyle';
 import { useThemeBubble } from './ThemeBubble';
 import { buildTokens, type AccentName, type Density, type Mode } from './tokens';
@@ -64,4 +64,24 @@ export function useSettings(): Settings {
   const value = useContext(SettingsContext);
   if (!value) throw new Error('useSettings must be used inside <SettingsProvider>');
   return value;
+}
+
+/** Lets a page draw above the scrolling content, at the root of the screen (non-modal sheets need it). */
+const OverlayContext = createContext<(node: ReactNode) => void>(() => undefined);
+
+/** Provides the overlay setter to the pages. */
+export const OverlayProvider = OverlayContext.Provider;
+
+/**
+ * Draws `node` at the root of the screen while the page is mounted.
+ * @param node What to draw; pass a stable element (rebuilt only when `deps` change).
+ * @param deps Values `node` depends on.
+ */
+export function useOverlay(node: ReactNode, deps: unknown[]): void {
+  const set = useContext(OverlayContext);
+  useEffect(() => {
+    set(node);
+    return () => set(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }

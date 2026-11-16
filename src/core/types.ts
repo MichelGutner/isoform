@@ -143,6 +143,17 @@ export interface OmniBreakpointNames {
   /** Extra large: desktops and wide screens (default `1280px`). */
   xl: unknown;
 }
+// export interface OmniBreakpointNames {
+//   /** Small: large phones and up (default `480px`). */
+//   large_phones_up: unknown;
+//   /** Medium: tablets in portrait and up (default `768px`). */
+//   tablets_in_portrait_up: unknown;
+//   /** Large: tablets in landscape, small laptops and up (default `1024px`). */
+//   tablets_landscape_small_laptops_up: unknown;
+//   /** Extra large: desktops and wide screens (default `1280px`). */
+//   desktop_wide_screens: unknown;
+// }
+
 
 /** A configured breakpoint name (`'sm' | 'md' | 'lg' | 'xl'` plus any augmented ones). */
 export type BreakpointName = Extract<keyof OmniBreakpointNames, string>;

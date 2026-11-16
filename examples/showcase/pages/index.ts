@@ -5,6 +5,7 @@ import { ComponentsPage } from './ComponentsPage';
 import { PdfPage } from './PdfPage';
 import { PlatformPage } from './PlatformPage';
 import { ResponsivePage } from './ResponsivePage';
+import { SheetPage } from './SheetPage';
 import { StatesPage } from './StatesPage';
 import { ThemePage } from './ThemePage';
 import { VideoPage } from './VideoPage';
@@ -30,4 +31,5 @@ export const PAGES: PageEntry[] = [
   { id: 'video', title: 'Video', Component: VideoPage },
   { id: 'audio', title: 'Audio', Component: AudioPage },
   { id: 'pdf', title: 'Pdf', Component: PdfPage },
+  { id: 'sheet', title: 'BottomSheet', Component: SheetPage },
 ];
