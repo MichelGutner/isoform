@@ -26,6 +26,7 @@ export const CANONICAL: Record<string, string> = {
   Pdf: 'Pdf',
   BottomSheet: 'BottomSheet',
   Camera: 'Camera',
+  DatePicker: 'DatePicker',
   // SVG: each element is its own primitive (`Svg`, `Path`, `SvgLinearGradient`…)
   ...Object.fromEntries(Object.keys(SVG_ELEMENTS).map((name) => [name, name])),
 };
@@ -56,6 +57,8 @@ const BASE: Record<string, string> = {
   // camera: the preview (`<video>`) covers this box; the children are drawn over it
   Camera:
     'border-style:solid;border-width:0;display:block;position:relative;overflow:hidden;box-sizing:border-box;max-width:100%;background-color:#000;flex-shrink:0',
+  // date picker: the browser's own <input>; the box styles it directly
+  DatePicker: 'box-sizing:border-box;font:inherit;color:inherit;max-width:100%',
   // SVG root: a block box that does not shrink in a flex column (shapes inside get no base rules)
   Svg: 'display:block;flex-shrink:0',
 };

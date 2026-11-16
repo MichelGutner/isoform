@@ -36,6 +36,7 @@ def audioEnabled = omnistyleModule("audio")
 def pdfEnabled = omnistyleModule("pdf")
 def sheetEnabled = omnistyleModule("sheet")
 def cameraEnabled = omnistyleModule("camera")
+def datePickerEnabled = omnistyleModule("datePicker")
 // camera features: each one only with the module on and its option `true` (all on without the file)
 def cameraSetting = omnistyleConfig?.modules?.get("camera")
 def cameraFeature = { String name -> cameraEnabled && (omnistyleConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
@@ -47,13 +48,13 @@ def mediaEnabled = videoEnabled || audioEnabled
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
 def audioSetting = omnistyleConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 // Compose: controles do vídeo e do áudio, o leitor de PDF, o bottom sheet e o viewfinder da câmera
-def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled
+def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled || datePickerEnabled
 if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
@@ -118,6 +119,8 @@ android {
       if (pdfEnabled) java.srcDirs += "src/pdf/java"
       // bottom sheet: Compose (drag, detents, scrim) hosting the React children
       if (sheetEnabled) java.srcDirs += "src/sheet/java"
+      // date picker: Material 3 DatePicker/TimePicker in Compose
+      if (datePickerEnabled) java.srcDirs += "src/datePicker/java"
       // camera: CameraX + Compose; video and the code scanner add their code (or an empty
       // stand-in with the same API) only when their option is on
       if (cameraEnabled) {
@@ -163,6 +166,11 @@ dependencies {
     implementation "androidx.compose.ui:ui"
     implementation "androidx.compose.foundation:foundation"
     implementation "androidx.compose.animation:animation"
+  }
+
+  // date picker: the Material 3 pickers
+  if (datePickerEnabled) {
+    implementation "androidx.compose.material3:material3"
   }
 
   // PDF: `@RequiresApi`/`@RequiresExtension` nos renderizadores novos do sistema

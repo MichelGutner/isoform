@@ -56,6 +56,7 @@ export type {
   SvgProps,
   SvgElementProps,
   CameraProps,
+  DatePickerProps,
 } from './core/primitives';
 export type {
   MediaHandle,
@@ -77,6 +78,11 @@ export type {
   PlaylistProps,
   VideoItem,
 } from './core/playlist';
+export type {
+  DatePickerDisplay,
+  DatePickerMode,
+  DatePickerOwnProps,
+} from './core/datePicker';
 export type {
   BottomSheetHandle,
   BottomSheetOwnProps,

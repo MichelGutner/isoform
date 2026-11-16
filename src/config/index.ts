@@ -147,9 +147,16 @@ export interface OmniModules {
    * Default `false`.
    */
   camera?: boolean | CameraModuleOptions;
+  /**
+   * `engine('DatePicker')`: pick a date, a time or both. iOS (SwiftUI) and Android
+   * (Jetpack Compose): the lib's own picker, the same design on both (calendar, wheels,
+   * compact pills with a sheet). Web: the browser's own `<input type="date">`.
+   * Default `false`.
+   */
+  datePicker?: boolean | ModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'` | `'datePicker'`). */
 export type ModuleName = keyof OmniModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -157,7 +164,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false };
+export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false, datePicker: false };
 let modules: OmniModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

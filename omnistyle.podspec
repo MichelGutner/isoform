@@ -21,6 +21,7 @@ audio = omnistyle_module.call("audio")
 pdf = omnistyle_module.call("pdf")
 sheet = omnistyle_module.call("sheet")
 camera = omnistyle_module.call("camera")
+date_picker = omnistyle_module.call("datePicker")
 # camera features: each one only with the module on and its option `true` (all on without the file)
 camera_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "camera")
 camera_feature = ->(name) { camera && (omnistyle_config.nil? || (camera_setting.is_a?(Hash) && camera_setting[name] == true)) }
@@ -29,7 +30,7 @@ camera_codes = camera_feature.call("codeScanner")
 # controles na tela de bloqueio: só com `audio.mediaSession: true` explícito (nunca por padrão)
 audio_setting = omnistyle_config.nil? ? nil : omnistyle_config.dig("modules", "audio")
 media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSession"] == true
-Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
+Pod::UI.puts "[omnistyle] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, datePicker: #{date_picker ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
 
 Pod::Spec.new do |s|
   s.name         = "omnistyle"
@@ -52,12 +53,14 @@ Pod::Spec.new do |s|
   sources << (sheet ? "ios/sheet/**/*.{h,m,mm,swift}" : "ios/stubs/sheet/**/*.{h,m,mm}")
   # camera: AVFoundation; video and the code scanner are compiled in only when on (Swift flags below)
   sources << (camera ? "ios/camera/**/*.{h,m,mm,swift}" : "ios/stubs/camera/**/*.{h,m,mm}")
+  # date picker: SwiftUI `DatePicker`
+  sources << (date_picker ? "ios/datePicker/**/*.{h,m,mm,swift}" : "ios/stubs/datePicker/**/*.{h,m,mm}")
   sources << "ios/shared/**/*.swift" if video || audio
   # o áudio sempre usa `OmniNowPlaying`: a versão real (tela de bloqueio) ou a vazia
   sources << (media_session ? "ios/mediaSession/**/*.swift" : "ios/mediaSessionOff/**/*.swift") if audio
   s.source_files = sources
   # PDF: PDFKit for the viewer, AVFoundation for reading aloud (AVSpeechSynthesizer)
-  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : []) | (sheet ? %w[SwiftUI] : []) | (camera ? %w[AVFoundation ImageIO] : [])
+  s.frameworks   = (video ? %w[AVFoundation AVKit] : []) | (audio ? %w[AVFoundation] : []) | (media_session ? %w[MediaPlayer] : []) | (pdf ? %w[PDFKit AVFoundation AVKit] : []) | ((sheet || date_picker) ? %w[SwiftUI] : []) | (camera ? %w[AVFoundation ImageIO] : [])
 
   # Gera o header `omnistyle-Swift.h` importado pelo .mm do vídeo.
   # Camera features as Swift compilation conditions (`#if OMNI_CAMERA_VIDEO`…).
@@ -75,8 +78,8 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../omnistyle.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true,camera:true,cameraVideo:true,cameraCodes:true" else a = m["audio"]; c = m["camera"]; f = ->(k) { (on.call(c) && c.is_a?(Hash) && c[k] == true).to_s }; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s + ",camera:" + on.call(c).to_s + ",cameraVideo:" + f.call("video") + ",cameraCodes:" + f.call("codeScanner") end' "$CONFIG")
-      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet},camera:#{camera},cameraVideo:#{camera_video},cameraCodes:#{camera_codes}"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true,datePicker:true,camera:true,cameraVideo:true,cameraCodes:true" else a = m["audio"]; c = m["camera"]; f = ->(k) { (on.call(c) && c.is_a?(Hash) && c[k] == true).to_s }; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s + ",datePicker:" + on.call(m["datePicker"]).to_s + ",camera:" + on.call(c).to_s + ",cameraVideo:" + f.call("video") + ",cameraCodes:" + f.call("codeScanner") end' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet},datePicker:#{date_picker},camera:#{camera},cameraVideo:#{camera_video},cameraCodes:#{camera_codes}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [omnistyle] omnistyle.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1

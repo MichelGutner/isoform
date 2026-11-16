@@ -13,6 +13,9 @@
     "sheet": {
       "enabled": true
     },
+    "datePicker": {
+      "enabled": true
+    },
     "svg": {
       "enabled": true
     },

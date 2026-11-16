@@ -10,6 +10,7 @@ import { Audio, Pdf, Video } from './media';
 import { BottomSheet } from './sheet/LazySheet';
 import { SvgPrimitives } from './svg/elements';
 import { Camera } from './camera/LazyCamera';
+import { DatePicker } from './datePicker/DatePicker';
 
 /** Seletores válidos de quadro: `from`, `to`, `50%`, `12.5%` (e listas separadas por vírgula). */
 const FRAME_SELECTOR = /^(from|to|\d+(\.\d+)?%)$/;
@@ -70,6 +71,7 @@ export const reactDomAdapter: PlatformAdapter = {
     Pdf,
     BottomSheet,
     Camera,
+    DatePicker,
     ...SvgPrimitives,
     // nomes legados do RN que têm equivalente na web
     View: Box,

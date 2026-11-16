@@ -12,6 +12,7 @@ import type { AudioHandle, AudioOwnProps, VideoHandle, VideoOwnProps } from './m
 import type { PdfHandle, PdfOwnProps } from './pdf';
 import type { BottomSheetHandle, BottomSheetOwnProps } from './sheet';
 import type { CameraHandle, CameraOwnProps } from './camera';
+import type { DatePickerOwnProps } from './datePicker';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -221,6 +222,16 @@ export type CameraProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof CameraOwn
   OmniNativeProps;
 
 /**
+ * Props of `DatePicker`: pick a date, a time or both (see {@link DatePickerOwnProps}).
+ * The style sizes the picker (native pickers have their own natural height).
+ * Requires `configure({ modules: { datePicker: true } })`.
+ */
+export type DatePickerProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof DatePickerOwnProps> &
+  DatePickerOwnProps &
+  CommonProps &
+  OmniNativeProps;
+
+/**
  * Props of an SVG primitive: the element's SVG attributes (`d`, `cx`, `viewBox`, `fill`…,
  * camelCase as in React) plus the common ones. Presentation attributes also work in the
  * style (`fill`, `stroke`, `strokeWidth`…), so they can come from the theme and `when()`.
@@ -317,6 +328,14 @@ export interface OmniPrimitives {
    * Requires `configure({ modules: { camera: true } })`.
    */
   Camera: CameraProps;
+
+  /**
+   * Date, time or both. iOS (SwiftUI) and Android (Compose): the lib's own picker, the
+   * same design on both. Web: the browser's `<input type="date">`.
+   * Controlled: pass `value` and update it in `onValueChange`.
+   * Requires `configure({ modules: { datePicker: true } })`.
+   */
+  DatePicker: DatePickerProps;
 
   /**
    * Root of an SVG drawing. Web: `<svg>`. Native: `react-native-svg`.

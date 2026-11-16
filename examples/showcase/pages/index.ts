@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { AnimationsPage } from './AnimationsPage';
 import { AudioPage } from './AudioPage';
 import { CameraPage } from './CameraPage';
+import { DatePickerPage } from './DatePickerPage';
 import { ComponentsPage } from './ComponentsPage';
 import { PdfPage } from './PdfPage';
 import { PlatformPage } from './PlatformPage';
@@ -36,4 +37,5 @@ export const PAGES: PageEntry[] = [
   { id: 'sheet', title: 'BottomSheet', Component: SheetPage },
   { id: 'svg', title: 'Svg', Component: SvgPage },
   { id: 'camera', title: 'Camera', Component: CameraPage },
+  { id: 'datepicker', title: 'DatePicker', Component: DatePickerPage },
 ];

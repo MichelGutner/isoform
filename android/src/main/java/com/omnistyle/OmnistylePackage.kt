@@ -16,6 +16,7 @@ private val MODULE_VIEW_MANAGERS = listOf(
   "com.omnistyle.OmniPdfViewManager", // omnistyle.pdf
   "com.omnistyle.OmniSheetViewManager", // omnistyle.sheet
   "com.omnistyle.OmniCameraViewManager", // omnistyle.camera
+  "com.omnistyle.OmniDatePickerViewManager", // omnistyle.datePicker
 )
 
 private fun instantiate(className: String): ViewManager<*, *>? =

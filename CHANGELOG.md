@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — `DatePicker` (optional `datePicker` module)
+- `engine('DatePicker')`: a date, a time or both. iOS (SwiftUI) and Android (Jetpack Compose) draw the lib's own picker with the same design: a calendar with a month/year panel, wheels that snap and tick (a real nested scroll view on iOS, so they work inside scroll views), and compact pills that open a bottom sheet. Web: the browser's `<input type="date | time | datetime-local">`.
+- Controlled `value` / `onValueChange` (already clamped to `minimumDate` / `maximumDate`), `mode`, `display` (`'inline'`, `'wheel'`, `'compact'`), `locale`, `is24Hour`, `tintColor`, `disabled`, `label`. The native view takes the natural height the picker reports.
+- Turned on with `"datePicker": { "enabled": true }` in `omnistyle.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
+
 ### Added — `Camera` (optional `camera` module)
 - `engine('Camera')`: the camera preview with the app's own interface on top (children are drawn over it). Android: CameraX 1.6 with the Jetpack Compose viewfinder (`CameraXViewfinder`); iOS: AVFoundation; web: `getUserMedia`.
 - Photos (`takePhoto`, flash, zero shutter lag where supported), torch, zoom with pinch (`onZoomChange`; `0.5` is the ultra wide where there is one), tap to focus, front/back, `active` to pause.

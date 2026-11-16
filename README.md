@@ -162,14 +162,15 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | `Input` | `input` / `textarea` (`multiline`) | `TextInput` |
 | `Image` | `img` | `Image` |
 | `Scroll` | scrollable `div` | `ScrollView` |
-| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-bottomsheet-svg-and-camera) | native players and viewer |
+| `Video`, `Audio`, `Pdf` | optional players and PDF viewer, see [Optional modules](#optional-modules-video-audio-pdf-bottomsheet-svg-camera-and-datepicker) | native players and viewer |
 | `BottomSheet` | optional `<dialog>` sheet, see [Bottom sheet](#bottom-sheet-sheet) | SwiftUI sheet (iOS), Compose sheet (Android) |
 | `Svg`, `Path`, `Circle`… | optional SVG elements, see [SVG](#svg-svg) | `react-native-svg` |
 | `Camera` | optional `getUserMedia` preview, see [Camera](#camera-camera) | CameraX + Compose (Android), AVFoundation (iOS) |
+| `DatePicker` | optional `<input type="date">`, see [Date picker](#date-picker-datepicker) | the lib's picker, same design on iOS (SwiftUI) and Android (Compose) |
 
 React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `Modal`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on web. You can also wrap any component: `engine(MyComponent, style)`.
 
-## Optional modules: `Video`, `Audio`, `Pdf`, `BottomSheet`, `Svg` and `Camera`
+## Optional modules: `Video`, `Audio`, `Pdf`, `BottomSheet`, `Svg`, `Camera` and `DatePicker`
 
 The media players, the PDF viewer, the bottom sheet, SVG and the camera are **optional and off by default**, so apps that do not use them pay nothing (no native code, no dependencies, no bundle size). Turn them on in one file, `omnistyle.config.json` at the app root (next to `package.json`), and pass the same file to `configure`:
 
@@ -181,6 +182,7 @@ The media players, the PDF viewer, the bottom sheet, SVG and the camera are **op
     "pdf": { "enabled": true },
     "sheet": { "enabled": true },
     "svg": { "enabled": true },
+    "datePicker": { "enabled": true },
     "camera": { "enabled": true, "video": true, "codeScanner": true }
   }
 }
@@ -357,6 +359,29 @@ Props: `facing` (`'back'` | `'front'`), `active` (stop it while hidden), `flash`
 - **iOS**: `NSCameraUsageDescription` (and `NSMicrophoneUsageDescription` with `video`) in Info.plist. The build adds a generic text when it is missing; set your own (in Expo, `ios.infoPlist` in `app.json`).
 - **Android**: the lib's manifest adds `CAMERA` (and `RECORD_AUDIO` with `video`); the dialog text is the system's.
 - **Web**: the browser asks; it needs `https` (or `localhost`).
+
+### Date picker (`datePicker`)
+
+A date, a time or both. On iOS (SwiftUI) and Android (Jetpack Compose) it is the lib's own picker, **the same design on both**: a calendar with round day cells and a month/year panel (tap the title), spinning wheels that snap and tick, and compact pills that open the picker in a bottom sheet. Colors follow light/dark mode and `tintColor`; labels follow `locale`. On the web it is the browser's `<input>`. It is controlled: keep the value in state.
+
+```tsx
+const Picker = engine('DatePicker', { alignSelf: 'flex-start' });
+const [date, setDate] = useState(new Date());
+
+<Picker value={date} onValueChange={setDate} mode="datetime" display="inline"
+  minimumDate={today} maximumDate={nextMonth} locale="pt-BR" is24Hour />
+```
+
+| Prop | |
+|---|---|
+| `value`, `onValueChange(date)` | the selected moment; the callback gets it already inside the limits |
+| `mode` | `'date'` (default), `'time'` or `'datetime'`; what the mode does not edit keeps its value |
+| `display` | `'inline'` (calendar, with the time behind a pill in `datetime`; default), `'wheel'` (day/month/year and time wheels) or `'compact'` (pills that open the picker in a sheet) |
+| `minimumDate`, `maximumDate` | limits; the native pickers grey out what is outside |
+| `locale`, `is24Hour` | language of the labels (BCP 47) and the clock; default: the device's |
+| `tintColor`, `disabled`, `label` | accent color, blocked, accessible name |
+
+The picker has its own natural height (a calendar is taller than a pill): the view takes the height it reports, unless the style sets one. The style's background and corners frame it (the picker itself is transparent). On the web the browser decides how the input looks (`display`, `tintColor` aside, and `is24Hour` follow the browser and the user's locale).
 
 ### Background audio and notification controls (`mediaSession`)
 
