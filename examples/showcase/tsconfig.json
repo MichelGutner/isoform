@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": ["dom", "esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "isoform": ["../../src/index.ts"],
+      // esta pasta não tem node_modules: o React vem do app web de exemplo
+      "react": ["../../example-web/node_modules/@types/react"],
+      "react/*": ["../../example-web/node_modules/@types/react/*"],
+      "react-dom": ["../../example-web/node_modules/@types/react-dom"],
+      "react-dom/*": ["../../example-web/node_modules/@types/react-dom/*"]
+    },
+    "types": []
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.d.ts"]
+}

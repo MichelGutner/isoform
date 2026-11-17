@@ -1,0 +1,58 @@
+---
+title: SVG
+description: Every SVG element as a primitive, styled from the theme. The browser's SVG on the web, react-native-svg on mobile.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import SvgDemo from '../../../components/demos/SvgDemo.tsx';
+import svgSource from '../../../components/demos/SvgDemo.tsx?raw';
+
+Every SVG element is a primitive, styled like the others: `fill`, `stroke`, `strokeWidth`, `stopColor`… go in the style, so they come from the theme and change with `when()`.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "svg": { "enabled": true } } }
+```
+
+On iOS and Android, **install `react-native-svg` in the app** (an optional peer dependency of Isoform). Its native code is linked by the app's own autolinking, not by Isoform's pod or Gradle module:
+
+```bash
+npx expo install react-native-svg   # or: yarn add react-native-svg
+cd ios && pod install
+```
+
+<LiveExample code={svgSource} title="Tap the circle: the color comes from the theme through when('props:done').">
+  <SvgDemo client:only="react" />
+</LiveExample>
+
+## Primitives
+
+`Svg`, `G`, `Path`, `Circle`, `Rect`, `Ellipse`, `Line`, `Polyline`, `Polygon`, `TSpan`, `Defs`, `Stop`.
+
+Names that clash with other primitives or common libraries carry the `Svg` prefix: `SvgText`, `SvgImage`, `SvgLinearGradient`, `SvgRadialGradient`, `SvgClipPath`, `SvgMask`, `SvgPattern`, `SvgSymbol`, `SvgUse`.
+
+Attributes are the SVG ones, camelCase as in React (`viewBox`, `d`, `cx`, `strokeDasharray`, `fill="url(#id)"`…), and `onPress` works on every element (tap on native, click on the web).
+
+## Styling
+
+Presentation properties in the style: `color`, `fill`, `fillOpacity`, `fillRule`, `stroke`, `strokeWidth`, `strokeOpacity`, `strokeLinecap`, `strokeLinejoin`, `strokeDasharray`, `strokeDashoffset`, `strokeMiterlimit`, `stopColor`, `stopOpacity`, `clipRule`, `vectorEffect`, `fontSize`, `fontFamily`, `fontWeight`, `fontStyle`, `letterSpacing`, `textAnchor`.
+
+The root `Svg`'s style sizes and places its box (`width`, `height`, `margin`…); its presentation keys (`color`, `fill`, `stroke`…) are inherited by the shapes inside, so `stroke: 'currentColor'` follows the root's `color`.
+
+## Per platform
+
+| | Web | iOS / Android |
+|---|---|---|
+| Elements | the browser's own `<svg>`, `<path>`… (no dependency) | [`react-native-svg`](https://github.com/software-mansion/react-native-svg) |
+| Style | CSS classes (SVG presentation properties are CSS) | the style becomes the element's props; the root `Svg` keeps its box style and passes `color`, `fill`, `stroke`… down to the shapes |
+| `'2px'` values | CSS | converted to plain numbers |
+
+## When the module is off
+
+The SVG primitives render nothing and log one development warning. With `withIsoform` in the Metro config, the SVG code is swapped for an empty stub, so `react-native-svg` is neither in the bundle nor needed.
+
+<Aside type="caution">
+With the module on and `react-native-svg` missing, `withIsoform` stops Metro at startup with a message saying what to install. Without `withIsoform`, the SVG code always loads `react-native-svg`: Expo's Metro tolerates a missing package (the elements render nothing, with a dev warning), plain React Native's Metro fails the build.
+</Aside>

@@ -1,0 +1,31 @@
+---
+title: Text
+description: A piece of text. A span on the web, Text on iOS and Android.
+---
+
+`Text` is a `<span>` on the web and React Native's `Text` on mobile.
+
+```tsx
+const Title = engine('Text', ({ theme }) => ({
+  fontSize: 22,
+  fontWeight: '800',
+  lineHeight: '1.3', // unitless, as in CSS
+  color: theme.color.text,
+}));
+
+<Title numberOfLines={2}>A long title that is cut after two lines</Title>;
+```
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `numberOfLines` | `number` | Maximum number of lines; extra text is cut with an ellipsis. Web: `-webkit-line-clamp`. |
+
+Plus the `<span>` DOM props and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+
+## Notes
+
+- On mobile, text must be inside a `Text`, as in React Native. On the web a bare string inside a `Box` renders, but keep text in `Text` so both platforms match.
+- `::before`, `::after` and `::first-letter` work on `Text` on both platforms. See [Pseudo-elements](/isoform/guides/pseudo-elements/).
+- `fontSize: '2em'` is resolved against the parent size on mobile, as in CSS.

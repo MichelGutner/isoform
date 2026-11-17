@@ -1,0 +1,49 @@
+---
+title: An icon set with SVG
+description: Theme-aware icons built from the SVG module's primitives.
+---
+
+Turn the [`svg` module](/isoform/modules/svg/) on (and install `react-native-svg` in the mobile app), then build icons from the SVG primitives. Presentation properties live in the style, so icons follow the theme and `when()`.
+
+```tsx title="Icon.tsx"
+import { engine } from 'isoform';
+
+type Tone = 'default' | 'muted' | 'danger';
+
+const Frame = engine<'Svg', { tone?: Tone; size?: number }>('Svg', ({ theme, props }) => ({
+  width: props.size ?? 24,
+  height: props.size ?? 24,
+  color: theme.color.text,
+}))
+  .when('props:tone=muted', ({ theme }) => ({ style: { color: theme.color.muted } }))
+  .when('props:tone=danger', ({ theme }) => ({ style: { color: theme.color.error } }));
+
+const Stroke = engine('Path', {
+  fill: 'none',
+  stroke: 'currentColor', // inherits the root's color
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+});
+
+type IconProps = { tone?: Tone; size?: number; label?: string };
+
+export const CheckIcon = ({ label, ...props }: IconProps) => (
+  <Frame viewBox="0 0 24 24" aria-label={label} {...props}>
+    <Stroke d="M5 12.5l4.5 4.5L19 7.5" />
+  </Frame>
+);
+
+export const CloseIcon = ({ label, ...props }: IconProps) => (
+  <Frame viewBox="0 0 24 24" aria-label={label} {...props}>
+    <Stroke d="M6 6l12 12M18 6L6 18" />
+  </Frame>
+);
+```
+
+```tsx
+<CheckIcon tone="muted" />
+<CloseIcon tone="danger" size={32} label="Close" />
+```
+
+A live version is on the [SVG page](/isoform/modules/svg/).

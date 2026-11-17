@@ -1,0 +1,71 @@
+---
+title: Platform differences
+description: What behaves differently on the web, iOS and Android, and how to scope code to one platform.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Isoform keeps one API, but the platforms are not identical. This page collects the differences in one place.
+
+## Scoping to a platform
+
+```tsx
+const Card = engine('Box', { padding: 16 })
+  .when('platform:web', { style: { cursor: 'pointer', backdropFilter: 'blur(8px)' } })
+  .when('platform:native', { style: { elevation: 2 } }) // iOS and Android
+  .when('platform:ios', { style: { shadowOpacity: 0.2 } })
+  .when('platform:android', { style: { elevation: 4 } });
+```
+
+Style functions also receive the platform: `engine('Box', ({ platform }) => ({ … }))`, where `platform` is `'ios'`, `'android'`, `'web'` or a custom adapter's name.
+
+## Styles
+
+| Topic | Web | iOS / Android |
+|---|---|---|
+| Strings | passed to CSS as-is | converted when possible (`rem`, `em`, `vh`, `vw`, `px`, multi-value `padding`/`margin`, unitless `lineHeight`), otherwise dropped with one dev warning |
+| `calc()`, `var()`, `ch` | CSS | dropped |
+| Grid, `cursor`, `backdropFilter`, CSS variables | CSS | dropped |
+| `boxShadow` | CSS | native (React Native ≥ 0.76, new architecture) |
+| `transition`, `animation` | CSS | `Animated` (see [Animations](/isoform/guides/animations/)) |
+| `flex: 1` | React Native semantics (`1 1 0%`) | native |
+| Default `Box` | `display: flex; flex-direction: column` | `View` |
+| Borders | `solid`, width `0` by default (so `borderWidth` alone draws one) | native |
+
+## Conditions
+
+| Condition | Web | iOS / Android |
+|---|---|---|
+| `state:hover` | `:hover` within `@media (hover: hover)` | ignored |
+| `state:focus`, `state:focus-visible` | `:focus`, `:focus-visible` | `Input` only |
+| `state:pressed` | `:active` | `Pressable` only |
+| `breakpoints:*` | `@media` rules (no JS) | window width (`useWindowDimensions`) |
+| `::first-line`, `::marker`, `::scrollbar*` | CSS | ignored (dev warning) |
+| `::before`/`::after` | CSS | generated children (not on `Input`/`Image`) |
+
+## Props
+
+- `onPress` is `onClick` plus Enter/Space on the web; `onChangeText` reads `e.target.value`.
+- `testID` becomes `data-testid` on the web.
+- `type="password"` becomes `secureTextEntry` on mobile.
+- Native-only props (`hitSlop`, `onLayout`, `activeOpacity`…) are removed on the web; web-only props (`href`, `id`, `onMouseEnter`…) go to the DOM element when they are valid for it.
+- Deprecated React Native accessibility props (`accessibilityLabel`, `accessibilityRole`, `accessibilityState`, `accessibilityHint`) are translated to `aria-*`/`role` on the web. Prefer the `aria-*` names.
+
+## Primitives
+
+The universal primitives (`Box`, `Text`, `Pressable`, `Input`, `Image`, `Scroll`) exist everywhere. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/isoform/primitives/native-and-legacy/).
+
+## Optional modules
+
+Each module page has a per-platform table. The largest differences: the PDF viewer on Android depends on the OS version, `BarcodeDetector` (web code scanning) exists only in Chromium browsers, and the image pipeline's caches, headers and progress are native only (the browser owns the cache on the web).
+
+<Aside type="tip">
+When a property has no effect on mobile, check the development warning: it names the property. Scope it with `.when('platform:web', …)` to make the intent explicit and silence the warning.
+</Aside>
+
+## Not supported yet
+
+- Web-only: `::first-line`, `::marker`, `::scrollbar*` and `hover` (typed `@platform web`, ignored on mobile).
+- `::before`/`::after` on `Input`/`Image` on mobile (they take no children), and `::first-letter` on a `Text` with non-string children.
+- Combining `animation` with `transition` on one element, and `attr()`/`counter()` in `content`, on mobile.
+- Picture-in-picture for `Video` on native.

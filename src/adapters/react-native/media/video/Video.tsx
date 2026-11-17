@@ -1,0 +1,132 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports */
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import type { WithoutPlaylist } from '../../../../core/playlist';
+import { Image, StyleSheet, View } from 'react-native';
+import { isModuleEnabled } from '../../../../config';
+import type { VideoHandle, VideoOwnProps } from '../../../../core/media';
+import { warnModuleDisabled } from '../../../../core/modules';
+
+declare const require: (id: string) => any;
+
+/**
+ * A spec só é carregada quando um `Video` é renderizado: assim importar o
+ * adaptador (inclusive em testes) não exige o runtime do Codegen.
+ */
+type Spec = typeof import('./native/IsoVideoViewNativeComponent');
+let spec: Spec | undefined;
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoVideoViewNativeComponent'));
+
+type Props = Partial<VideoOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void; /** Entries for the carousel the fullscreen draws natively. */ items?: Array<{ title: string; image: string }>; /** An entry picked in that carousel. */ onSelect?(index: number): void }; /** Any touch on the player (also on the native controls): the overlay uses it to show itself like the controls do. */ onPlayerTouch?: () => void };
+
+/**
+ * Porta de entrada do `Video` no mobile. Com `modules.video` desligado, nem a
+ * spec nativa é carregada: fica só um espaço vazio com o mesmo estilo (e um
+ * aviso em dev), em vez do erro "componente nativo não encontrado".
+ */
+export const Video = forwardRef<WithoutPlaylist<VideoHandle>, Props>((props, ref) => {
+  if (!isModuleEnabled('video')) {
+    warnModuleDisabled('video');
+    return <View style={[styles.container, props.style]} testID={props.testID} />;
+  }
+  return <VideoPlayer ref={ref} {...props} />;
+});
+Video.displayName = 'Video';
+
+/**
+ * O player: o componente nativo da lib (AVPlayer no iOS, Media3 no Android).
+ * Aqui só traduzimos o contrato do isoform para as props e os eventos
+ * nativos, e mostramos o `poster` até o primeiro play.
+ */
+const VideoPlayer = forwardRef<WithoutPlaylist<VideoHandle>, Props>(
+  (
+    {
+      src,
+      poster,
+      controls = true,
+      autoPlay = false,
+      loop = false,
+      muted = false,
+      rate = 1,
+      volume = 1,
+      onPlay,
+      onPause,
+      onEnded,
+      onTimeUpdate,
+      onLoad,
+      onError,
+      onSeek,
+      onBuffering,
+      onBufferedChange,
+      onVolumeChange,
+      onRateChange,
+      onFullscreenChange,
+      style,
+      testID,
+      overlay,
+      playlist,
+      onPlayerTouch,
+    },
+    ref,
+  ) => {
+    const { default: NativeVideo, Commands } = nativeSpec();
+    const native = useRef<any>(null);
+    const [started, setStarted] = useState(false);
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        play: () => native.current && Commands.play(native.current),
+        pause: () => native.current && Commands.pause(native.current),
+        seekTo: (seconds) => native.current && Commands.seekTo(native.current, seconds),
+        setFullscreen: (fullscreen) => native.current && Commands.setFullscreen(native.current, fullscreen),
+      }),
+      [Commands],
+    );
+
+    return (
+      <View style={[styles.container, style]} testID={testID} onTouchStart={onPlayerTouch}>
+        {poster && !started ? (
+          // under the native player (transparent until the first frame), so its controls draw over the poster
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <Image source={{ uri: poster }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          </View>
+        ) : null}
+        <NativeVideo
+          ref={native}
+          playlistIndex={playlist?.index ?? -1}
+          playlistCount={playlist?.count ?? 0}
+          playlistItems={playlist?.items ? JSON.stringify(playlist.items) : ''}
+          onPlayerPlaylistSelect={(e) => playlist?.onSelect?.(e.nativeEvent.index)}
+          onPlayerPlaylist={() => playlist?.onPress()}
+          style={StyleSheet.absoluteFill}
+          src={src}
+          controls={controls}
+          autoPlay={autoPlay}
+          loop={loop}
+          muted={muted}
+          rate={rate}
+          volume={volume}
+          onPlayerPlay={() => {
+            setStarted(true);
+            onPlay?.();
+          }}
+          onPlayerPause={() => onPause?.()}
+          onPlayerEnd={() => onEnded?.()}
+          onPlayerTime={(e) => onTimeUpdate?.({ currentTime: e.nativeEvent.currentTime, duration: e.nativeEvent.duration })}
+          onPlayerLoad={({ nativeEvent: { duration, width, height } }) => onLoad?.({ duration, width, height })}
+          onPlayerError={(e) => onError?.(e.nativeEvent.message)}
+          onPlayerSeek={(e) => onSeek?.({ from: e.nativeEvent.from, to: e.nativeEvent.to })}
+          onPlayerBuffering={(e) => onBuffering?.(e.nativeEvent.buffering)}
+          onPlayerBuffered={(e) => onBufferedChange?.(e.nativeEvent.buffered)}
+          onPlayerVolume={(e) => onVolumeChange?.({ volume: e.nativeEvent.volume, muted: e.nativeEvent.muted })}
+          onPlayerRate={(e) => onRateChange?.(e.nativeEvent.rate)}
+          onPlayerFullscreen={(e) => onFullscreenChange?.(e.nativeEvent.fullscreen)}
+        />
+        {overlay}
+      </View>
+    );
+  },
+);
+VideoPlayer.displayName = 'VideoPlayer';
+
+const styles = StyleSheet.create({ container: { backgroundColor: '#000', overflow: 'hidden' } });

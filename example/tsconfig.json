@@ -10,6 +10,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "isoform": [
+        "../src/index.ts"
       ]
     }
   },
@@ -17,6 +20,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.d.ts",
+    "../examples/showcase/**/*.ts",
+    "../examples/showcase/**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ]

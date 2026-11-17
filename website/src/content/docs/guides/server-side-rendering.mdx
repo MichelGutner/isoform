@@ -1,0 +1,19 @@
+---
+title: Server-side rendering
+description: Collect the atomic CSS generated on the server with getStyleText().
+---
+
+The web adapter emits atomic CSS. In the browser it is inserted into a `<style data-isoform="client">` element. On the server, collect it with [`getStyleText()`](/isoform/reference/get-style-text/) after rendering your tree:
+
+```tsx
+import { getStyleText } from 'isoform';
+
+// after rendering your tree:
+<style data-isoform="ssr" dangerouslySetInnerHTML={{ __html: getStyleText() }} />;
+```
+
+`getStyleText()` returns the CSS collected so far (including `@keyframes` and `@media` rules for what was rendered). On platforms that do not generate CSS (mobile) it returns `''`.
+
+- Breakpoints are real `@media` rules, so the server-rendered layout is already right before hydration.
+- `keyframes()` names are content-hashed, so they are the same on the server and the client.
+- Values that contain `{`, `}` or `</style` are refused by the web adapter, which protects the generated CSS.

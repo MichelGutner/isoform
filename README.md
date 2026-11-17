@@ -1,210 +1,103 @@
-# 🎨 React Native Stylish
-
-> Modern styling library for React Native with conditional styling and global theming
-
-[![npm version](https://badge.fury.io/js/react-native-stylized.svg)](https://badge.fury.io/js/react-native-stylized)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
----
-
-## � Introduction
-
-**React Native Stylish** is a modern styling library designed specifically for React Native applications. It provides a powerful, type-safe way to create styled components with conditional styling, global theming, and excellent performance.
-
-### Who It's For
-
-- **React Native developers** who want a cleaner styling approach than StyleSheet
-- Teams building **cross-platform apps** that need consistent theming
-- Developers who need **conditional styling** without complex ternary operators
-- Projects requiring **TypeScript support** with full autocomplete
-
-### What It Does
-
-- Create styled React Native components with method chaining
-- Apply conditional styles based on props, platform, or custom logic
-- Manage global themes without providers
-- Provide full TypeScript support with type inference
-- Optimize performance with intelligent caching
-
----
-
-## 🚀 Installation
-
-```bash
-npm install react-native-stylized
-# or
-yarn add react-native-stylized
-```
-
-### Peer Dependencies
-
-```json
-{
-  "react": ">=18",
-  "react-native": ">=0.70"
-}
-```
-
----
-
-## ⚡ Quick Start
-
-```tsx
-import { engine, setTheme } from 'react-native-stylized';
-
-// Set up your theme
-setTheme({
-  colors: { 
-    primary: '#007AFF', 
-    background: '#FFFFFF',
-    text: '#000000' 
-  },
-  spacing: { sm: 8, md: 16, lg: 24 },
-  borderRadius: { sm: 4, md: 8, lg: 12 },
-});
-
-// Create styled components
-const Button = engine('TouchableOpacity')
-  .style({ 
-    padding: 16, 
-    borderRadius: 8,
-    backgroundColor: '#007AFF',
-    alignItems: 'center',
-    justifyContent: 'center'
-  })
-  .when('disabled', { opacity: 0.5 })
-  .when('variant:secondary', { backgroundColor: '#5856D6' });
-
-const Container = engine('View', ({ theme }) => ({
-  flex: 1,
-  backgroundColor: theme.colors.background,
-  padding: theme.spacing.md,
-}));
-
-const Title = engine('Text', ({ theme }) => ({
-  fontSize: 24,
-  fontWeight: 'bold',
-  color: theme.colors.text,
-}));
-
-// Use in your app
-export default function App() {
-  return (
-    <Container>
-      <Title>Welcome to React Native Stylish</Title>
-      <Button variant="primary">
-        <Text style={{ color: 'white' }}>Primary Button</Text>
-      </Button>
-      <Button variant="secondary">
-        <Text style={{ color: 'white' }}>Secondary Button</Text>
-      </Button>
-    </Container>
-  );
-}
-```
-
----
-
-## ✨ Features
-
-### 🎨 **Conditional Styling**
-Apply styles based on props, platform, or custom conditions without complex ternary operators.
-
-```tsx
-const AdaptiveButton = engine('TouchableOpacity')
-  .style({ padding: 16, borderRadius: 8 })
-  .when('variant:primary', { backgroundColor: '#007AFF' })
-  .when('variant:secondary', { backgroundColor: '#5856D6' })
-  .when('disabled', { opacity: 0.5 })
-  .when('ios', { shadowColor: '#000', shadowOpacity: 0.1 })
-  .when('android', { elevation: 4 });
-```
-
-### 🌍 **Global Theme System**
-No providers required. Set a global theme and access it anywhere in your app.
-
-```tsx
-// Set theme once
-setTheme({
-  colors: { primary: '#007AFF', background: '#FFFFFF' },
-  spacing: { md: 16 },
-});
-
-// Use anywhere
-const ThemedComponent = engine('View', ({ theme }) => ({
-  backgroundColor: theme.colors.background,
-  padding: theme.spacing.md,
-}));
-```
-
-### 🔒 **Full TypeScript Support**
-Get autocomplete and type safety for your themes and components.
-
-```tsx
-interface ButtonProps {
-  variant?: 'primary' | 'secondary';
-  size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
-}
-
-const Button = engine<ButtonProps>('TouchableOpacity', ({ theme, variant, size, disabled }) => ({
-  backgroundColor: disabled ? '#ccc' : theme.colors[variant],
-  padding: theme.spacing[size],
-  borderRadius: theme.borderRadius.md,
-  opacity: disabled ? 0.5 : 1,
-}));
-```
-
-### ⚡ **Performance Optimized**
-Built-in caching and smart updates ensure your app stays fast even with complex styling.
-
-### 📱 **React Native First**
-Designed specifically for React Native with support for all built-in components.
-
----
-
-## � Documentation
-
-### 🚀 [Getting Started](./docs/README.md)
-Installation, setup, and basic usage for React Native.
-
-### 📖 [API Reference](./docs/api-reference.md)
-Complete API documentation with examples and TypeScript support.
-
----
-
-## 🔧 Available Components
-
-All standard React Native components are supported:
-
-- `View`, `Text`, `Image`
-- `ScrollView`, `FlatList`, `SectionList`
-- `TouchableOpacity`, `Pressable`, `TouchableHighlight`, `TouchableWithoutFeedback`
-- `TextInput`, `Button`
-- `ActivityIndicator`, `Switch`, `Slider`
-- `Modal`, `StatusBar`
-- `SafeAreaView`, `KeyboardAvoidingView`, `ImageBackground`
-
----
-
-## 🤝 Community
-
-- [🐛 Report Issues](https://github.com/MichelGutner/stylized/issues)
-- [💡 Feature Requests](https://github.com/MichelGutner/stylized/discussions)
-- [📖 Full Documentation](./docs/README.md)
-
----
-
-## 📄 License
-
-MIT © [Michel Gutner]
-
----
-
 <div align="center">
 
-**Built with ❤️ for the React Native community**
+# Isoform
 
-[📚 View Full Documentation](./docs/README.md)
+**One styling and component API for React and React Native.**<br>
+Write a component once; it runs on the web, iOS and Android.
+
+[![npm](https://img.shields.io/npm/v/isoform.svg)](https://www.npmjs.com/package/isoform)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Docs](https://img.shields.io/badge/docs-michelgutner.github.io%2Fisoform-6366f1.svg)](https://michelgutner.github.io/isoform/)
+
+[Documentation](https://michelgutner.github.io/isoform/) ·
+[Quick start](https://michelgutner.github.io/isoform/getting-started/quick-start/) ·
+[API reference](https://michelgutner.github.io/isoform/reference/engine/) ·
+[Changelog](./CHANGELOG.md)
 
 </div>
+
+## In 30 seconds
+
+```bash
+npm install isoform
+```
+
+```tsx
+import { configure, engine } from 'isoform';
+
+configure({ theme: { color: { primary: '#6366f1' }, spacing: { sm: 8 } } }); // once, at startup
+
+export const Button = engine<'Pressable', { variant?: 'primary' | 'ghost' }>('Pressable', ({ theme }) => ({
+  paddingBlock: theme.spacing.sm,
+  paddingInline: '1.25rem', // rem works on both platforms
+  borderRadius: 12,
+  backgroundColor: theme.color.primary,
+  boxShadow: '0 4px 12px rgba(0,0,0,.12)', // same shadow on both platforms
+}))
+  .when('props:variant=ghost', { style: { backgroundColor: 'transparent' } })
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } })
+  .when('platform:web', { style: { cursor: 'pointer' } });
+
+<Button variant="ghost" onPress={save} aria-label="Save" />;
+```
+
+The same `Button` renders a keyboard-accessible `<div role="button">` with atomic CSS on the web and a React Native `Pressable` on iOS and Android. No platform checks, no providers.
+
+## Features
+
+|  |  |
+|---|---|
+| **One component library**<br>`engine('Box')`, `'Text'`, `'Pressable'`, `'Input'`, `'Image'`, `'Scroll'` resolve to DOM elements on the web and React Native components on mobile. | **Standard CSS vocabulary**<br>`paddingInline`, `boxShadow`, `'1rem'`, `transform: 'rotate(-2deg)'`. Numbers are px, strings are CSS; full CSS on the web, converted on mobile. |
+| **Global theme, no providers**<br>`configure({ theme })` once, `updateTheme()` anywhere, `useTheme()` to read it. | **Variants with `when()`**<br>Props, `state:hover`/`pressed`/`focus`, `breakpoints:md`, `platform:web`, `::before`… all typed. |
+| **Animations on both runtimes**<br>`keyframes()` and CSS `transition` become real CSS on the web and `Animated` on React Native. | **Optional native modules**<br>Video, audio, PDF, bottom sheet, SVG, camera, date picker, image pipeline and modal. Zero cost when off. |
+| **SSR-ready atomic CSS**<br>Deduplicated, rank-ordered classes and real `@media` rules; `getStyleText()` on the server. | **TypeScript first**<br>Typed theme, custom props, conditions, breakpoints and `ref` handles. |
+
+## Platform support
+
+| Platform | Renders with | Requirements |
+|---|---|---|
+| Web | React DOM (atomic CSS) | `react >= 18`, `react-dom >= 18`; Vite, webpack, Next or Metro web |
+| iOS | React Native | `react-native >= 0.76` (new architecture for `boxShadow` and the native modules) |
+| Android | React Native | `react-native >= 0.76` |
+
+The bundler picks the adapter: a web bundle never contains `react-native`, and a mobile bundle never contains the DOM adapter.
+
+## Optional modules
+
+Off by default. Turn on only what you use in `isoform.config.json`; disabled modules are left out of the JS bundle, the Gradle build and the pods.
+
+| Module | Primitive | Web | iOS | Android |
+|---|---|---|---|---|
+| [`video`](https://michelgutner.github.io/isoform/modules/video/) | `Video` | `<video>` + the lib's controls | `AVPlayer` + UIKit | Media3 + Compose |
+| [`audio`](https://michelgutner.github.io/isoform/modules/audio/) | `Audio` | `<audio>` card player | `AVPlayer` + UIKit, lock screen | Media3 + Compose, notification |
+| [`pdf`](https://michelgutner.github.io/isoform/modules/pdf/) | `Pdf` | pdf.js | PDFKit | `PdfRenderer` + Compose |
+| [`sheet`](https://michelgutner.github.io/isoform/modules/sheet/) | `BottomSheet` | `<dialog>` | SwiftUI sheet | Compose sheet |
+| [`svg`](https://michelgutner.github.io/isoform/modules/svg/) | `Svg`, `Path`… | browser SVG | `react-native-svg` | `react-native-svg` |
+| [`camera`](https://michelgutner.github.io/isoform/modules/camera/) | `Camera` | `getUserMedia` | AVFoundation | CameraX + Compose, ML Kit |
+| [`datePicker`](https://michelgutner.github.io/isoform/modules/date-picker/) | `DatePicker` | `<input type="date">` | SwiftUI | Compose |
+| [`image`](https://michelgutner.github.io/isoform/modules/image/) | `Image` | `<img>` + blurhash, zoom | URLSession, ImageIO | OkHttp, `ImageDecoder` |
+| [`modal`](https://michelgutner.github.io/isoform/modules/modal/) | `Modal` | `<dialog>` | UIKit | Compose |
+
+```json
+{ "modules": { "video": true, "sheet": true, "camera": { "enabled": true, "codeScanner": true } } }
+```
+
+## Documentation
+
+Everything else lives on the site, with live examples rendered by the library itself:
+
+- [Getting started](https://michelgutner.github.io/isoform/getting-started/introduction/): installation for Expo, bare React Native, Vite and Next.
+- [Guides](https://michelgutner.github.io/isoform/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript.
+- [Primitives](https://michelgutner.github.io/isoform/primitives/overview/) and [native modules](https://michelgutner.github.io/isoform/modules/overview/).
+- [API reference](https://michelgutner.github.io/isoform/reference/configure/) and [recipes](https://michelgutner.github.io/isoform/recipes/button-variants/).
+- [Migrating from `react-native-stylized`](https://michelgutner.github.io/isoform/project/migration/).
+
+A runnable proof lives in this repo: [`examples/showcase`](./examples/showcase) is rendered by both the Expo app in [`example/`](./example) and the Vite app in [`example-web/`](./example-web).
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md), the [Code of Conduct](./CODE_OF_CONDUCT.md) and the [security policy](./SECURITY.md).
+
+## License
+
+[MIT](./LICENSE)

@@ -1,0 +1,28 @@
+---
+title: Scroll
+description: A scrollable container. A div with overflow auto on the web, ScrollView on mobile.
+---
+
+`Scroll` is a `<div>` with `overflow: auto` on the web and React Native's `ScrollView` on mobile.
+
+```tsx
+const Page = engine('Scroll', ({ theme }) => ({ flex: 1, backgroundColor: theme.color.background }));
+const Carousel = engine('Scroll').attrs({ horizontal: true });
+
+<Page contentContainerStyle={{ padding: 16, gap: 12 }}>…</Page>;
+```
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `horizontal` | `boolean` | Scrolls sideways instead of vertically. |
+| `contentContainerStyle` | `StyleInput` | Style of the inner content container (padding, gap, alignment of the scrolled content). |
+| `onScroll` | `(event) => void` | Called while scrolling, with the platform scroll event. |
+| `showsVerticalScrollIndicator` | `boolean` | Shows the vertical scrollbar. **Native only.** |
+| `showsHorizontalScrollIndicator` | `boolean` | Shows the horizontal scrollbar. **Native only.** |
+| `keyboardShouldPersistTaps` | `'always' \| 'never' \| 'handled'` | Whether taps inside the scroll dismiss the keyboard (`'never'` by default). **Native only.** |
+
+Plus the `<div>` DOM props and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+
+On the web, style the scrollbar with `when('::scrollbar')`, `'::scrollbar-thumb'` and `'::scrollbar-track'` (web only; see [Pseudo-elements](/isoform/guides/pseudo-elements/)). `ScrollView` is the deprecated legacy name.

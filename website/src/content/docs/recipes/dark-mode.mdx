@@ -1,0 +1,64 @@
+---
+title: Light and dark themes
+description: Switch between token sets with updateTheme(), follow the system setting, and fade colors between themes.
+---
+
+```ts title="tokens.ts"
+export const lightTokens = {
+  color: { background: '#f4f5f9', surface: '#ffffff', text: '#12141c', muted: '#6b7280', primary: '#6366f1' },
+  spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
+};
+
+export const darkTokens = {
+  ...lightTokens,
+  color: { background: '#0b0d14', surface: '#161a26', text: '#eef0f6', muted: '#98a2b8', primary: '#818cf8' },
+};
+```
+
+```ts title="isoform.config.ts"
+import { configure } from 'isoform';
+import { lightTokens } from './tokens';
+
+configure({ theme: lightTokens });
+```
+
+Switch from anywhere; no provider needed:
+
+```tsx
+import { updateTheme } from 'isoform';
+import { darkTokens, lightTokens } from './tokens';
+
+export const setMode = (mode: 'light' | 'dark') => updateTheme(mode === 'dark' ? darkTokens : lightTokens);
+```
+
+## Follow the system setting
+
+```tsx title="Mobile"
+import { useEffect } from 'react';
+import { useColorScheme } from 'react-native';
+
+export function useSystemTheme() {
+  const scheme = useColorScheme();
+  useEffect(() => setMode(scheme === 'dark' ? 'dark' : 'light'), [scheme]);
+}
+```
+
+```ts title="Web"
+const query = matchMedia('(prefers-color-scheme: dark)');
+setMode(query.matches ? 'dark' : 'light');
+query.addEventListener('change', (event) => setMode(event.matches ? 'dark' : 'light'));
+```
+
+## Fade between themes
+
+Add a `transition` on the colors that change; it runs on the web and on mobile:
+
+```tsx
+const Screen = engine('Box', ({ theme }) => ({
+  flex: 1,
+  backgroundColor: theme.color.background,
+  transition: 'background-color 300ms ease',
+}));
+```
+
+This site's live examples do the same: they call `updateTheme()` whenever the site's own theme switch changes. Try it with the switch in the header on the [Theme guide](/isoform/guides/theming/).

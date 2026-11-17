@@ -1,0 +1,37 @@
+---
+title: A responsive layout
+description: A sidebar layout that stacks on phones and splits on tablets and desktops, on every platform.
+---
+
+```tsx
+import { engine } from 'isoform';
+
+const Layout = engine('Box', { flex: 1, flexDirection: 'column' })
+  .when('breakpoints:md', { style: { flexDirection: 'row' } });
+
+const Sidebar = engine('Box', ({ theme }) => ({
+  padding: theme.spacing.md,
+  backgroundColor: theme.color.surface,
+}))
+  .when('breakpoints:md', { style: { width: 240 } })
+  .when('breakpoints:xl', { style: { width: 320 } });
+
+const Content = engine('Scroll', { flex: 1 });
+
+const HideOnPhones = engine('Box').when('breakpoints:<md', { style: { display: 'none' } });
+
+export function App() {
+  return (
+    <Layout>
+      <Sidebar>
+        <HideOnPhones>{/* long navigation */}</HideOnPhones>
+      </Sidebar>
+      <Content contentContainerStyle={{ padding: 16, gap: 12 }}>{/* … */}</Content>
+    </Layout>
+  );
+}
+```
+
+- On the web the breakpoints are `@media` rules: the right layout is in the first paint, also with SSR.
+- On mobile, only these components follow the window width (rotation, split screen); the rest of the app subscribes to nothing.
+- Need different names? `configure({ breakpoints: { tablet: 600, desktop: 1100 } })`. See [Responsive design](/isoform/guides/responsive/).

@@ -1,0 +1,104 @@
+---
+title: TypeScript
+description: Type your theme, custom props, breakpoints, native props and refs.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Isoform is written in TypeScript and every exported type carries documentation. This page shows the few places where your app adds types.
+
+## Typing your theme
+
+`EngineTheme` is a **global** type, read by style functions (`({ theme }) => …`), `useTheme()` and `getTheme()`. Declare its shape once in a `.d.ts` file of your app:
+
+```ts title="theme.d.ts"
+declare global {
+  interface EngineTheme {
+    color: { background: string; surface: string; text: string; muted: string; primary: string };
+    spacing: { xs: number; sm: number; md: number; lg: number; xl: number };
+  }
+}
+
+export {};
+```
+
+Or derive it from your tokens object:
+
+```ts title="theme.d.ts"
+import type { lightTokens } from './tokens';
+
+type Tokens = typeof lightTokens;
+
+declare global {
+  interface EngineTheme extends Tokens {}
+}
+
+export {};
+```
+
+The repository's showcase does this in [`examples/showcase/theme.d.ts`](https://github.com/MichelGutner/isoform/blob/main/examples/showcase/theme.d.ts), shared by the Expo and Vite apps.
+
+## Custom props
+
+The second type parameter of `engine` declares the component's own props. They are accepted by the component and turned into typed `when()` conditions:
+
+```tsx
+const Badge = engine<'Text', { tone?: 'info' | 'danger'; bold?: boolean }>('Text')
+  .when('props:tone=danger', { style: { color: 'crimson' } }) // ✓ autocompleted
+  .when('props:bold', { style: { fontWeight: '700' } });
+
+<Badge tone="danger" bold />; // ✓
+<Badge tone="warning" />; // ✗ type error
+```
+
+When you pass an engine component to `engine()`, its custom props are inherited and the new ones are added.
+
+## Style functions keep literals
+
+Style functions return the object form of the style, so literals such as `flexDirection: 'row'` are not widened to `string`:
+
+```tsx
+const Row = engine('Box', ({ theme }) => ({ flexDirection: 'row', gap: theme.spacing.sm })); // ✓
+```
+
+## Refs
+
+Primitives with methods type their `ref` with a handle: `engine('Video')` gets a `VideoHandle` ref, `engine('Pdf')` a `PdfHandle`, `engine('BottomSheet')` a `BottomSheetHandle`, `engine('Camera')` a `CameraHandle` and `engine('Image')` an `ImageHandle`.
+
+```tsx
+import { engine, type VideoHandle } from 'isoform';
+
+const Player = engine('Video', { width: '100%' });
+const ref = useRef<VideoHandle>(null);
+
+<Player ref={ref} src={url} />;
+ref.current?.seekTo(30);
+```
+
+## Your own breakpoint names
+
+```ts
+declare module 'isoform' {
+  interface IsoBreakpointNames {
+    tablet: unknown;
+  }
+}
+
+configure({ breakpoints: { tablet: 600 } });
+```
+
+## Native props the lib does not list
+
+Any extra native prop is passed straight to the React Native component. To type it, augment `IsoNativeProps`:
+
+```ts
+declare module 'isoform' {
+  interface IsoNativeProps {
+    collapsable?: boolean;
+  }
+}
+```
+
+<Aside>
+See [Exported types](/isoform/reference/types/) for every public type.
+</Aside>

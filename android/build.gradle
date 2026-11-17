@@ -1,0 +1,212 @@
+// Parte nativa do isoform. O plugin `com.facebook.react` roda o Codegen a partir
+// do `codegenConfig` do package.json.
+//
+// Módulos opcionais: decididos pelo `isoform.config.json` na raiz do app
+// (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
+//   { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
+// (cada módulo aceita `true` ou `{ "enabled": true, ...opções }`)
+// Módulo fora do arquivo (ou `false`) não é compilado: sem Media3 nem Compose no APK.
+// Sem o arquivo, tudo é compilado e só o `configure` decide em runtime.
+
+buildscript {
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : (project.findProperty(prop) ?: fallback)
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    // O compilador do Compose precisa ter a MESMA versão do Kotlin do app.
+    classpath("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:${safeExtGet("kotlinVersion", "2.1.20")}")
+  }
+}
+
+// `android/` do app → a raiz do app é a pasta de cima
+def isoformConfigFile = new File(rootProject.projectDir.parentFile, "isoform.config.json")
+def isoformConfig = isoformConfigFile.exists() ? new groovy.json.JsonSlurper().parse(isoformConfigFile) : null
+// `true` ou `{ "enabled": true }`
+def isoformOn = { setting -> setting == true || (setting instanceof Map && setting.enabled == true) }
+def isoformModule = { String name -> isoformConfig == null || isoformOn(isoformConfig.modules?.get(name)) }
+
+def videoEnabled = isoformModule("video")
+def audioEnabled = isoformModule("audio")
+def pdfEnabled = isoformModule("pdf")
+def sheetEnabled = isoformModule("sheet")
+def cameraEnabled = isoformModule("camera")
+def datePickerEnabled = isoformModule("datePicker")
+def imageEnabled = isoformModule("image")
+def modalEnabled = isoformModule("modal")
+// camera features: each one only with the module on and its option `true` (all on without the file)
+def cameraSetting = isoformConfig?.modules?.get("camera")
+def cameraFeature = { String name -> cameraEnabled && (isoformConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
+def cameraVideoEnabled = cameraFeature("video")
+def cameraCodesEnabled = cameraFeature("codeScanner")
+// player e interface (Media3 + Compose) são comuns aos dois módulos
+def mediaEnabled = videoEnabled || audioEnabled
+// foreground service + controles na notificação: só com `audio.mediaSession: true` explícito
+// (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
+def audioSetting = isoformConfig?.modules?.get("audio")
+def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
+logger.lifecycle("[isoform] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, image: ${imageEnabled ? "on" : "off"}, modal: ${modalEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${isoformConfig == null ? "sem isoform.config.json" : isoformConfigFile})")
+
+apply plugin: "com.android.library"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+// Compose: controles do vídeo e do áudio, o leitor de PDF, o bottom sheet e o viewfinder da câmera
+def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled || datePickerEnabled || modalEnabled
+if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
+
+/**
+ * Sempre as versões estáveis mais novas que o React Native 0.81 aceita
+ * (Kotlin 2.1, compileSdk 36, AGP 8.11):
+ *  · Media3 1.11.1 (compileSdk 36);
+ *  · Compose BOM 2026.06.01 = Compose 1.11.4 (o 1.12 já exige compileSdk 37).
+ * O app pode sobrescrever com `ext.isoformMedia3Version` / `ext.isoformComposeBomVersion`.
+ */
+def media3Version = safeExtGet("isoformMedia3Version", "1.11.1")
+// CameraX 1.6.2: the newest stable (compileSdk 36), with the Compose viewfinder (`camera-compose`)
+def cameraXVersion = safeExtGet("isoformCameraXVersion", "1.6.2")
+// ML Kit barcode scanning with the model inside the APK (works offline, no Play services download)
+def mlkitBarcodeVersion = safeExtGet("isoformMlkitBarcodeVersion", "17.3.0")
+def composeBomVersion = safeExtGet("isoformComposeBomVersion", "2026.06.01")
+
+/**
+ * One manifest with what the enabled modules need: the main one, plus the pieces of
+ * `mediaSession` (service, notification) and the camera (camera, microphone for video).
+ * Written to `build/` at configuration time; Gradle's merger then adds it to the app.
+ */
+def manifestBody = { File file ->
+  def xml = file.text
+  xml.substring(xml.indexOf(">", xml.indexOf("<manifest")) + 1, xml.lastIndexOf("</manifest>")).trim()
+}
+def manifestParts = [file("src/main/AndroidManifest.xml")]
+if (mediaSessionEnabled) manifestParts << file("src/mediaSession/AndroidManifest.xml")
+if (cameraEnabled) manifestParts << file("src/camera/AndroidManifest.xml")
+if (cameraVideoEnabled) manifestParts << file("src/cameraVideo/AndroidManifest.xml")
+def isoformManifest = new File(layout.buildDirectory.get().asFile, "generated/isoform/AndroidManifest.xml")
+isoformManifest.parentFile.mkdirs()
+isoformManifest.text = """<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+${manifestParts.collect(manifestBody).join("\n")}
+</manifest>
+"""
+
+android {
+  namespace "com.isoform"
+  compileSdkVersion safeExtGet("compileSdkVersion", 36)
+
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+    targetSdkVersion safeExtGet("targetSdkVersion", 36)
+    // as views dos módulos são criadas por reflexão: o R8 do app precisa mantê-las
+    consumerProguardFiles "consumer-rules.pro"
+  }
+
+  buildFeatures {
+    compose composeEnabled
+  }
+
+  // cada módulo ligado acrescenta a sua pasta de código
+  sourceSets {
+    main {
+      if (videoEnabled) java.srcDirs += "src/video/java"
+      if (audioEnabled) {
+        java.srcDirs += "src/audio/java"
+        // o áudio sempre chama `IsoMediaSession`: a versão real (serviço) ou a vazia
+        java.srcDirs += (mediaSessionEnabled ? "src/mediaSession/java" : "src/mediaSessionOff/java")
+      }
+      // PDF: o `PdfRenderer` do sistema + Compose (sem dependência extra)
+      if (pdfEnabled) java.srcDirs += "src/pdf/java"
+      // bottom sheet: Compose (drag, detents, scrim) hosting the React children
+      if (sheetEnabled) java.srcDirs += "src/sheet/java"
+      // date picker: Material 3 DatePicker/TimePicker in Compose
+      if (datePickerEnabled) java.srcDirs += "src/datePicker/java"
+      // image: the lib's pipeline (React Native's OkHttp, ImageDecoder) — no Compose, no extra dependency
+      if (imageEnabled) java.srcDirs += "src/image/java"
+      // modal: Compose (scrim, card, springs) hosting the React children
+      if (modalEnabled) java.srcDirs += "src/modal/java"
+      // camera: CameraX + Compose; video and the code scanner add their code (or an empty
+      // stand-in with the same API) only when their option is on
+      if (cameraEnabled) {
+        java.srcDirs += "src/camera/java"
+        java.srcDirs += (cameraVideoEnabled ? "src/cameraVideo/java" : "src/cameraVideoOff/java")
+        java.srcDirs += (cameraCodesEnabled ? "src/cameraCodes/java" : "src/cameraCodesOff/java")
+      }
+      // permissions and services of the modules that are on, merged into one manifest
+      // (a source set takes a single manifest file)
+      manifest.srcFile isoformManifest
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+}
+
+dependencies {
+  implementation "com.facebook.react:react-android"
+
+  if (mediaEnabled) {
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+    // `@androidx.annotation.OptIn(UnstableApi::class)` para as APIs do Media3 marcadas como instáveis
+    implementation "androidx.annotation:annotation-experimental:1.6.0"
+  }
+
+  if (composeEnabled) {
+    // tela cheia do vídeo: esconder as barras do sistema (WindowInsetsControllerCompat)
+    implementation "androidx.core:core:1.18.0"
+    implementation platform("androidx.compose:compose-bom:$composeBomVersion")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.foundation:foundation"
+    implementation "androidx.compose.animation:animation"
+  }
+
+  // date picker: the Material 3 pickers
+  if (datePickerEnabled) {
+    implementation "androidx.compose.material3:material3"
+  }
+
+  // PDF: `@RequiresApi`/`@RequiresExtension` nos renderizadores novos do sistema
+  if (pdfEnabled) {
+    implementation "androidx.annotation:annotation:1.11.0"
+  }
+
+  // controles na notificação do sistema (MediaSession + foreground service)
+  if (mediaSessionEnabled) {
+    implementation "androidx.media3:media3-session:$media3Version"
+  }
+
+  // camera: CameraX with the Compose viewfinder (`CameraXViewfinder`)
+  if (cameraEnabled) {
+    implementation "androidx.camera:camera-camera2:$cameraXVersion"
+    implementation "androidx.camera:camera-lifecycle:$cameraXVersion"
+    implementation "androidx.camera:camera-compose:$cameraXVersion"
+    // photo size with the EXIF rotation applied (newest stable)
+    implementation "androidx.exifinterface:exifinterface:1.4.2"
+  }
+  if (cameraVideoEnabled) {
+    implementation "androidx.camera:camera-video:$cameraXVersion"
+  }
+  if (cameraCodesEnabled) {
+    implementation "androidx.camera:camera-mlkit-vision:$cameraXVersion"
+    implementation "com.google.mlkit:barcode-scanning:$mlkitBarcodeVersion"
+  }
+
+  // a superfície do vídeo dentro do Compose (`ContentFrame`) só é usada pelo vídeo
+  if (videoEnabled) {
+    implementation "androidx.media3:media3-ui-compose:$media3Version"
+  }
+}

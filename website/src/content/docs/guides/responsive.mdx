@@ -1,0 +1,73 @@
+---
+title: Responsive design
+description: Mobile-first breakpoints with when('breakpoints:md'), ranges, and your own breakpoint names.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import ResponsiveDemo from '../../../components/demos/ResponsiveDemo.tsx';
+import responsiveSource from '../../../components/demos/ResponsiveDemo.tsx?raw';
+
+Breakpoints are mobile-first: `when('breakpoints:md')` applies from 768px **up**, and larger breakpoints stack on top of smaller ones.
+
+<LiveExample code={responsiveSource} title="Resize the browser window: the cells stack below 768px and change color by range.">
+  <ResponsiveDemo client:only="react" />
+</LiveExample>
+
+## Default breakpoints
+
+| Name | Default min width |
+|---|---|
+| `sm` | 480px |
+| `md` | 768px |
+| `lg` | 1024px |
+| `xl` | 1280px |
+
+## Below and ranges
+
+The upper bound of a range is exclusive:
+
+| Condition | Applies when |
+|---|---|
+| `'breakpoints:md'` | width ≥ md |
+| `'breakpoints:<md'` | width < md |
+| `'breakpoints:sm..lg'` | width ≥ sm **and** < lg |
+
+```tsx
+engine('Box')
+  .when('breakpoints:<md', { style: { display: 'none' } })
+  .when('breakpoints:md..lg', { style: { gap: 12 } });
+```
+
+Autocomplete suggests `'breakpoints:<name'` for every breakpoint and the valid ascending ranges between the defaults (`'sm..md'`, `'sm..lg'`, `'sm..xl'`, `'md..lg'`, `'md..xl'`, `'lg..xl'`), so it never offers an invalid one such as `'lg..sm'`.
+
+## Your own breakpoints
+
+`configure({ breakpoints })` **replaces** the defaults:
+
+```ts
+configure({ breakpoints: { tablet: 600, desktop: 1100 } });
+// engine('Box').when('breakpoints:tablet', { style: { … } })
+```
+
+Names must match `[A-Za-z_][\w-]*`, the widths must be numbers ≥ 0, and names that already mean something in `when()` (`ios`, `android`, `web`, `native`, `hover`, `focus`, `focus-visible`, `pressed`) are refused with a clear error. To type the new names, augment `IsoBreakpointNames`:
+
+```ts
+declare module 'isoform' {
+  interface IsoBreakpointNames {
+    tablet: unknown;
+    desktop: unknown;
+  }
+}
+```
+
+Ranges with your own names (`'breakpoints:tablet..desktop'`) are accepted too; they are just not suggested by autocomplete.
+
+## How it works on each platform
+
+- **Web**: a real `@media (min-width: …)` rule in the atomic stylesheet. No JavaScript, so it works with SSR and never flashes the wrong layout. Ranges emit `max-width: <upper − 0.02px>`.
+- **Mobile**: components that use a breakpoint follow the window width (`useWindowDimensions`) and recompose their style when it changes (rotation, split screen). Components without breakpoints do not subscribe to anything.
+
+<Aside>
+Like states, breakpoint rules only take `{ style }`. The `style` prop at the call site always wins over breakpoint styles. A prop named like a breakpoint (`md`) is not forwarded to the DOM. If you need the current breakpoint in JavaScript, use `useWindowDimensions` or `matchMedia` directly.
+</Aside>

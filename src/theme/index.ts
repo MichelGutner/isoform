@@ -20,7 +20,7 @@ import { themeStore } from './store';
  *
  * @example Basic Usage
  * ```tsx
- * import { useTheme } from 'react-native-stylish';
+ * import { useTheme } from 'isoform';
  * 
  * const MyComponent = () => {
  *   const theme = useTheme();
@@ -54,4 +54,4 @@ export const useTheme = () => {
   return theme as EngineTheme;
 };
 
-export { setTheme, getTheme } from './store';
+export { updateTheme, getTheme } from './store';

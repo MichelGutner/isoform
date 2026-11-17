@@ -1,0 +1,34 @@
+{
+  "modules": {
+    "video": {
+      "enabled": true
+    },
+    "audio": {
+      "enabled": true,
+      "mediaSession": true
+    },
+    "pdf": {
+      "enabled": true
+    },
+    "sheet": {
+      "enabled": true
+    },
+    "datePicker": {
+      "enabled": true
+    },
+    "image": {
+      "enabled": true
+    },
+    "modal": {
+      "enabled": true
+    },
+    "svg": {
+      "enabled": true
+    },
+    "camera": {
+      "enabled": true,
+      "video": true,
+      "codeScanner": true
+    }
+  }
+}

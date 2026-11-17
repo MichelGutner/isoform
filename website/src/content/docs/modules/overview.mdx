@@ -1,0 +1,56 @@
+---
+title: Native modules
+description: Optional components drawn with UIKit/SwiftUI on iOS, Jetpack Compose on Android and the DOM on the web. Off by default.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Isoform ships optional components that apps keep rebuilding: media players, a PDF viewer, a bottom sheet, SVG, a camera, a date picker, an image pipeline and a modal. They are **off by default**; turn on only what you use in [`isoform.config.json`](/isoform/getting-started/configuration/#isoformconfigjson-and-optional-modules), and the rest never enters your app.
+
+| Module | Primitive | Web | iOS | Android |
+|---|---|---|---|---|
+| [`video`](/isoform/modules/video/) | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + the lib's UIKit controls | Media3 + Compose controls |
+| [`audio`](/isoform/modules/audio/) | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
+| [`pdf`](/isoform/modules/pdf/) | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
+| [`sheet`](/isoform/modules/sheet/) | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
+| [`svg`](/isoform/modules/svg/) | `engine('Svg')`, `engine('Path')`… | the browser's `<svg>` elements | `react-native-svg` (installed by the app) | `react-native-svg` (installed by the app) |
+| [`camera`](/isoform/modules/camera/) | `engine('Camera')` | `getUserMedia`, `MediaRecorder`, `BarcodeDetector` | AVFoundation | CameraX + Jetpack Compose viewfinder, ML Kit |
+| [`datePicker`](/isoform/modules/date-picker/) | `engine('DatePicker')` | the browser's `<input type="date">` | the lib's SwiftUI picker | the lib's Compose picker (same design) |
+| [`image`](/isoform/modules/image/) | `engine('Image')` | `<img>` with blurhash, crossfade, tint, zoom | URLSession, ImageIO, CoreImage | OkHttp (React Native's client), `ImageDecoder` |
+| [`modal`](/isoform/modules/modal/) | `engine('Modal')` | native `<dialog>` | UIKit | Jetpack Compose |
+
+Media lists (`items`) for `Video`, `Audio` and `Pdf` are covered in [Playlists](/isoform/modules/playlists/).
+
+## Turning a module on
+
+```json title="isoform.config.json"
+{ "modules": { "video": true, "sheet": { "enabled": true } } }
+```
+
+```ts title="isoform.config.ts"
+import { configure } from 'isoform';
+import isoform from './isoform.config.json';
+
+configure({ modules: isoform.modules });
+```
+
+Then, on mobile:
+
+1. Wrap the Metro config with `withIsoform` (`isoform/metro`), so disabled modules are swapped for an empty stub.
+2. Run `cd ios && pod install`, and rebuild the native app.
+
+<Aside type="caution">
+On iOS the file is read at `pod install`. Changing it without reinstalling the pods stops the build with a clear message.
+</Aside>
+
+## Styling a module component
+
+Module components are primitives like the others: style them with `engine()`, the theme and `when()`. Each page says where the style goes (the player box, the sheet surface, the modal card…).
+
+```tsx
+const Player = engine('Video', ({ theme }) => ({ width: '100%', aspectRatio: 16 / 9, borderRadius: 16 }));
+```
+
+## Typed refs
+
+`engine('Video' | 'Audio' | 'Pdf' | 'BottomSheet' | 'Camera' | 'Image')` types its `ref` with the primitive's handle (`VideoHandle`, `BottomSheetHandle`…).

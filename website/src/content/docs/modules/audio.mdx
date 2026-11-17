@@ -1,0 +1,139 @@
+---
+title: Audio
+description: An audio player with a card UI, and optional background playback with lock screen and notification controls.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import AudioDemo from '../../../components/demos/AudioDemo.tsx';
+import audioSource from '../../../components/demos/AudioDemo.tsx?raw';
+
+`engine('Audio')` is an audio player with title, artist and cover: `<audio>` with a card player on the web, `AVPlayer` with a UIKit card on iOS, Media3 with a Compose card on Android.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "audio": { "enabled": true, "mediaSession": false } } }
+```
+
+<LiveExample code={audioSource}>
+  <AudioDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | `string` | | Media URL: a file (`.mp3`, `.mp4`, `.webm`…) or an HLS stream (`.m3u8`; Safari only on the web). Give either `src` or [`items`](/isoform/modules/playlists/). |
+| `title` | `string` | | Track title shown above the seek bar. |
+| `artist` | `string` | | Artist, show or author shown under the title. |
+| `artwork` | `string` | | Cover image URL shown at the left of the player. |
+| `controls` | `boolean` | `true` | Shows the controls (play/pause, ±10 s, seek bar, speed, mute). |
+| `autoPlay` | `boolean` | `false` | Starts as soon as the media is ready (browsers only allow it when `muted`). |
+| `loop` | `boolean` | `false` | Restarts when it ends. |
+| `muted` | `boolean` | `false` | Starts muted. |
+| `rate` | `number` | `1` | Playback speed. |
+| `volume` | `number` | `1` | From `0` to `1`. |
+
+Plus the [playlist props](/isoform/modules/playlists/).
+
+## Events and ref
+
+`Audio` has the same events as [`Video`](/isoform/modules/video/#events) except `onFullscreenChange` and `onPictureInPictureChange`: `onPlay`, `onPause`, `onEnded`, `onTimeUpdate`, `onLoad`, `onError`, `onSeek`, `onBuffering`, `onBufferedChange`, `onVolumeChange`, `onRateChange`, `onItemChange`.
+
+Its `ref` is an `AudioHandle`: `play()`, `pause()`, `seekTo(seconds)`, plus `next()`, `previous()` and `goTo(index)` with a list.
+
+## Background audio and system controls (`mediaSession`)
+
+Set `audio.mediaSession` to `true` (next to `"enabled": true`) so an `Audio` keeps playing with the screen locked or the app in the background, with controls outside the app. It is **build-time only** (ignored in JS) and off unless set explicitly, because it adds permissions to your app.
+
+| Platform | What you get | What the lib sets up for you |
+|---|---|---|
+| Android | A media notification (play/pause, ±10 s, seek bar, cover, title) and a foreground service | The lib's manifest is merged at build time: the `mediaPlayback` service and the `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK` and `POST_NOTIFICATIONS` permissions. No native code in your app. |
+| iOS | Lock screen and Control Center controls (play/pause, ±10 s, seek, cover, title) | The pod's build step adds `UIBackgroundModes` → `audio` to your app's `Info.plist` (a pod cannot declare it). The change shows up in git once. |
+
+What is left to you:
+
+- **Android 13+**: request the `POST_NOTIFICATIONS` permission at runtime. Without it, audio still plays but the notification is hidden.
+
+  ```ts
+  import { PermissionsAndroid, Platform } from 'react-native';
+
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    await PermissionsAndroid.request('android.permission.POST_NOTIFICATIONS');
+  }
+  ```
+
+- **iOS**: reinstall the pods after turning it on (the build then edits the `Info.plist` for you): `cd ios && pod install`.
+
+### Running the iOS setup by hand
+
+To apply the `Info.plist` change without building (in CI, or after regenerating `ios/`), run from the app root:
+
+```bash
+npx isoform-setup-ios
+# or
+node node_modules/isoform/scripts/setup-ios.js
+# app in another folder (monorepo):
+npx isoform-setup-ios path/to/app
+```
+
+It only acts when `isoform.config.json` has `audio: { enabled: true, mediaSession: true }`, runs on macOS only (it uses the system `plutil`) and is safe to run again.
+
+### Setting it up manually
+
+Prefer to own the native files? Leave `audio.mediaSession` as `false` and add the entries yourself. On iOS (`ios/<App>/Info.plist`):
+
+```xml
+<key>UIBackgroundModes</key>
+<array>
+  <string>audio</string>
+</array>
+```
+
+Or from a terminal:
+
+```bash
+/usr/bin/plutil -insert UIBackgroundModes -json '["audio"]' ios/<App>/Info.plist
+# if the key already exists (e.g. "fetch"), add to it instead:
+/usr/bin/plutil -insert UIBackgroundModes.0 -string audio ios/<App>/Info.plist
+```
+
+The lock screen controls themselves (`MPNowPlayingInfoCenter`) are compiled only with `mediaSession: true`; the plist entry alone just lets audio keep playing in the background.
+
+On Android, `mediaSession: true` already adds these entries at build time. They are listed so you can see what is added, or override them (for example `tools:node="remove"` on `POST_NOTIFICATIONS`):
+
+```xml
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+<application ...>
+  <service
+    android:name="com.isoform.IsoMediaService"
+    android:exported="true"
+    android:foregroundServiceType="mediaPlayback">
+    <intent-filter>
+      <action android:name="androidx.media3.session.MediaSessionService" />
+    </intent-filter>
+  </service>
+</application>
+```
+
+The `IsoMediaService` class only exists when `mediaSession` is `true`, so the flag must be on for the service to be compiled; the manifest entries alone do nothing.
+
+<Aside type="note">
+The iOS build step and script run on macOS only (iOS builds happen there anyway). If your Xcode project has `ENABLE_USER_SCRIPT_SANDBOXING = YES`, the build step cannot write the plist (React Native's template sets it to `NO`); run the script or the `plutil` command by hand in that case.
+</Aside>
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Engine | `<audio>` | `AVPlayer` | Media3 ExoPlayer |
+| UI | card player (DOM) | UIKit card | Compose card |
+| Background + system controls | – | with `mediaSession` | with `mediaSession` |
+
+## When the module is off
+
+`Audio` renders an empty box with the same style and logs one development warning.

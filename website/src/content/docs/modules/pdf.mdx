@@ -1,0 +1,98 @@
+---
+title: PDF viewer
+description: A PDF viewer with search, thumbnails, zoom, read aloud and night mode. pdf.js on the web, PDFKit on iOS, PdfRenderer on Android.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import PdfDemo from '../../../components/demos/PdfDemo.tsx';
+import pdfSource from '../../../components/demos/PdfDemo.tsx?raw';
+
+`engine('Pdf')` is a document viewer with its own colorless toolbar: thumbnails, page counter (tap to go to a page), read aloud, search, fullscreen, table of contents and a menu (voice, night mode, fit width/page, direction, download/print on the web, share on iOS).
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "pdf": { "enabled": true } } }
+```
+
+<LiveExample code={pdfSource}>
+  <PdfDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | `string` | | `https://…`, `file://…` (native), or a same-origin/CORS-enabled URL (web). Give either `src` or [`items`](/isoform/modules/playlists/). |
+| `password` | `string` | | Password of a protected document. Without it the viewer asks the user (and calls `onPasswordRequired`). |
+| `initialPage` | `number` | `1` | Page shown when the document opens (from `1`). |
+| `controls` | `boolean` | `true` | Shows the toolbar. |
+| `nightMode` | `boolean` | `false` | Starts with inverted page colors. The user can switch it in the menu. |
+| `fit` | `'width' \| 'page'` | `'width'` | Page size at zoom `1`. |
+| `maxZoom` | `number` | `5` | Largest zoom, as a multiple of the `fit` size. |
+| `direction` | `'vertical' \| 'horizontal'` | `'vertical'` | Pages one under the other, or side by side turning like a book. The user can switch it in the menu. |
+| `speechLanguage` | `string` | device language | BCP 47 language of the read-aloud voice (`'pt-BR'`, `'en-US'`…). |
+| `speechVoice` | `string` | most natural installed | Read-aloud voice by the platform's id: the voice `name` on the web, `AVSpeechSynthesisVoice.identifier` on iOS, `Voice.getName()` on Android. |
+
+## Events
+
+| Event | Payload | When |
+|---|---|---|
+| `onLoad` | `{ pageCount }` | The document is open. |
+| `onPageChange` | `{ page, pageCount }` | The page most visible on screen changes (from `1`). |
+| `onSearch` | `{ query, total, current }` | After a search and after each move between matches (`current` from `1`, `0` with no matches). |
+| `onError` | `message: string` | The document fails to download or open. |
+| `onPasswordRequired` | | The document needs a password (none or a wrong one). The viewer shows a field. |
+| `onLinkPress` | `url: string` | The user taps a link to a website, before it opens. |
+| `onFullscreenChange` | `boolean` | Entering or leaving fullscreen. |
+| `onReadAloudChange` | `boolean` | Reading aloud starts, or stops / reaches the end. |
+| `onItemChange` | `{ index, item }` | With `items`: the current document changes. |
+
+## Ref: `PdfHandle`
+
+| Method | Description |
+|---|---|
+| `goToPage(page)` | Scrolls to `page` (from `1`, clamped). Triggers `onPageChange`. |
+| `search(query)` | Finds every occurrence (case- and accent-insensitive), highlights them and scrolls to the first. Triggers `onSearch`. No-op on Android older than 12. |
+| `searchNext()`, `searchPrevious()` | Selects the next / previous match (wrapping). |
+| `clearSearch()` | Removes the highlights. Triggers `onSearch` with `query: ''`. |
+| `setZoom(scale)` | Zooms to `scale`, where `1` is the `fit` size (up to `maxZoom`; the web also allows down to `0.25`). |
+| `setFullscreen(on)` | Shows the viewer over the whole screen, or back in place. |
+| `startReadAloud()`, `stopReadAloud()` | Reads the document aloud from the page on screen, turning pages. No-op on Android older than 12. |
+| `next()`, `previous()`, `goTo(index)` | List navigation with `items`. |
+
+## Per platform
+
+| Feature | Web | iOS | Android 15+, or 12–14 with system updates | Older Android |
+|---|---|---|---|---|
+| Pages, scroll, pinch/double-tap zoom, page counter, thumbnails, night mode, fullscreen | ✓ | ✓ | ✓ | ✓ |
+| Search with every match highlighted (case- and accent-insensitive) | ✓ | ✓ | ✓ | – |
+| Read aloud (word highlight on web and iOS) and voice picker | ✓ | ✓ | ✓ | – |
+| Links (pages and websites), password prompt | ✓ | ✓ | ✓ | – |
+| Text selection and copy, table of contents | ✓ | ✓ | – | – |
+| Download / print / share | ✓ | ✓ | – | – |
+
+"Android 12–14 with system updates" means SDK extension 13 (`PdfRendererPreV`, delivered by Google Play system updates). Older devices get the basic viewer: the search and read-aloud buttons are hidden and protected files show an error.
+
+**Read aloud** uses the system voice (web `speechSynthesis`, iOS `AVSpeechSynthesizer`, Android `TextToSpeech`) and picks the most natural voice installed for the language: neural/"Natural" voices on the web (Edge, Chrome), Premium and Enhanced voices on iOS, the highest-quality voices on Android. On iOS, better voices are downloaded in Settings › Accessibility › Spoken Content › Voices.
+
+## Web worker
+
+`pdfjs-dist` comes with Isoform and is only downloaded by the browser when a `Pdf` renders. By default the PDF is parsed on the main thread (no setup). For very large files, serve the worker (same `pdfjs-dist` version) and pass its URL:
+
+```bash
+cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/
+```
+
+```json title="isoform.config.json"
+{ "modules": { "pdf": { "enabled": true, "workerSrc": "/pdf.worker.min.mjs" } } }
+```
+
+<Aside>
+On the web the file must be same-origin or served with CORS. On mobile, `https://`, `file://` and (Android) `content://` addresses work; remote files are downloaded once to the cache.
+</Aside>
+
+## When the module is off
+
+`Pdf` renders an empty box with the same style and logs one development warning.

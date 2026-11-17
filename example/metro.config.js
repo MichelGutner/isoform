@@ -2,21 +2,30 @@ const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
 const projectRoot = __dirname;
-const workspaceRoot = path.resolve(projectRoot, '..');
+const libRoot = path.resolve(projectRoot, '..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Add watch folders for local src
-config.watchFolders = [workspaceRoot];
+// Observa a lib (../src) para o Fast Refresh funcionar ao editar o código dela.
+config.watchFolders = [libRoot];
 
-// Add resolver for local src using extraNodeModules
-config.resolver.extraNodeModules = {
-  'stylized': path.resolve(workspaceRoot, 'dist'),
+// Dependências (react, react-native...) sempre resolvidas a partir do example,
+// evitando duas cópias de React quando os arquivos da lib importam algo.
+config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')];
+config.resolver.disableHierarchicalLookup = true;
+
+// `import ... from 'isoform'` aponta direto para o código-fonte da lib.
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName === 'isoform') {
+    return {
+      type: 'sourceFile',
+      filePath: path.resolve(libRoot, 'src/index.ts'),
+    };
+  }
+  return context.resolveRequest(context, moduleName, platform);
 };
 
-// Add alias as fallback
-config.resolver.alias = {
-  'stylized': path.resolve(workspaceRoot, 'dist/index.js'),
-};
+// Módulos desligados no isoform.config.json saem do bundle JS.
+const { withIsoform } = require('isoform/metro');
 
-module.exports = config;
+module.exports = withIsoform(config);

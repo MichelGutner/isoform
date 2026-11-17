@@ -6,18 +6,21 @@ export function makeProxy<
   const proxy = new Proxy(component, {
     get(target, prop) {
       if (prop in builder) {
-        const original = builder[prop];
+        const original = (builder as any)[prop];
         if (typeof original === 'function') {
           return (...args: unknown[]) => {
             const result = original.apply(builder, args);
+            if (result === builder) {
+              return proxy;
+            }
             if (result instanceof builder.constructor) {
               return makeProxy((result as any).build(), result);
             }
-            return makeProxy(component, builder);
+            return proxy;
           };
         }
       }
-      return target[prop];
+      return (target as any)[prop];
     },
   });
 

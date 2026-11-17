@@ -1,0 +1,56 @@
+---
+title: Isoform
+description: One styling and component API for React and React Native. Write a component once, run it on the web, iOS and Android.
+template: splash
+hero:
+  tagline: One styling and component API for React and React Native. Write a component once; it runs on the web, iOS and Android.
+  actions:
+    - text: Get started
+      link: /isoform/getting-started/introduction/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/MichelGutner/isoform
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LiveExample from '../../components/LiveExample.astro';
+import ButtonDemo from '../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../components/demos/ButtonDemo.tsx?raw';
+
+The button below is rendered by Isoform's React DOM adapter, right in this page. The same file renders a React Native `Pressable` on iOS and Android.
+
+<LiveExample code={buttonSource}>
+  <ButtonDemo client:only="react" />
+</LiveExample>
+
+<CardGrid>
+  <Card title="One component library" icon="laptop">
+    `engine('Box')`, `engine('Pressable')`… resolve to a `div` on the web and a `View` on mobile. No platform checks in your components.
+  </Card>
+  <Card title="Standard CSS vocabulary" icon="pencil">
+    `paddingInline`, `boxShadow`, `'1rem'`, `transform: 'rotate(-2deg)'`. Numbers are px, strings are CSS, on every platform.
+  </Card>
+  <Card title="Global theme, no providers" icon="star">
+    `configure({ theme })` once at startup, `updateTheme()` anywhere. Every component re-renders, nothing wraps your tree.
+  </Card>
+  <Card title="Variants without boilerplate" icon="list-format">
+    `when('props:variant=ghost')`, `when('state:pressed')`, `when('breakpoints:md')`, `when('platform:web')`, `when('::before')`.
+  </Card>
+  <Card title="Animations on both runtimes" icon="rocket">
+    `keyframes()` and CSS `transition` become real CSS on the web and `Animated` on React Native.
+  </Card>
+  <Card title="Optional native modules" icon="puzzle">
+    Video, audio, PDF, bottom sheet, SVG, camera, date picker, image pipeline and modal, drawn with UIKit/SwiftUI and Jetpack Compose. Off by default, zero cost when off.
+  </Card>
+</CardGrid>
+
+## Where to next
+
+<CardGrid>
+  <LinkCard title="Installation" href="/isoform/getting-started/installation/" description="Expo, bare React Native, Vite and Next." />
+  <LinkCard title="Quick start" href="/isoform/getting-started/quick-start/" description="Configure once, build a card and a button." />
+  <LinkCard title="Style vocabulary" href="/isoform/guides/style-vocabulary/" description="Which CSS works where, and how values convert." />
+  <LinkCard title="Native modules" href="/isoform/modules/overview/" description="Turn on only the modules your app uses." />
+</CardGrid>

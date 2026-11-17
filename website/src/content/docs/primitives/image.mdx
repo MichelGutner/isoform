@@ -1,0 +1,30 @@
+---
+title: Image
+description: A picture with the web-standard src and alt. Optional image pipeline with caches, blurhash and zoom.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+`Image` is an `<img>` on the web and React Native's `Image` on mobile. Use the web-standard `src` and `alt`:
+
+```tsx
+const Avatar = engine('Image', { width: 48, height: 48, borderRadius: 24 });
+
+<Avatar src="https://example.com/me.jpg" alt="My avatar" />;
+<Avatar src={require('./me.png')} alt="My avatar" />;
+```
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `src` | `string \| number \| ImageSource` | The picture: a URL, a `require('./pic.png')` or `{ uri, headers, cacheKey }`. |
+| `alt` | `string` | Alternative text. |
+| `contentFit` | `'cover' \| 'contain' \| 'fill' \| 'none' \| 'scale-down'` | How the picture fills its box. Applies with or without the module. |
+| `tintColor` | `string` | Paints every non-transparent pixel. Applies with or without the module. |
+| `blurRadius` | `number` | Gaussian blur radius. Applies with or without the module. |
+| `source` | `{ uri } \| string \| number` | Deprecated: use `src`. |
+
+<Aside type="tip" title="The image module">
+Turn on the [`image` module](/isoform/modules/image/) for the lib's own pipeline: memory and disk caches, shared downloads, blurhash placeholders, crossfade, animated GIF/WebP, pinch-to-zoom, `prefetchImages` and `clearImageCache`. Without it, `Image` stays the platform's plain image.
+</Aside>

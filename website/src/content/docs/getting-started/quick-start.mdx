@@ -1,0 +1,66 @@
+---
+title: Quick start
+description: Configure Isoform once, build components from neutral primitives and use them on the web and on mobile.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import CardDemo from '../../../components/demos/CardDemo.tsx';
+import cardSource from '../../../components/demos/CardDemo.tsx?raw';
+import ButtonDemo from '../../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../../components/demos/ButtonDemo.tsx?raw';
+
+<Steps>
+
+1. **One config file, shared by every app.** It picks the platform provider, sets the theme and, optionally, turns modules on.
+
+   ```ts title="isoform.config.ts"
+   import { configure } from 'isoform';
+
+   configure({
+     provider: 'auto', // 'auto' | 'react-native' | 'react' | a custom adapter
+     theme: {
+       color: { background: '#fff', surface: '#fff', text: '#111', muted: '#6b7280', primary: '#6366f1' },
+       spacing: { sm: 8, md: 16, lg: 24 },
+     },
+   });
+   ```
+
+   Import it once, before rendering: `import './isoform.config'` in your entry (`main.tsx` on Vite, `app/_layout.tsx` on Expo Router, `index.js` on bare React Native).
+
+2. **Build components from neutral primitives.** `Box`, `Text`, `Pressable`, `Input`, `Image` and `Scroll` exist on every platform.
+
+   <LiveExample code={cardSource}>
+     <CardDemo client:only="react" />
+   </LiveExample>
+
+3. **Add variants and states with `when()`.** Conditions read props, interaction states, breakpoints, the platform or pseudo-elements.
+
+   <LiveExample code={buttonSource}>
+     <ButtonDemo client:only="react" />
+   </LiveExample>
+
+4. **Use them anywhere.** Universal props work on both platforms: `onPress`, `aria-*`, `role`, `testID`.
+
+   ```tsx
+   <Card>
+     <Title>Hello, web and mobile</Title>
+     <Button onPress={save} aria-label="Save" testID="save">
+       <Label>Save</Label>
+     </Button>
+   </Card>
+   ```
+
+</Steps>
+
+The same `Button` renders a `<div role="button">` with atomic CSS classes on the web (keyboard accessible: Enter and Space call `onPress`) and a React Native `Pressable` on iOS and Android.
+
+<Aside type="tip">
+Type your theme once so `theme.color.primary` autocompletes everywhere: see [TypeScript](/isoform/guides/typescript/).
+</Aside>
+
+## What's next
+
+- [Configuration](/isoform/getting-started/configuration/): breakpoints, `rem` on native and the optional modules.
+- [Style vocabulary](/isoform/guides/style-vocabulary/): which CSS works on which platform.
+- [Conditions and variants](/isoform/guides/conditions/): everything `when()` accepts.

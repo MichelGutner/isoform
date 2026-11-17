@@ -1,0 +1,33 @@
+---
+title: Pseudo-elements
+description: when('::before'), '::after', '::placeholder', '::selection' and '::first-letter' on both platforms, plus web-only names.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import PseudoDemo from '../../../components/demos/PseudoDemo.tsx';
+import pseudoSource from '../../../components/demos/PseudoDemo.tsx?raw';
+
+`when('::before', { style })` uses the CSS pseudo-element syntax and works on both platforms wherever there is an honest translation.
+
+<LiveExample code={pseudoSource}>
+  <PseudoDemo client:only="react" />
+</LiveExample>
+
+## Support
+
+| Pseudo-element | Web | Mobile |
+|---|---|---|
+| `'::before'`, `'::after'` | CSS `::before`/`::after` | a generated child before/after the real ones: a `Text` when `content` has text, an empty `View` otherwise (decorations). Not available on `Input`/`Image`. |
+| `'::placeholder'` | CSS | `Input` → `placeholderTextColor` (uses `color`) |
+| `'::selection'` | CSS | `Input` → `selectionColor` (uses `backgroundColor`) |
+| `'::first-letter'` | CSS | `Text` with plain-text (string) children: the first letter gets its own nested `Text` |
+| `'::first-line'`, `'::marker'` | CSS | **web only**, ignored (one dev warning) |
+| `'::scrollbar'`, `'::scrollbar-thumb'`, `'::scrollbar-track'` | `::-webkit-scrollbar*` (Chrome, Edge, Safari) | **web only**, ignored (one dev warning) |
+
+The universal names are grouped in the `UniversalPseudoName` type and the web-only ones in `WebOnlyPseudoName` (marked `@platform web`).
+
+## `content`
+
+Plain text is quoted for you (`'→'` becomes `content: "→"`); an empty string or no `content` renders an empty box. CSS keywords and functions pass through on the web (`none`, `attr(title)`, `url(…)`, an already-quoted `'"x"'`). On mobile `none` renders nothing and `attr()`/`counter()`/`url()` are skipped with a warning.
+
+Pseudo-element rules only take `{ style }`, like states and breakpoints. On the web they live in their own rank block (after base and state rules, before breakpoints), so they always beat the base rules.
