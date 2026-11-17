@@ -8,7 +8,7 @@ import LiveExample from '../../../components/LiveExample.astro';
 import VocabularyDemo from '../../../components/demos/VocabularyDemo.tsx';
 import vocabularySource from '../../../components/demos/VocabularyDemo.tsx?raw';
 
-Rule of thumb: **use the standard CSS / HTML / ARIA name whenever React Native also understands it.** The style type, [`IsoStyle`](/isoform/reference/types/#style), is the full `React.CSSProperties` plus a few React Native aliases.
+Rule of thumb: **use the standard CSS / HTML / ARIA name whenever React Native also understands it.** The style type, [`IsoStyle`](/reference/types/#style), is the full `React.CSSProperties` plus a few React Native aliases.
 
 ## Two value rules, identical everywhere
 
@@ -31,7 +31,7 @@ On the web strings go straight to CSS. On mobile the adapter converts what it ca
 | Any other CSS | `cursor`, `backdropFilter`, `gridTemplateColumns`… | CSS | ignored (dev warning) |
 | React Native aliases | `paddingHorizontal`, `shadow*`, `elevation`, `resizeMode` | converted | native |
 
-`transition` and `animation` are the exception to "web-only CSS": both run on mobile too, through `Animated`. See [Animations](/isoform/guides/animations/).
+`transition` and `animation` are the exception to "web-only CSS": both run on mobile too, through `Animated`. See [Animations](/guides/animations/).
 
 ## How mobile converts values
 

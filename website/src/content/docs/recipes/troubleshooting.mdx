@@ -9,15 +9,15 @@ Isoform's runtime error messages are currently written in Portuguese; the table 
 |---|---|
 | `nenhum provedor disponível` ("no provider available") | The entry was not imported before rendering (a custom bundler skipped `providers/*`). Import `isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` is not stripping `providers/*`. |
 | `provider "react-native" não está disponível neste bundle` ("is not available in this bundle") | You forced a provider that the current bundle does not include. Use `'auto'`. |
-| `a primitiva "Switch" não existe no provedor "react"` ("the primitive does not exist in the provider") | A mobile-only primitive was rendered on the web. Give it a web variant (`Component.tsx` / `Component.native.tsx`). See [Native-only primitives](/isoform/primitives/native-and-legacy/). |
-| `módulo "video" desligado` ("module disabled") warning | A component of a disabled module rendered. Turn the module on in `isoform.config.json` and pass it to `configure({ modules })`. See [Configuration](/isoform/getting-started/configuration/). |
+| `a primitiva "Switch" não existe no provedor "react"` ("the primitive does not exist in the provider") | A mobile-only primitive was rendered on the web. Give it a web variant (`Component.tsx` / `Component.native.tsx`). See [Native-only primitives](/primitives/native-and-legacy/). |
+| `módulo "video" desligado` ("module disabled") warning | A component of a disabled module rendered. Turn the module on in `isoform.config.json` and pass it to `configure({ modules })`. See [Configuration](/getting-started/configuration/). |
 | A CSS property has no effect on mobile | It has no React Native equivalent; check the development warning. Scope it with `.when('platform:web', …)`. |
 | `boxShadow` or `paddingInline` ignored on mobile | Needs React Native ≥ 0.76 (and the new architecture for `boxShadow`). |
 | `configure()` throws about a breakpoint name | Names must match `[A-Za-z_][\w-]*`, cannot be `ios`, `android`, `web`, `native`, `hover`, `focus`, `focus-visible` or `pressed`, and need a width ≥ 0. |
 | An unknown `when()` condition warns | Typo, or the old unprefixed syntax (`'web'`, `'md'`, `'hover'`). Use the prefixes: `'platform:web'`, `'breakpoints:md'`, `'state:hover'`. |
 | The iOS build stops saying `isoform.config.json` changed | The file is read at `pod install`. Run `cd ios && pod install`. |
 | Metro stops: module `svg` is on but `react-native-svg` is missing | Install it: `npx expo install react-native-svg` (then `pod install`), or turn the module off. |
-| `mediaSession` controls missing on Android 13+ | Request `POST_NOTIFICATIONS` at runtime. See [Audio](/isoform/modules/audio/#background-audio-and-system-controls-mediasession). |
+| `mediaSession` controls missing on Android 13+ | Request `POST_NOTIFICATIONS` at runtime. See [Audio](/modules/audio/#background-audio-and-system-controls-mediasession). |
 | `Info.plist` not updated with `mediaSession` | `ENABLE_USER_SCRIPT_SANDBOXING = YES` blocks the build step. Run `npx isoform-setup-ios`. |
 | A `Pdf` cannot load a remote file on the web | The file must be same-origin or served with CORS. |
 | `when('state:pressed')` does nothing on a `Box` on mobile | `pressed` only exists on `Pressable` on mobile (`:active` on the web). |

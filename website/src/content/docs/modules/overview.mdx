@@ -5,21 +5,21 @@ description: Optional components drawn with UIKit/SwiftUI on iOS, Jetpack Compos
 
 import { Aside } from '@astrojs/starlight/components';
 
-Isoform ships optional components that apps keep rebuilding: media players, a PDF viewer, a bottom sheet, SVG, a camera, a date picker, an image pipeline and a modal. They are **off by default**; turn on only what you use in [`isoform.config.json`](/isoform/getting-started/configuration/#isoformconfigjson-and-optional-modules), and the rest never enters your app.
+Isoform ships optional components that apps keep rebuilding: media players, a PDF viewer, a bottom sheet, SVG, a camera, a date picker, an image pipeline and a modal. They are **off by default**; turn on only what you use in [`isoform.config.json`](/getting-started/configuration/#isoformconfigjson-and-optional-modules), and the rest never enters your app.
 
 | Module | Primitive | Web | iOS | Android |
 |---|---|---|---|---|
-| [`video`](/isoform/modules/video/) | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + the lib's UIKit controls | Media3 + Compose controls |
-| [`audio`](/isoform/modules/audio/) | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
-| [`pdf`](/isoform/modules/pdf/) | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
-| [`sheet`](/isoform/modules/sheet/) | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
-| [`svg`](/isoform/modules/svg/) | `engine('Svg')`, `engine('Path')`… | the browser's `<svg>` elements | `react-native-svg` (installed by the app) | `react-native-svg` (installed by the app) |
-| [`camera`](/isoform/modules/camera/) | `engine('Camera')` | `getUserMedia`, `MediaRecorder`, `BarcodeDetector` | AVFoundation | CameraX + Jetpack Compose viewfinder, ML Kit |
-| [`datePicker`](/isoform/modules/date-picker/) | `engine('DatePicker')` | the browser's `<input type="date">` | the lib's SwiftUI picker | the lib's Compose picker (same design) |
-| [`image`](/isoform/modules/image/) | `engine('Image')` | `<img>` with blurhash, crossfade, tint, zoom | URLSession, ImageIO, CoreImage | OkHttp (React Native's client), `ImageDecoder` |
-| [`modal`](/isoform/modules/modal/) | `engine('Modal')` | native `<dialog>` | UIKit | Jetpack Compose |
+| [`video`](/modules/video/) | `engine('Video')` | `<video>` with the lib's controls (fullscreen, picture-in-picture, speed) | `AVPlayer` + the lib's UIKit controls | Media3 + Compose controls |
+| [`audio`](/modules/audio/) | `engine('Audio')` | `<audio>` with a card player | `AVPlayer` + a UIKit card | Media3 + Compose card |
+| [`pdf`](/modules/pdf/) | `engine('Pdf')` | pdf.js (`pdfjs-dist`) with the lib's toolbar | PDFKit + a UIKit toolbar | system `PdfRenderer` + Compose viewer |
+| [`sheet`](/modules/sheet/) | `engine('BottomSheet')` | native `<dialog>` with drag and snapping | SwiftUI `.sheet` (`presentationDetents`) | Jetpack Compose sheet |
+| [`svg`](/modules/svg/) | `engine('Svg')`, `engine('Path')`… | the browser's `<svg>` elements | `react-native-svg` (installed by the app) | `react-native-svg` (installed by the app) |
+| [`camera`](/modules/camera/) | `engine('Camera')` | `getUserMedia`, `MediaRecorder`, `BarcodeDetector` | AVFoundation | CameraX + Jetpack Compose viewfinder, ML Kit |
+| [`datePicker`](/modules/date-picker/) | `engine('DatePicker')` | the browser's `<input type="date">` | the lib's SwiftUI picker | the lib's Compose picker (same design) |
+| [`image`](/modules/image/) | `engine('Image')` | `<img>` with blurhash, crossfade, tint, zoom | URLSession, ImageIO, CoreImage | OkHttp (React Native's client), `ImageDecoder` |
+| [`modal`](/modules/modal/) | `engine('Modal')` | native `<dialog>` | UIKit | Jetpack Compose |
 
-Media lists (`items`) for `Video`, `Audio` and `Pdf` are covered in [Playlists](/isoform/modules/playlists/).
+Media lists (`items`) for `Video`, `Audio` and `Pdf` are covered in [Playlists](/modules/playlists/).
 
 ## Turning a module on
 

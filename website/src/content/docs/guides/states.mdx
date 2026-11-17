@@ -41,7 +41,7 @@ State rules only take `{ style }` (other props are ignored with a development wa
 - **Mobile**: `pressed` turns the `Pressable` style into `({ pressed }) => …`; `focus` is tracked by a shared style host through `onFocus`/`onBlur`, so focus changes can be transitioned and combine with breakpoints.
 
 <Aside>
-A prop with the same name as a state (`pressed`, `focus`…) never clashes: it is checked with `'props:pressed'`. State changes can be animated with a CSS `transition` on both platforms: see [Animations](/isoform/guides/animations/#transitions).
+A prop with the same name as a state (`pressed`, `focus`…) never clashes: it is checked with `'props:pressed'`. State changes can be animated with a CSS `transition` on both platforms: see [Animations](/guides/animations/#transitions).
 </Aside>
 
 `onPressIn` and `onPressOut` work on both platforms (pointer events on the web) if you need the state in JavaScript.

@@ -18,7 +18,7 @@ Isoform's peer dependencies are `react >= 18` plus **one** platform:
 | Web | `react-dom >= 18` |
 | Mobile | `react-native >= 0.76` |
 
-Both `react-dom` and `react-native` are optional peers, so a web app never needs React Native and a mobile app never needs React DOM. `react-native-svg` (`>= 15`) is an optional peer too, needed only by the [SVG module](/isoform/modules/svg/) on mobile.
+Both `react-dom` and `react-native` are optional peers, so a web app never needs React Native and a mobile app never needs React DOM. `react-native-svg` (`>= 15`) is an optional peer too, needed only by the [SVG module](/modules/svg/) on mobile.
 
 ## Set up your app
 
@@ -31,13 +31,13 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
        npx expo install isoform
        ```
 
-    2. Create the config file (see [Quick start](/isoform/getting-started/quick-start/)) and import it **first** in your root layout, before anything renders:
+    2. Create the config file (see [Quick start](/getting-started/quick-start/)) and import it **first** in your root layout, before anything renders:
 
        ```tsx title="app/_layout.tsx"
        import '../isoform.config';
        ```
 
-    3. If you use [optional modules](/isoform/getting-started/configuration/), add `isoform.config.json` next to `package.json`, wrap the Metro config, and rebuild the native app (`npx expo prebuild` / `npx expo run:ios`):
+    3. If you use [optional modules](/getting-started/configuration/), add `isoform.config.json` next to `package.json`, wrap the Metro config, and rebuild the native app (`npx expo prebuild` / `npx expo run:ios`):
 
        ```js title="metro.config.js"
        const { getDefaultConfig } = require('expo/metro-config');
@@ -109,7 +109,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
 
     2. Isoform components render on the client. Import the config file at the top of a client entry that wraps your tree (for example a `'use client'` providers file used by the root layout), so `configure()` runs before the first render.
 
-    3. To server-render the styles, collect them with [`getStyleText()`](/isoform/guides/server-side-rendering/) and inject them into a `<style>` tag.
+    3. To server-render the styles, collect them with [`getStyleText()`](/guides/server-side-rendering/) and inject them into a `<style>` tag.
     </Steps>
   </TabItem>
 </Tabs>
@@ -120,5 +120,5 @@ Components can be **defined** before `configure()` runs (they only store a primi
 
 ## Next steps
 
-- [Quick start](/isoform/getting-started/quick-start/): configure, build and render your first components.
-- [Configuration](/isoform/getting-started/configuration/): `configure()` options and `isoform.config.json`.
+- [Quick start](/getting-started/quick-start/): configure, build and render your first components.
+- [Configuration](/getting-started/configuration/): `configure()` options and `isoform.config.json`.

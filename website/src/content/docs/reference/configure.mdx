@@ -20,7 +20,7 @@ configure({ theme: tokens, modules: isoform.modules });
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `provider` | `'auto' \| ProviderName \| PlatformAdapter` | `'auto'` | `'auto'`: the provider the bundler included (React Native on Metro, React DOM on Vite/Next/webpack). `'react-native'` / `'react'`: explicit; throws a clear error if it does not match the bundle. A [`PlatformAdapter`](/isoform/reference/platform-adapter/): a custom platform. |
+| `provider` | `'auto' \| ProviderName \| PlatformAdapter` | `'auto'` | `'auto'`: the provider the bundler included (React Native on Metro, React DOM on Vite/Next/webpack). `'react-native'` / `'react'`: explicit; throws a clear error if it does not match the bundle. A [`PlatformAdapter`](/reference/platform-adapter/): a custom platform. |
 | `theme` | `Partial<EngineTheme>` | | The theme. Shortcut for `updateTheme(theme)`. |
 | `breakpoints` | `Record<string, number>` | `{ sm: 480, md: 768, lg: 1024, xl: 1280 }` | Minimum widths (px), mobile-first. Replaces the whole set. Augment `IsoBreakpointNames` to type new names. |
 | `native` | `{ remBase?: number }` | `{ remBase: 16 }` | Pixel size of `1rem` (and the fallback for `em`) on native. |

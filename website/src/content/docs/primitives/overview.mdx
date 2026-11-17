@@ -7,22 +7,22 @@ A primitive is a name passed to `engine()`. It is resolved **at render time** by
 
 | Name | Web | Mobile |
 |---|---|---|
-| [`Box`](/isoform/primitives/box/) | `div` (flex column, React Native-like defaults) | `View` |
-| [`Text`](/isoform/primitives/text/) | `span` | `Text` |
-| [`Pressable`](/isoform/primitives/pressable/) | `div[role=button]`, keyboard accessible | `Pressable` |
-| [`Input`](/isoform/primitives/input/) | `input` / `textarea` (`multiline`) | `TextInput` |
-| [`Image`](/isoform/primitives/image/) | `img` (with the `image` module: blurhash, crossfade, tint, zoom) | `Image` (with the `image` module: the lib's pipeline) |
-| [`Scroll`](/isoform/primitives/scroll/) | scrollable `div` | `ScrollView` |
-| [`Video`](/isoform/modules/video/), [`Audio`](/isoform/modules/audio/), [`Pdf`](/isoform/modules/pdf/) | optional players and PDF viewer | native players and viewer |
-| [`BottomSheet`](/isoform/modules/sheet/) | optional `<dialog>` sheet | SwiftUI sheet (iOS), Compose sheet (Android) |
-| [`Svg`, `Path`, `Circle`…](/isoform/modules/svg/) | optional SVG elements | `react-native-svg` |
-| [`Camera`](/isoform/modules/camera/) | optional `getUserMedia` preview | CameraX + Compose (Android), AVFoundation (iOS) |
-| [`DatePicker`](/isoform/modules/date-picker/) | optional `<input type="date">` | the lib's picker, same design on iOS (SwiftUI) and Android (Compose) |
-| [`Modal`](/isoform/modules/modal/) | optional `<dialog>` | the lib's modal: UIKit (iOS), Compose (Android); React Native's `Modal` with the module off |
+| [`Box`](/primitives/box/) | `div` (flex column, React Native-like defaults) | `View` |
+| [`Text`](/primitives/text/) | `span` | `Text` |
+| [`Pressable`](/primitives/pressable/) | `div[role=button]`, keyboard accessible | `Pressable` |
+| [`Input`](/primitives/input/) | `input` / `textarea` (`multiline`) | `TextInput` |
+| [`Image`](/primitives/image/) | `img` (with the `image` module: blurhash, crossfade, tint, zoom) | `Image` (with the `image` module: the lib's pipeline) |
+| [`Scroll`](/primitives/scroll/) | scrollable `div` | `ScrollView` |
+| [`Video`](/modules/video/), [`Audio`](/modules/audio/), [`Pdf`](/modules/pdf/) | optional players and PDF viewer | native players and viewer |
+| [`BottomSheet`](/modules/sheet/) | optional `<dialog>` sheet | SwiftUI sheet (iOS), Compose sheet (Android) |
+| [`Svg`, `Path`, `Circle`…](/modules/svg/) | optional SVG elements | `react-native-svg` |
+| [`Camera`](/modules/camera/) | optional `getUserMedia` preview | CameraX + Compose (Android), AVFoundation (iOS) |
+| [`DatePicker`](/modules/date-picker/) | optional `<input type="date">` | the lib's picker, same design on iOS (SwiftUI) and Android (Compose) |
+| [`Modal`](/modules/modal/) | optional `<dialog>` | the lib's modal: UIKit (iOS), Compose (Android); React Native's `Modal` with the module off |
 
-React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/isoform/primitives/native-and-legacy/).
+React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/primitives/native-and-legacy/).
 
-You can also wrap any component: `engine(MyComponent, style)`. See [Composition](/isoform/guides/composition/#wrapping-any-react-component).
+You can also wrap any component: `engine(MyComponent, style)`. See [Composition](/guides/composition/#wrapping-any-react-component).
 
 ## Props every primitive shares
 

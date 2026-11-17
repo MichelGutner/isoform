@@ -31,7 +31,7 @@ const Button = engine('Pressable')
 
 | Parameter | Description |
 |---|---|
-| `component` | A primitive name (see [`IsoPrimitives`](/isoform/primitives/overview/)), an existing engine component, or any React component. |
+| `component` | A primitive name (see [`IsoPrimitives`](/primitives/overview/)), an existing engine component, or any React component. |
 | `style` | Optional initial style: an object, or a function of `{ theme, props, platform }`. |
 
 ## Type parameters
@@ -42,7 +42,7 @@ const Button = engine('Pressable')
 
 ## Returns
 
-An [`EngineComponent`](/isoform/reference/engine-component/): a React component (with `ref` forwarding) that also has `.style()`, `.when()`, `.attrs()` and `.extend()`.
+An [`EngineComponent`](/reference/engine-component/): a React component (with `ref` forwarding) that also has `.style()`, `.when()`, `.attrs()` and `.extend()`.
 
 Primitives with methods type their `ref` with a handle: `Video` → `VideoHandle`, `Audio` → `AudioHandle`, `Pdf` → `PdfHandle`, `BottomSheet` → `BottomSheetHandle`, `Camera` → `CameraHandle`, `Image` → `ImageHandle`.
 

@@ -9,7 +9,7 @@ description: The builder behind engine(). Not part of the public entry; use engi
 import { stylized } from 'isoform'; // ✗ not exported
 ```
 
-Use [`engine()`](/isoform/reference/engine/) instead. It takes the same kinds of base component (a primitive name or any React component), accepts an initial style, returns a ready component with `ref` forwarding, and adds the chainable `.style()`, `.when()`, `.attrs()` and `.extend()` methods.
+Use [`engine()`](/reference/engine/) instead. It takes the same kinds of base component (a primitive name or any React component), accepts an initial style, returns a ready component with `ref` forwarding, and adds the chainable `.style()`, `.when()`, `.attrs()` and `.extend()` methods.
 
 | Need | Use |
 |---|---|
@@ -17,4 +17,4 @@ Use [`engine()`](/isoform/reference/engine/) instead. It takes the same kinds of
 | Style any React component | `engine(MyComponent, style)` |
 | Build on another styled component | `engine(OtherEngineComponent, style)` or `.extend()` |
 
-Coming from `react-native-stylized`? See [Migration](/isoform/project/migration/).
+Coming from `react-native-stylized`? See [Migration](/project/migration/).

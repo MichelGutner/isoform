@@ -24,7 +24,7 @@ import audioSource from '../../../components/demos/AudioDemo.tsx?raw';
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `src` | `string` | | Media URL: a file (`.mp3`, `.mp4`, `.webm`…) or an HLS stream (`.m3u8`; Safari only on the web). Give either `src` or [`items`](/isoform/modules/playlists/). |
+| `src` | `string` | | Media URL: a file (`.mp3`, `.mp4`, `.webm`…) or an HLS stream (`.m3u8`; Safari only on the web). Give either `src` or [`items`](/modules/playlists/). |
 | `title` | `string` | | Track title shown above the seek bar. |
 | `artist` | `string` | | Artist, show or author shown under the title. |
 | `artwork` | `string` | | Cover image URL shown at the left of the player. |
@@ -35,11 +35,11 @@ import audioSource from '../../../components/demos/AudioDemo.tsx?raw';
 | `rate` | `number` | `1` | Playback speed. |
 | `volume` | `number` | `1` | From `0` to `1`. |
 
-Plus the [playlist props](/isoform/modules/playlists/).
+Plus the [playlist props](/modules/playlists/).
 
 ## Events and ref
 
-`Audio` has the same events as [`Video`](/isoform/modules/video/#events) except `onFullscreenChange` and `onPictureInPictureChange`: `onPlay`, `onPause`, `onEnded`, `onTimeUpdate`, `onLoad`, `onError`, `onSeek`, `onBuffering`, `onBufferedChange`, `onVolumeChange`, `onRateChange`, `onItemChange`.
+`Audio` has the same events as [`Video`](/modules/video/#events) except `onFullscreenChange` and `onPictureInPictureChange`: `onPlay`, `onPause`, `onEnded`, `onTimeUpdate`, `onLoad`, `onError`, `onSeek`, `onBuffering`, `onBufferedChange`, `onVolumeChange`, `onRateChange`, `onItemChange`.
 
 Its `ref` is an `AudioHandle`: `play()`, `pause()`, `seekTo(seconds)`, plus `next()`, `previous()` and `goTo(index)` with a list.
 

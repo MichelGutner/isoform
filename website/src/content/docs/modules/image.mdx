@@ -8,7 +8,7 @@ import LiveExample from '../../../components/LiveExample.astro';
 import ImageDemo from '../../../components/demos/ImageDemo.tsx';
 import imageSource from '../../../components/demos/ImageDemo.tsx?raw';
 
-With the module on, [`Image`](/isoform/primitives/image/) is the lib's own picture, **the same pipeline design on iOS and Android** with no extra dependency. iOS uses URLSession, ImageIO and CoreImage; Android uses React Native's own OkHttp client (its cookies and interceptors) and `ImageDecoder`.
+With the module on, [`Image`](/primitives/image/) is the lib's own picture, **the same pipeline design on iOS and Android** with no extra dependency. iOS uses URLSession, ImageIO and CoreImage; Android uses React Native's own OkHttp client (its cookies and interceptors) and `ImageDecoder`.
 
 - Pictures are kept in a memory cache and a disk cache (300 MB, least recently used first).
 - A download is shared by every view that shows the same picture, and cancelled when no view waits for it.
@@ -79,7 +79,7 @@ await prefetchImages(next1, { cachePolicy: 'memory-disk' }); // also decodes, sh
 await clearImageCache({ disk: false }); // memory only
 ```
 
-See [`prefetchImages` and `clearImageCache`](/isoform/reference/images/).
+See [`prefetchImages` and `clearImageCache`](/reference/images/).
 
 ## Per platform
 

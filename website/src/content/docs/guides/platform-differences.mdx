@@ -27,7 +27,7 @@ Style functions also receive the platform: `engine('Box', ({ platform }) => ({ â
 | `calc()`, `var()`, `ch` | CSS | dropped |
 | Grid, `cursor`, `backdropFilter`, CSS variables | CSS | dropped |
 | `boxShadow` | CSS | native (React Native â‰¥ 0.76, new architecture) |
-| `transition`, `animation` | CSS | `Animated` (see [Animations](/isoform/guides/animations/)) |
+| `transition`, `animation` | CSS | `Animated` (see [Animations](/guides/animations/)) |
 | `flex: 1` | React Native semantics (`1 1 0%`) | native |
 | Default `Box` | `display: flex; flex-direction: column` | `View` |
 | Borders | `solid`, width `0` by default (so `borderWidth` alone draws one) | native |
@@ -53,7 +53,7 @@ Style functions also receive the platform: `engine('Box', ({ platform }) => ({ â
 
 ## Primitives
 
-The universal primitives (`Box`, `Text`, `Pressable`, `Input`, `Image`, `Scroll`) exist everywhere. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`â€¦) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/isoform/primitives/native-and-legacy/).
+The universal primitives (`Box`, `Text`, `Pressable`, `Input`, `Image`, `Scroll`) exist everywhere. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`â€¦) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/primitives/native-and-legacy/).
 
 ## Optional modules
 

@@ -46,7 +46,7 @@ Highly dynamic values (a `width` that changes with every prop value) create one 
 
 ## The React Native adapter
 
-- Normalizes the CSS vocabulary into React Native styles (see [Style vocabulary](/isoform/guides/style-vocabulary/#how-mobile-converts-values)).
+- Normalizes the CSS vocabulary into React Native styles (see [Style vocabulary](/guides/style-vocabulary/#how-mobile-converts-values)).
 - `type="password"` on `Input` becomes `secureTextEntry`. Everything else is passed straight to the React Native component.
 - Deprecated React Native exports (such as `SafeAreaView`) are read lazily, so you only get React Native's deprecation warning if you use them.
 - A single **style host** tracks what a style depends on at render time (window width for breakpoints, `pressed`, `focus`). Hosts are only created for components that need them, cached per component, and chained as `styleHost` → `transitionHost` → `animatedHost` → component.
@@ -60,4 +60,4 @@ Highly dynamic values (a `width` that changes with every prop value) create one 
 
 ## Custom providers
 
-A provider implements [`PlatformAdapter`](/isoform/reference/platform-adapter/) and is passed with `configure({ provider: myAdapter })`.
+A provider implements [`PlatformAdapter`](/reference/platform-adapter/) and is passed with `configure({ provider: myAdapter })`.

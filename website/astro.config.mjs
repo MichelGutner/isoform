@@ -10,12 +10,19 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 // The live examples import the library from its source, like example-web does.
 const lib = fileURLToPath(new URL('../src/index.ts', import.meta.url));
 
+/**
+ * Public address of the site (canonical URLs, sitemap). Deployed on Vercel at the domain root:
+ * `SITE_URL` wins when set; otherwise Vercel's production domain; otherwise the default.
+ */
+const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const site =
+  process.env.SITE_URL ?? (productionDomain ? `https://${productionDomain}` : 'https://isoform.vercel.app');
+
 /** One sidebar group whose pages are listed in order (slugs under src/content/docs). */
 const group = (label, items) => ({ label, items });
 
 export default defineConfig({
-  site: 'https://michelgutner.github.io',
-  base: '/isoform',
+  site,
   trailingSlash: 'always',
   integrations: [
     react(),

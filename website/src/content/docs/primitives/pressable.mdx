@@ -23,7 +23,7 @@ import buttonSource from '../../../components/demos/ButtonDemo.tsx?raw';
 | `onPressOut` | `(event?) => void` | Called when the press ends (release, leaving the area or cancel). Web: `pointerup` / `pointerleave` / `pointercancel`. |
 | `disabled` | `boolean` | Disables presses. Web: also sets `aria-disabled`. |
 
-Plus the `<div>` DOM props and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+Plus the `<div>` DOM props and the [shared props](/primitives/overview/#props-every-primitive-shares).
 
 ## Pressed and hover styles
 
@@ -35,4 +35,4 @@ const Button = engine('Pressable', { backgroundColor: '#6366f1' })
   .when('state:pressed', { style: { transform: 'scale(0.97)' } }); // both
 ```
 
-See [Interaction states](/isoform/guides/states/).
+See [Interaction states](/guides/states/).

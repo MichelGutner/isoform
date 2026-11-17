@@ -44,7 +44,7 @@ Plus `(ctx) => boolean` and a plain `boolean` (`true` always applies, `false` ne
 
 ### Prop conditions are typed
 
-TypeScript derives the valid prop conditions from your custom props ([`PropConditionKeys`](/isoform/reference/types/#conditions)):
+TypeScript derives the valid prop conditions from your custom props ([`PropConditionKeys`](/reference/types/#conditions)):
 
 - a boolean prop `disabled` gives `'props:disabled'`, `'props:disabled=true'` and `'props:disabled=false'`;
 - a string or number prop `variant: 'primary' | 'ghost'` gives `'props:variant'` (truthy), `'props:variant=primary'` and `'props:variant=ghost'`;
@@ -71,6 +71,6 @@ Rules apply in the order they are chained; for the same property, **the last mat
 
 ## Related
 
-- [Interaction states](/isoform/guides/states/) · [Responsive design](/isoform/guides/responsive/) · [Pseudo-elements](/isoform/guides/pseudo-elements/)
-- [Composition and `extend`](/isoform/guides/composition/)
-- [`EngineComponent` reference](/isoform/reference/engine-component/)
+- [Interaction states](/guides/states/) · [Responsive design](/guides/responsive/) · [Pseudo-elements](/guides/pseudo-elements/)
+- [Composition and `extend`](/guides/composition/)
+- [`EngineComponent` reference](/reference/engine-component/)

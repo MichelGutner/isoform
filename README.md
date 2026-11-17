@@ -7,11 +7,11 @@ Write a component once; it runs on the web, iOS and Android.
 
 [![npm](https://img.shields.io/npm/v/isoform.svg)](https://www.npmjs.com/package/isoform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Docs](https://img.shields.io/badge/docs-michelgutner.github.io%2Fisoform-6366f1.svg)](https://michelgutner.github.io/isoform/)
+[![Docs](https://img.shields.io/badge/docs-isoform.vercel.app-6366f1.svg)](https://isoform.vercel.app/)
 
-[Documentation](https://michelgutner.github.io/isoform/) ·
-[Quick start](https://michelgutner.github.io/isoform/getting-started/quick-start/) ·
-[API reference](https://michelgutner.github.io/isoform/reference/engine/) ·
+[Documentation](https://isoform.vercel.app/) ·
+[Quick start](https://isoform.vercel.app/getting-started/quick-start/) ·
+[API reference](https://isoform.vercel.app/reference/engine/) ·
 [Changelog](./CHANGELOG.md)
 
 </div>
@@ -68,15 +68,15 @@ Off by default. Turn on only what you use in `isoform.config.json`; disabled mod
 
 | Module | Primitive | Web | iOS | Android |
 |---|---|---|---|---|
-| [`video`](https://michelgutner.github.io/isoform/modules/video/) | `Video` | `<video>` + the lib's controls | `AVPlayer` + UIKit | Media3 + Compose |
-| [`audio`](https://michelgutner.github.io/isoform/modules/audio/) | `Audio` | `<audio>` card player | `AVPlayer` + UIKit, lock screen | Media3 + Compose, notification |
-| [`pdf`](https://michelgutner.github.io/isoform/modules/pdf/) | `Pdf` | pdf.js | PDFKit | `PdfRenderer` + Compose |
-| [`sheet`](https://michelgutner.github.io/isoform/modules/sheet/) | `BottomSheet` | `<dialog>` | SwiftUI sheet | Compose sheet |
-| [`svg`](https://michelgutner.github.io/isoform/modules/svg/) | `Svg`, `Path`… | browser SVG | `react-native-svg` | `react-native-svg` |
-| [`camera`](https://michelgutner.github.io/isoform/modules/camera/) | `Camera` | `getUserMedia` | AVFoundation | CameraX + Compose, ML Kit |
-| [`datePicker`](https://michelgutner.github.io/isoform/modules/date-picker/) | `DatePicker` | `<input type="date">` | SwiftUI | Compose |
-| [`image`](https://michelgutner.github.io/isoform/modules/image/) | `Image` | `<img>` + blurhash, zoom | URLSession, ImageIO | OkHttp, `ImageDecoder` |
-| [`modal`](https://michelgutner.github.io/isoform/modules/modal/) | `Modal` | `<dialog>` | UIKit | Compose |
+| [`video`](https://isoform.vercel.app/modules/video/) | `Video` | `<video>` + the lib's controls | `AVPlayer` + UIKit | Media3 + Compose |
+| [`audio`](https://isoform.vercel.app/modules/audio/) | `Audio` | `<audio>` card player | `AVPlayer` + UIKit, lock screen | Media3 + Compose, notification |
+| [`pdf`](https://isoform.vercel.app/modules/pdf/) | `Pdf` | pdf.js | PDFKit | `PdfRenderer` + Compose |
+| [`sheet`](https://isoform.vercel.app/modules/sheet/) | `BottomSheet` | `<dialog>` | SwiftUI sheet | Compose sheet |
+| [`svg`](https://isoform.vercel.app/modules/svg/) | `Svg`, `Path`… | browser SVG | `react-native-svg` | `react-native-svg` |
+| [`camera`](https://isoform.vercel.app/modules/camera/) | `Camera` | `getUserMedia` | AVFoundation | CameraX + Compose, ML Kit |
+| [`datePicker`](https://isoform.vercel.app/modules/date-picker/) | `DatePicker` | `<input type="date">` | SwiftUI | Compose |
+| [`image`](https://isoform.vercel.app/modules/image/) | `Image` | `<img>` + blurhash, zoom | URLSession, ImageIO | OkHttp, `ImageDecoder` |
+| [`modal`](https://isoform.vercel.app/modules/modal/) | `Modal` | `<dialog>` | UIKit | Compose |
 
 ```json
 { "modules": { "video": true, "sheet": true, "camera": { "enabled": true, "codeScanner": true } } }
@@ -86,11 +86,11 @@ Off by default. Turn on only what you use in `isoform.config.json`; disabled mod
 
 Everything else lives on the site, with live examples rendered by the library itself:
 
-- [Getting started](https://michelgutner.github.io/isoform/getting-started/introduction/): installation for Expo, bare React Native, Vite and Next.
-- [Guides](https://michelgutner.github.io/isoform/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript.
-- [Primitives](https://michelgutner.github.io/isoform/primitives/overview/) and [native modules](https://michelgutner.github.io/isoform/modules/overview/).
-- [API reference](https://michelgutner.github.io/isoform/reference/configure/) and [recipes](https://michelgutner.github.io/isoform/recipes/button-variants/).
-- [Migrating from `react-native-stylized`](https://michelgutner.github.io/isoform/project/migration/).
+- [Getting started](https://isoform.vercel.app/getting-started/introduction/): installation for Expo, bare React Native, Vite and Next.
+- [Guides](https://isoform.vercel.app/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript.
+- [Primitives](https://isoform.vercel.app/primitives/overview/) and [native modules](https://isoform.vercel.app/modules/overview/).
+- [API reference](https://isoform.vercel.app/reference/configure/) and [recipes](https://isoform.vercel.app/recipes/button-variants/).
+- [Migrating from `react-native-stylized`](https://isoform.vercel.app/project/migration/).
 
 A runnable proof lives in this repo: [`examples/showcase`](./examples/showcase) is rendered by both the Expo app in [`example/`](./example) and the Vite app in [`example-web/`](./example-web).
 

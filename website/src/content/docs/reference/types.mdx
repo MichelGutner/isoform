@@ -13,18 +13,18 @@ import type { EngineComponent, IsoStyle, VideoHandle } from 'isoform';
 
 | Type | Description |
 |---|---|
-| `Engine` | The type of `engine()`, with its three overloads. See [`engine()`](/isoform/reference/engine/). |
-| `EngineComponent<C, P>` | A component created by `engine()`. See [`EngineComponent`](/isoform/reference/engine-component/). |
+| `Engine` | The type of `engine()`, with its three overloads. See [`engine()`](/reference/engine/). |
+| `EngineComponent<C, P>` | A component created by `engine()`. See [`EngineComponent`](/reference/engine-component/). |
 | `BaseStyleContext<P>`, `StyleContext<P>` | `{ theme, props, platform }`, passed to style and condition functions (`platform` is always resolved in `StyleContext`). |
-| `EngineTheme` | Your app's theme shape, declared globally. See [TypeScript](/isoform/guides/typescript/#typing-your-theme). |
-| `Keyframes` | The frames passed to [`keyframes()`](/isoform/reference/keyframes/). |
-| `PlatformAdapter`, `ApplyPropsInput`, `StateStyles` | The provider interface. See [`PlatformAdapter`](/isoform/reference/platform-adapter/). |
+| `EngineTheme` | Your app's theme shape, declared globally. See [TypeScript](/guides/typescript/#typing-your-theme). |
+| `Keyframes` | The frames passed to [`keyframes()`](/reference/keyframes/). |
+| `PlatformAdapter`, `ApplyPropsInput`, `StateStyles` | The provider interface. See [`PlatformAdapter`](/reference/platform-adapter/). |
 
 ## Configuration
 
 | Type | Description |
 |---|---|
-| `ConfigureOptions` | Options of [`configure()`](/isoform/reference/configure/). |
+| `ConfigureOptions` | Options of [`configure()`](/reference/configure/). |
 | `ProviderName` | `'react-native' \| 'react'`. |
 | `IsoModules` | The optional modules and their settings. |
 | `ModuleName` | `'video' \| 'audio' \| 'pdf' \| 'sheet' \| 'svg' \| 'camera' \| 'datePicker' \| 'image' \| 'modal'`. |
@@ -54,7 +54,7 @@ import type { EngineComponent, IsoStyle, VideoHandle } from 'isoform';
 
 | Type | Description |
 |---|---|
-| `IsoStyle` | The universal style: full `React.CSSProperties` (with `transform` as a CSS string or a React Native array), the legacy React Native aliases and CSS custom properties (`--name`, web only). See [Style vocabulary](/isoform/guides/style-vocabulary/). |
+| `IsoStyle` | The universal style: full `React.CSSProperties` (with `transform` as a CSS string or a React Native array), the legacy React Native aliases and CSS custom properties (`--name`, web only). See [Style vocabulary](/guides/style-vocabulary/). |
 | `StyleInput` | What the `style` prop accepts: an `IsoStyle`, a falsy value, or a nested array of those. |
 | `LegacyRNStyle` | React Native aliases kept for compatibility (`paddingHorizontal`, `shadow*`, `elevation`, `resizeMode`, `tintColor`…), each marked with its CSS replacement. |
 
@@ -64,43 +64,43 @@ import type { EngineComponent, IsoStyle, VideoHandle } from 'isoform';
 |---|---|
 | `IsoPrimitives` | Primitive name → props: what `engine('Name')` accepts. |
 | `IsoNativeProps` | Augment it to type native props the lib does not list. |
-| `BoxProps`, `TextProps`, `PressableProps`, `InputProps`, `ImageProps`, `ScrollProps` | Props of the universal primitives. See [Primitives](/isoform/primitives/overview/). |
+| `BoxProps`, `TextProps`, `PressableProps`, `InputProps`, `ImageProps`, `ScrollProps` | Props of the universal primitives. See [Primitives](/primitives/overview/). |
 | `VideoProps`, `AudioProps`, `PdfProps`, `BottomSheetProps`, `CameraProps`, `DatePickerProps`, `ModalProps`, `SvgProps`, `SvgElementProps` | Props of the module primitives. |
 
 ## Media (video, audio, playlists)
 
 | Type | Description |
 |---|---|
-| `PlaybackProps` | Props shared by `Video` and `Audio`. See [Video](/isoform/modules/video/). |
+| `PlaybackProps` | Props shared by `Video` and `Audio`. See [Video](/modules/video/). |
 | `VideoOwnProps`, `AudioOwnProps` | Each player's own props. |
 | `MediaHandle`, `VideoHandle`, `AudioHandle` | The players' `ref`. |
 | `MediaTime` | `{ currentTime, duration }` from `onTimeUpdate`. |
 | `MediaInfo` | `{ duration, width, height }` from `onLoad`. |
-| `PlaylistItem`, `VideoItem`, `AudioItem`, `PdfItem` | Entries of an `items` list. See [Playlists](/isoform/modules/playlists/). |
+| `PlaylistItem`, `VideoItem`, `AudioItem`, `PdfItem` | Entries of an `items` list. See [Playlists](/modules/playlists/). |
 | `PlaylistProps`, `MediaPlaylistProps` | List props (`items`, `initialIndex`, `carousel`, `onItemChange`, `autoAdvance`). |
 | `PlaylistChange` | `{ index, item }` from `onItemChange`. |
 | `PlaylistHandle` | `next()`, `previous()`, `goTo(index)`. |
 
 ## PDF
 
-`PdfOwnProps`, `PdfHandle`, `PdfFit` (`'width' | 'page'`), `PdfDirection` (`'vertical' | 'horizontal'`), `PdfLoadInfo`, `PdfPageInfo`, `PdfSearchInfo`. See [PDF viewer](/isoform/modules/pdf/).
+`PdfOwnProps`, `PdfHandle`, `PdfFit` (`'width' | 'page'`), `PdfDirection` (`'vertical' | 'horizontal'`), `PdfLoadInfo`, `PdfPageInfo`, `PdfSearchInfo`. See [PDF viewer](/modules/pdf/).
 
 ## Bottom sheet
 
-`BottomSheetOwnProps`, `BottomSheetHandle`, `SheetDetent` (`'fit' | 'full' | number | '${number}%'`), `SheetDetentChange`. See [Bottom sheet](/isoform/modules/sheet/).
+`BottomSheetOwnProps`, `BottomSheetHandle`, `SheetDetent` (`'fit' | 'full' | number | '${number}%'`), `SheetDetentChange`. See [Bottom sheet](/modules/sheet/).
 
 ## Camera
 
-`CameraOwnProps`, `CameraHandle`, `CameraFacing`, `CameraFlash`, `CameraPermission`, `CameraPermissionStatus`, `CameraCode`, `CameraCodeType`, `CameraPhoto`, `CameraVideo`, `TakePhotoOptions`. See [Camera](/isoform/modules/camera/).
+`CameraOwnProps`, `CameraHandle`, `CameraFacing`, `CameraFlash`, `CameraPermission`, `CameraPermissionStatus`, `CameraCode`, `CameraCodeType`, `CameraPhoto`, `CameraVideo`, `TakePhotoOptions`. See [Camera](/modules/camera/).
 
 ## Date picker
 
-`DatePickerOwnProps`, `DatePickerMode` (`'date' | 'time' | 'datetime'`), `DatePickerDisplay` (`'inline' | 'wheel' | 'compact'`). See [Date picker](/isoform/modules/date-picker/).
+`DatePickerOwnProps`, `DatePickerMode` (`'date' | 'time' | 'datetime'`), `DatePickerDisplay` (`'inline' | 'wheel' | 'compact'`). See [Date picker](/modules/date-picker/).
 
 ## Image
 
-`ImageOwnProps`, `ImageHandle`, `ImageSource`, `ImageSourceInput`, `ImageContentFit`, `ImageContentPosition`, `ImageCachePolicy`, `ImageCacheType`, `ImagePriority`, `ImageLoadEvent`, `ImageProgressEvent`, `ImageErrorEvent`, `ImageZoomEvent`, `ImageZoomOptions`, `PrefetchOptions`, `ClearImageCacheOptions`. See [Image pipeline](/isoform/modules/image/).
+`ImageOwnProps`, `ImageHandle`, `ImageSource`, `ImageSourceInput`, `ImageContentFit`, `ImageContentPosition`, `ImageCachePolicy`, `ImageCacheType`, `ImagePriority`, `ImageLoadEvent`, `ImageProgressEvent`, `ImageErrorEvent`, `ImageZoomEvent`, `ImageZoomOptions`, `PrefetchOptions`, `ClearImageCacheOptions`. See [Image pipeline](/modules/image/).
 
 ## Modal
 
-`ModalOwnProps`, `ModalPresentation` (`'dialog' | 'fullScreen'`), `ModalAnimation` (`'scale' | 'slide' | 'fade' | 'none'`). See [Modal](/isoform/modules/modal/).
+`ModalOwnProps`, `ModalPresentation` (`'dialog' | 'fullScreen'`), `ModalAnimation` (`'scale' | 'slide' | 'fade' | 'none'`). See [Modal](/modules/modal/).

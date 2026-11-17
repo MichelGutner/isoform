@@ -22,10 +22,10 @@ const Title = engine('Text', ({ theme }) => ({
 |---|---|---|
 | `numberOfLines` | `number` | Maximum number of lines; extra text is cut with an ellipsis. Web: `-webkit-line-clamp`. |
 
-Plus the `<span>` DOM props and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+Plus the `<span>` DOM props and the [shared props](/primitives/overview/#props-every-primitive-shares).
 
 ## Notes
 
 - On mobile, text must be inside a `Text`, as in React Native. On the web a bare string inside a `Box` renders, but keep text in `Text` so both platforms match.
-- `::before`, `::after` and `::first-letter` work on `Text` on both platforms. See [Pseudo-elements](/isoform/guides/pseudo-elements/).
+- `::before`, `::after` and `::first-letter` work on `Text` on both platforms. See [Pseudo-elements](/guides/pseudo-elements/).
 - `fontSize: '2em'` is resolved against the parent size on mobile, as in CSS.

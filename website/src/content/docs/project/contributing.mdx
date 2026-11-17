@@ -38,11 +38,13 @@ The site lives in [`website/`](https://github.com/MichelGutner/isoform/tree/main
 ```bash
 cd website
 npm install
-npm run dev     # http://localhost:4321/isoform/
+npm run dev     # http://localhost:4321/
 npm run build   # also checks every internal link
 ```
 
 Pages are MDX files under `website/src/content/docs/`; live examples are React components under `website/src/components/demos/`. Every page has an "Edit page" link at the bottom.
+
+The site is deployed by [Vercel](https://vercel.com) from the repository (root directory `website/`, settings in `website/vercel.json`): `main` goes to production and every pull request gets a preview URL. A build with a broken internal link fails, so a broken deploy never goes live. Commits that touch nothing under `website/`, `src/` or `CHANGELOG.md` skip the build.
 
 ## Pull requests
 

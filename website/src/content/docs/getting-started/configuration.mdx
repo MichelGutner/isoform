@@ -5,7 +5,7 @@ description: configure() options and the isoform.config.json file that turns opt
 
 import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
-Isoform is configured once, at startup, with [`configure()`](/isoform/reference/configure/). Optional native modules are listed in `isoform.config.json`, a file read both by `configure()` at runtime and by the native builds.
+Isoform is configured once, at startup, with [`configure()`](/reference/configure/). Optional native modules are listed in `isoform.config.json`, a file read both by `configure()` at runtime and by the native builds.
 
 ## `configure()`
 
@@ -25,9 +25,9 @@ configure({
 
 | Option | Type | Default | What it does |
 |---|---|---|---|
-| `provider` | `'auto' \| 'react-native' \| 'react' \| PlatformAdapter` | `'auto'` | Which platform renders. `'auto'` uses the provider the bundler included. An explicit name throws a clear error when it does not match the bundle. An adapter object plugs in [a custom platform](/isoform/reference/platform-adapter/). |
-| `theme` | `Partial<EngineTheme>` | none | The theme. Shortcut for [`updateTheme(theme)`](/isoform/reference/theme/). |
-| `breakpoints` | `Record<string, number>` | `{ sm: 480, md: 768, lg: 1024, xl: 1280 }` | Minimum widths (px) used by `when('breakpoints:…')`. Replaces the whole set. See [Responsive design](/isoform/guides/responsive/). |
+| `provider` | `'auto' \| 'react-native' \| 'react' \| PlatformAdapter` | `'auto'` | Which platform renders. `'auto'` uses the provider the bundler included. An explicit name throws a clear error when it does not match the bundle. An adapter object plugs in [a custom platform](/reference/platform-adapter/). |
+| `theme` | `Partial<EngineTheme>` | none | The theme. Shortcut for [`updateTheme(theme)`](/reference/theme/). |
+| `breakpoints` | `Record<string, number>` | `{ sm: 480, md: 768, lg: 1024, xl: 1280 }` | Minimum widths (px) used by `when('breakpoints:…')`. Replaces the whole set. See [Responsive design](/guides/responsive/). |
 | `native.remBase` | `number` | `16` | Pixel size of `1rem` (and the fallback for `em`) on React Native. |
 | `modules` | `IsoModules` | all off | The optional modules to turn on. |
 
@@ -46,7 +46,7 @@ So a web bundle never contains `react-native`, and a mobile bundle never contain
 |---|---|
 | `'auto'` (default) | Use whatever the bundler included. |
 | `'react-native'` / `'react'` | Explicit. Throws a clear error if it does not match the bundle. |
-| adapter object | Plug in another platform (see [`PlatformAdapter`](/isoform/reference/platform-adapter/)). |
+| adapter object | Plug in another platform (see [`PlatformAdapter`](/reference/platform-adapter/)). |
 
 Components are defined *before* `configure()` runs (imports are hoisted), so `engine('Box')` only stores the primitive's **name**; the real component is resolved at render time by the active provider. Call `configure()` once, at boot: switching providers after the first render only produces a development warning.
 
@@ -83,8 +83,8 @@ Each module takes `true` or an object (`{ "enabled": true, ...options }`), so `"
 
 | Module | Option | Default | What it does |
 |---|---|---|---|
-| `audio` | `mediaSession` | `false` | Background audio with lock screen and notification controls. **Build-time only.** See [Audio](/isoform/modules/audio/#background-audio-and-system-controls-mediasession). |
-| `pdf` | `workerSrc` | none | Web only: URL of the pdf.js worker, to parse PDFs off the main thread. See [PDF](/isoform/modules/pdf/#web-worker). |
+| `audio` | `mediaSession` | `false` | Background audio with lock screen and notification controls. **Build-time only.** See [Audio](/modules/audio/#background-audio-and-system-controls-mediasession). |
+| `pdf` | `workerSrc` | none | Web only: URL of the pdf.js worker, to parse PDFs off the main thread. See [PDF](/modules/pdf/#web-worker). |
 | `camera` | `video` | `false` | Video recording (`startRecording`), adds the microphone permission. |
 | `camera` | `codeScanner` | `false` | Barcode and QR scanning (`onCodeScanned`). |
 
@@ -122,4 +122,4 @@ Rendering a component of a disabled module never crashes. It logs one developmen
 | `image` | a plain `<img>` | React Native's `Image` |
 | `modal` | nothing | React Native's `Modal` |
 
-See the [modules overview](/isoform/modules/overview/) for what each module draws on each platform.
+See the [modules overview](/modules/overview/) for what each module draws on each platform.
