@@ -1,6 +1,6 @@
 import './setup';
 import { useRef } from 'react';
-import { engine, type ImageHandle } from 'isoform';
+import { engine, type ImageHandle } from '@michelgutner/isoform';
 import { asset, Button, ButtonText, Row, Stack } from './kit';
 
 const Photo = engine('Image', { width: '100%', maxWidth: 480, height: 240, borderRadius: 20 });

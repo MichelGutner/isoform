@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 export const Button = engine<'Pressable', { variant?: 'primary' | 'ghost' }>('Pressable', ({ theme }) => ({
   paddingBlock: theme.spacing.sm,

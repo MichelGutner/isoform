@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { Button, ButtonText, Caption } from './kit';
 
 const Sheet = engine('BottomSheet', ({ theme }) => ({

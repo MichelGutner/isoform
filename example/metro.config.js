@@ -14,9 +14,9 @@ config.watchFolders = [libRoot];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')];
 config.resolver.disableHierarchicalLookup = true;
 
-// `import ... from 'isoform'` aponta direto para o código-fonte da lib.
+// `import ... from '@michelgutner/isoform'` aponta direto para o código-fonte da lib.
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'isoform') {
+  if (moduleName === '@michelgutner/isoform') {
     return {
       type: 'sourceFile',
       filePath: path.resolve(libRoot, 'src/index.ts'),
@@ -26,6 +26,6 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
 };
 
 // Módulos desligados no isoform.config.json saem do bundle JS.
-const { withIsoform } = require('isoform/metro');
+const { withIsoform } = require('@michelgutner/isoform/metro');
 
 module.exports = withIsoform(config);

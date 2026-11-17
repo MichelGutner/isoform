@@ -11,7 +11,7 @@
       "@/*": [
         "./*"
       ],
-      "isoform": [
+      "@michelgutner/isoform": [
         "../src/index.ts"
       ]
     }

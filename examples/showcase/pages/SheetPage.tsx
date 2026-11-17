@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { engine, type BottomSheetHandle } from 'isoform';
+import { engine, type BottomSheetHandle } from '@michelgutner/isoform';
 import { Body, Button, ButtonLabel, Heading, Row, themeFade } from '../ui';
 import { useOverlay } from '../settings';
 import { Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';

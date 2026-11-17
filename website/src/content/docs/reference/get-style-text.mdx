@@ -10,7 +10,7 @@ function getStyleText(): string;
 SSR (web): returns the CSS generated so far (atomic classes, state and breakpoint rules, `@keyframes`), to inject into a `<style>` on the server. On platforms that do not generate CSS (mobile) it returns `''`.
 
 ```tsx
-import { getStyleText } from 'isoform';
+import { getStyleText } from '@michelgutner/isoform';
 
 <style data-isoform="ssr" dangerouslySetInnerHTML={{ __html: getStyleText() }} />;
 ```

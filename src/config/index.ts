@@ -41,7 +41,7 @@ export interface ConfigureOptions {
    * configure({ modules: isoform.modules });
    * ```
    * The same file drives the build: Gradle and CocoaPods only compile the
-   * enabled modules, and `isoform/metro` removes the disabled ones from the
+   * enabled modules, and `@michelgutner/isoform/metro` removes the disabled ones from the
    * JS bundle. On the web, a disabled module's code is never downloaded.
    */
   modules?: IsoModules;

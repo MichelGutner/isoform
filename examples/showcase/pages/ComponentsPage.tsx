@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { Badge, BadgeText, Body, Button, ButtonLabel, Card, Field, Heading, Row, themeFade } from '../ui';
 import { Code, Flag, Flags, PageShell, Section } from '../kit';
 

@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 const Tag = engine('Box', ({ theme }) => ({
   paddingBlock: 4,

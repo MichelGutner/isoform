@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine, type ModalAnimation } from 'isoform';
+import { engine, type ModalAnimation } from '@michelgutner/isoform';
 import { Body, Button, ButtonLabel, Field, Heading, Row } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 

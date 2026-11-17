@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { asset } from './kit';
 
 const Player = engine('Audio', { width: '100%', maxWidth: 560 });

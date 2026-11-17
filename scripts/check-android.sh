@@ -11,5 +11,5 @@ if [ ! -f android/gradlew ]; then
 fi
 
 cd android
-./gradlew :isoform:compileDebugKotlin -q
-echo "ok    android: :isoform:compileDebugKotlin"
+./gradlew :michelgutner_isoform:compileDebugKotlin -q
+echo "ok    android: :michelgutner_isoform:compileDebugKotlin"

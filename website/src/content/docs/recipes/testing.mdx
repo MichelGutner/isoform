@@ -10,7 +10,7 @@ Component libraries built on Isoform can test with either platform's tooling.
 With Jest (or Vitest) and `@testing-library/react` on jsdom, the bundled provider is the DOM adapter:
 
 ```ts title="jest.setup.ts"
-import { configure } from 'isoform';
+import { configure } from '@michelgutner/isoform';
 
 configure({ provider: 'auto', theme: tokens });
 ```

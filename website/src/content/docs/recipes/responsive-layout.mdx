@@ -4,7 +4,7 @@ description: A sidebar layout that stacks on phones and splits on tablets and de
 ---
 
 ```tsx
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 const Layout = engine('Box', { flex: 1, flexDirection: 'column' })
   .when('breakpoints:md', { style: { flexDirection: 'row' } });

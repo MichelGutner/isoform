@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { Body, Card, Chip, ChipLabel, Heading, Title, themeFade } from './ui';
 
 /** Building blocks shared by the pages: a page frame, a section card, a code block and small controls. */

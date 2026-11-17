@@ -1,6 +1,6 @@
 import './setup';
 import { useRef, useState } from 'react';
-import { engine, type CameraCode, type CameraHandle } from 'isoform';
+import { engine, type CameraCode, type CameraHandle } from '@michelgutner/isoform';
 import { Button, ButtonText, Caption, Row, Stack } from './kit';
 
 const Preview = engine('Camera', { width: '100%', maxWidth: 480, height: 320, borderRadius: 20 });

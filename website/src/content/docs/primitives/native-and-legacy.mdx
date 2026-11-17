@@ -36,13 +36,13 @@ These map to React Native components and are loosely typed (any prop is accepted
 To use a native-only primitive in shared code, give it a web variant with platform files: Metro prefers `.native.tsx`, web bundlers take the plain file.
 
 ```tsx title="Spinner.native.tsx"
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 export const Spinner = engine('ActivityIndicator').attrs({ color: '#6366f1' });
 ```
 
 ```tsx title="Spinner.tsx"
-import { engine, keyframes } from 'isoform';
+import { engine, keyframes } from '@michelgutner/isoform';
 
 const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
 

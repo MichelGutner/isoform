@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 const Quote = engine('Text', ({ theme }) => ({ fontSize: 18, color: theme.color.text }))
   .when('::before', { style: { content: '“', color: 'tomato', fontSize: 24 } })

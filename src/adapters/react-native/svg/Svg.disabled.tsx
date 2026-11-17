@@ -4,7 +4,7 @@ import { warnModuleDisabled } from '../../../core/modules';
 import { SVG_ELEMENTS, type SvgElementName } from '../../../core/svg';
 
 /**
- * The SVG primitives without `react-native-svg`: `isoform/metro` uses this file instead
+ * The SVG primitives without `react-native-svg`: `@michelgutner/isoform/metro` uses this file instead
  * of `Svg.tsx` when `svg` is off in `isoform.config.json`, so `react-native-svg` is
  * neither in the JS bundle nor needed in the app.
  */

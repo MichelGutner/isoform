@@ -1,4 +1,4 @@
-import { engine, getProvider } from 'isoform';
+import { engine, getProvider } from '@michelgutner/isoform';
 import { Badge, BadgeText, Body, Card, Row } from '../ui';
 import { Code, PageShell, Section } from '../kit';
 

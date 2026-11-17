@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 const Grid = engine('Box', { flexDirection: 'column', gap: 8 })
   .when('breakpoints:md', { style: { flexDirection: 'row' } }) // ≥ 768px

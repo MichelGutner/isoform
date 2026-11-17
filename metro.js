@@ -3,7 +3,7 @@
  * no `isoform.config.json` da raiz do app.
  *
  *   // metro.config.js
- *   const { withIsoform } = require('isoform/metro');
+ *   const { withIsoform } = require('@michelgutner/isoform/metro');
  *   module.exports = withIsoform(getDefaultConfig(__dirname));
  *
  * Sem o arquivo (ou sem este helper), nada muda: o código fica no bundle e o
