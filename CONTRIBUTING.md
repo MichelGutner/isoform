@@ -18,7 +18,13 @@ yarn install
 | `yarn test` | Jest (core, both adapters, codegen specs) |
 | `yarn test:coverage` | Jest with coverage in `coverage/` |
 | `yarn build` | Compiles `src` to `dist` |
+| `yarn check:package` | Checks what `npm publish` would ship (after `yarn build`) |
 | `yarn check:swift` | Type-checks every iOS module's Swift sources (macOS + Xcode) |
+| `yarn check:android` | Compiles the Kotlin of every module through `example/android` (JDK 17+, Android SDK) |
+| `yarn verify` | Lint, types, tests, build and the package check: what must pass before a PR |
+| `yarn verify:all` | `verify` plus the Swift and Kotlin checks |
+
+Node `>=22.13` is required. Git hooks (husky, installed by `yarn install`) run `yarn typecheck` on commit and `yarn verify` on push.
 
 ## Running the showcase
 
@@ -45,7 +51,7 @@ cd example-web && yarn install && yarn dev    # React DOM + Vite
 ## Pull requests
 
 - Squash-merged: the **PR title** becomes the commit and must follow [Conventional Commits](https://www.conventionalcommits.org): `feat(image): pinch zoom`, `fix(modal): content cut on iOS`, `docs: …`.
-- There is no hosted CI. Before opening a PR, run `yarn lint`, `yarn typecheck`, `yarn test` and `yarn build`, and `yarn check:swift` if you touched `ios/`. For `android/`, compile with `./gradlew :isoform:compileDebugKotlin` from an app that uses the library (such as `example/`).
+- There is no hosted CI: the checks run on your machine. `yarn verify` must pass (the push hook runs it), plus `yarn check:swift` if you touched `ios/` and `yarn check:android` if you touched `android/`.
 - Add or update tests for behavior changes, and the README/docs for API changes.
 - Exported types need English JSDoc on every member.
 
@@ -60,4 +66,11 @@ The maintainer publishes from their own machine. The next version comes from the
 | `feat!:` or a `BREAKING CHANGE:` footer | major |
 | only `docs:`, `chore:`, `ci:`, `test:`… | no release |
 
-Logged in to npm and to `gh`, run `npx semantic-release --no-ci` on `main` (it needs the tools in `.releaserc.js` and a Node version that satisfies semantic-release), or publish by hand with `npm publish` after bumping the version. Both build the package first (`prepack`).
+Logged in to npm (`npm login`) and GitHub (`gh auth login`):
+
+```bash
+yarn release:dry   # the version and notes semantic-release would produce, nothing changes
+yarn release       # on main: runs yarn verify, then publishes, tags and writes the GitHub release
+```
+
+`yarn release` refuses to run off `main`/`next`, with uncommitted changes, or out of sync with origin. It fetches semantic-release at the versions pinned in `scripts/release.sh`; the commits and the notes come from `.releaserc.js`. Pushing to `next` publishes prereleases under the `next` dist-tag. If you would rather publish by hand, bump the version and run `npm publish` (`prepack` builds first).
