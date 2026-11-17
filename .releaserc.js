@@ -9,7 +9,14 @@
 module.exports = {
   branches: ['main', { name: 'next', prerelease: true }],
   plugins: [
-    ['@semantic-release/commit-analyzer', { preset: 'conventionalcommits' }],
+    [
+      '@semantic-release/commit-analyzer',
+      {
+        preset: 'conventionalcommits',
+        // 0.x: a breaking change bumps the minor. Delete this rule when the API is ready for 1.0.0.
+        releaseRules: [{ breaking: true, release: 'minor' }],
+      },
+    ],
     ['@semantic-release/release-notes-generator', { preset: 'conventionalcommits' }],
     ['@semantic-release/changelog', { changelogFile: 'CHANGELOG.md' }],
     '@semantic-release/npm',

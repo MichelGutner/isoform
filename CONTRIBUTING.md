@@ -63,7 +63,7 @@ The maintainer publishes from their own machine. The next version comes from the
 |---|---|
 | `fix:` / `perf:` | patch |
 | `feat:` | minor |
-| `feat!:` or a `BREAKING CHANGE:` footer | major |
+| `feat!:` or a `BREAKING CHANGE:` footer | major (minor while the version is 0.x) |
 | only `docs:`, `chore:`, `ci:`, `test:`… | no release |
 
 Logged in to npm (`npm login`) and GitHub (`gh auth login`):
@@ -72,5 +72,18 @@ Logged in to npm (`npm login`) and GitHub (`gh auth login`):
 yarn release:dry   # the version and notes semantic-release would produce, nothing changes
 yarn release       # on main: runs yarn verify, then publishes, tags and writes the GitHub release
 ```
+
+### The first release (0.1.0)
+
+semantic-release always starts at 1.0.0 when the repository has no tag, so the first version is published by hand and tagged; from then on `yarn release` continues from that tag. On `main`, in sync with `origin`, with `version` set to `0.1.0` in `package.json`:
+
+```bash
+yarn verify
+npm publish                                   # prepack builds; confirm with your 2FA code
+git tag v0.1.0 && git push origin v0.1.0
+gh release create v0.1.0 --title v0.1.0 --generate-notes
+```
+
+While the version is 0.x, a breaking change bumps the minor (`releaseRules` in `.releaserc.js`); delete that rule to go to 1.0.0.
 
 `yarn release` refuses to run off `main`/`next`, with uncommitted changes, or out of sync with origin. It fetches semantic-release at the versions pinned in `scripts/release.sh`; the commits and the notes come from `.releaserc.js`. Pushing to `next` publishes prereleases under the `next` dist-tag. If you would rather publish by hand, bump the version and run `npm publish` (`prepack` builds first).
