@@ -53,7 +53,7 @@ configure({ breakpoints: { tablet: 600, desktop: 1100 } });
 Names must match `[A-Za-z_][\w-]*`, the widths must be numbers ≥ 0, and names that already mean something in `when()` (`ios`, `android`, `web`, `native`, `hover`, `focus`, `focus-visible`, `pressed`) are refused with a clear error. To type the new names, augment `IsoBreakpointNames`:
 
 ```ts
-declare module 'isoform' {
+declare module '@michelgutner/isoform' {
   interface IsoBreakpointNames {
     tablet: unknown;
     desktop: unknown;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { engine, type CameraCode, type CameraFacing, type CameraFlash, type CameraHandle } from 'isoform';
+import { engine, type CameraCode, type CameraFacing, type CameraFlash, type CameraHandle } from '@michelgutner/isoform';
 import { Body, Button, ButtonLabel, Row, themeFade } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 

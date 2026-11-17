@@ -10,7 +10,7 @@ Isoform is configured once, at startup, with [`configure()`](/reference/configur
 ## `configure()`
 
 ```ts title="isoform.config.ts"
-import { configure } from 'isoform';
+import { configure } from '@michelgutner/isoform';
 import isoform from './isoform.config.json';
 import { tokens } from './tokens';
 
@@ -71,7 +71,7 @@ The media players, the PDF viewer, the bottom sheet, SVG, the camera, the date p
 ```
 
 ```ts
-import { configure } from 'isoform';
+import { configure } from '@michelgutner/isoform';
 import isoform from './isoform.config.json';
 
 configure({ modules: isoform.modules });
@@ -100,7 +100,7 @@ The same file drives every build, so a disabled module is really left out:
 | iOS (CocoaPods) | The module's Swift and Objective-C++ are only compiled when on, with an empty shell otherwise. |
 
 ```js title="metro.config.js"
-const { withIsoform } = require('isoform/metro');
+const { withIsoform } = require('@michelgutner/isoform/metro');
 
 module.exports = withIsoform(getDefaultConfig(__dirname));
 ```

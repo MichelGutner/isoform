@@ -14,7 +14,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "isoform": ["./src/index.ts"]
+      "@michelgutner/isoform": ["./src/index.ts"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths", "afterDeclarations": true }

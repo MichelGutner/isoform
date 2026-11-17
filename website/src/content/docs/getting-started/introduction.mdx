@@ -8,7 +8,7 @@ import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
 Isoform is a styling and component library that runs the **same component code** on the web (React DOM) and on mobile (React Native, iOS and Android). You describe components with `engine()`, standard CSS names and values, and a global theme; the active platform adapter turns them into DOM elements with atomic CSS on the web, and into React Native components with native styles on mobile.
 
 ```tsx
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 
 export const Card = engine('Box', ({ theme }) => ({
   padding: theme.spacing.md,

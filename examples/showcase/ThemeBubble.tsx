@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { engine, getTheme, keyframes, updateTheme } from 'isoform';
+import { engine, getTheme, keyframes, updateTheme } from '@michelgutner/isoform';
 
 /**
  * Troca de tema em "bolha": um círculo com a cor do novo tema cresce a partir do ponto

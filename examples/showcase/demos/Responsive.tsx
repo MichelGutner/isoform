@@ -1,4 +1,4 @@
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { Body, Card, Heading, themeFade } from '../ui';
 
 /**

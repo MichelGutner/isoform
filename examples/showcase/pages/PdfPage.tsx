@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from 'isoform';
+import { engine } from '@michelgutner/isoform';
 import { Body } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 import { LISTS, PDFS } from '../media';

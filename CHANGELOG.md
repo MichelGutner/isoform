@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example apps: `examples/showcase` (an interactive showcase with one page per feature: theme, components, states, responsive, animations, platform, Video, Audio, Pdf), the Expo app (`example/`) and a Vite + React DOM app (`example-web/`) render the same pages.
 
 ### Changed
-- **BREAKING:** package renamed from `react-native-stylized` to `isoform`; the `/react-native` subpath export was removed — import everything from the root.
+- **BREAKING:** package renamed from `react-native-stylized` to `@michelgutner/isoform`; the `/react-native` subpath export was removed — import everything from the root.
 - `react-native` peer dependency is now `>=0.76` and optional, alongside optional `react-dom` (props such as `paddingInline` and `boxShadow` need RN ≥ 0.76).
 - The core, theme, cache and hash modules no longer import `react-native`; only the adapters do (enforced by `src/boundaries.test.ts`).
 - `StyleSheet.flatten` replaced by a platform-independent `flattenStyle`.

@@ -5,7 +5,7 @@ import type { VideoHandle } from '../../../../core/media';
 import { warnModuleDisabled } from '../../../../core/modules';
 
 /**
- * `Video` sem player: o `isoform/metro` usa este arquivo no lugar de
+ * `Video` sem player: o `@michelgutner/isoform/metro` usa este arquivo no lugar de
  * `Video.tsx` quando o vídeo está desligado no `isoform.config.json`.
  * Assim nem o player nem a spec nativa entram no bundle JS.
  */

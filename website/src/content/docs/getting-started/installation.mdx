@@ -6,9 +6,9 @@ description: Install Isoform in an Expo app, a bare React Native app, or a web a
 import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
 
 ```bash
-npm install isoform
+npm install @michelgutner/isoform
 # or
-yarn add isoform
+yarn add @michelgutner/isoform
 ```
 
 Isoform's peer dependencies are `react >= 18` plus **one** platform:
@@ -28,7 +28,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
     1. Install the package:
 
        ```bash
-       npx expo install isoform
+       npx expo install @michelgutner/isoform
        ```
 
     2. Create the config file (see [Quick start](/getting-started/quick-start/)) and import it **first** in your root layout, before anything renders:
@@ -41,7 +41,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
 
        ```js title="metro.config.js"
        const { getDefaultConfig } = require('expo/metro-config');
-       const { withIsoform } = require('isoform/metro');
+       const { withIsoform } = require('@michelgutner/isoform/metro');
 
        module.exports = withIsoform(getDefaultConfig(__dirname));
        ```
@@ -52,7 +52,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
     1. Install the package and the iOS pods:
 
        ```bash
-       yarn add isoform
+       yarn add @michelgutner/isoform
        cd ios && pod install
        ```
 
@@ -70,7 +70,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
 
        ```js title="metro.config.js"
        const { getDefaultConfig } = require('@react-native/metro-config');
-       const { withIsoform } = require('isoform/metro');
+       const { withIsoform } = require('@michelgutner/isoform/metro');
 
        module.exports = withIsoform(getDefaultConfig(__dirname));
        ```
@@ -83,7 +83,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
     1. Install the package with React DOM:
 
        ```bash
-       npm install isoform react react-dom
+       npm install @michelgutner/isoform react react-dom
        ```
 
     2. Import your config file first in the entry:
@@ -104,7 +104,7 @@ Both `react-dom` and `react-native` are optional peers, so a web app never needs
     1. Install the package with React DOM:
 
        ```bash
-       npm install isoform react react-dom
+       npm install @michelgutner/isoform react react-dom
        ```
 
     2. Isoform components render on the client. Import the config file at the top of a client entry that wraps your tree (for example a `'use client'` providers file used by the root layout), so `configure()` runs before the first render.

@@ -19,11 +19,11 @@ Write a component once; it runs on the web, iOS and Android.
 ## In 30 seconds
 
 ```bash
-npm install isoform
+npm install @michelgutner/isoform
 ```
 
 ```tsx
-import { configure, engine } from 'isoform';
+import { configure, engine } from '@michelgutner/isoform';
 
 configure({ theme: { color: { primary: '#6366f1' }, spacing: { sm: 8 } } }); // once, at startup
 
