@@ -16,7 +16,7 @@ const hosts = new Map<string, WeakMap<React.ComponentType<any>, React.ComponentT
 
 /**
  * Envolve um componente RN num host que rastreia largura da janela, `pressed`
- * e `focus`, e pede ao adapter o estilo final (`__omniStyleFor(width, pressed,
+ * e `focus`, e pede ao adapter o estilo final (`__isoStyleFor(width, pressed,
  * focused)`). Só entram aqui os componentes que precisam (breakpoints,
  * `when('state:focus')`, `pressed` + transition); os demais seguem no caminho estático.
  *
@@ -32,8 +32,9 @@ export function styleHost(Component: React.ComponentType<any>, flags: StyleHostF
 
   const { width: useWidth, pressed: usePressed, focus: useFocus } = flags;
 
-  const Created = forwardRef<any, any>(({ __omniStyleFor: styleFor, onPressIn, onPressOut, onFocus, onBlur, ...rest }, ref) => {
+  const Created = forwardRef<any, any>(({ __isoStyleFor: styleFor, onPressIn, onPressOut, onFocus, onBlur, ...rest }, ref) => {
     // cada flag é constante por host, então a ordem dos hooks nunca muda
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- useWidth is fixed for this host
     const win = useWidth ? useWindowDimensions() : undefined;
     const [pressed, setPressed] = useState(false);
     const [focused, setFocused] = useState(false);

@@ -70,7 +70,7 @@ interface CssVariables {
 }
 
 /**
- * The universal omnistyle style: **full CSS** (`React.CSSProperties`) plus the
+ * The universal isoform style: **full CSS** (`React.CSSProperties`) plus the
  * legacy React Native aliases ({@link LegacyRNStyle}).
  *
  * - A number is a length in px (dp on native), except for unitless properties
@@ -79,7 +79,7 @@ interface CssVariables {
  *   the web and converted on native when possible (unsupported values are dropped
  *   with a development warning).
  */
-export type OmniStyle = Omit<CSSProperties, 'transform'> &
+export type IsoStyle = Omit<CSSProperties, 'transform'> &
   LegacyRNStyle &
   CssVariables & {
     /** Transformations: a CSS string (`'translateX(10px) rotate(45deg)'`) or a React Native array of {@link TransformItem}. */
@@ -91,4 +91,4 @@ export type OmniStyle = Omit<CSSProperties, 'transform'> &
  * (ignored, handy for `cond && style`) or a (nested) array of those, merged in
  * order (last wins).
  */
-export type StyleInput = OmniStyle | false | null | undefined | readonly StyleInput[];
+export type StyleInput = IsoStyle | false | null | undefined | readonly StyleInput[];

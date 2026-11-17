@@ -23,9 +23,9 @@ jest.mock('react-native', () => {
   };
 });
 
-jest.mock('./native/OmniDatePickerViewNativeComponent', () => ({
+jest.mock('./native/IsoDatePickerViewNativeComponent', () => ({
   __esModule: true,
-  default: function OmniDatePickerView() {
+  default: function IsoDatePickerView() {
     return null;
   },
 }));
@@ -34,7 +34,7 @@ import { configure, registerBundledProvider, resetProvider } from '../../../conf
 import { engine } from '../../../core/engine';
 import { reactNativeAdapter } from '../adapter';
 
-const Spec: any = jest.requireMock('./native/OmniDatePickerViewNativeComponent');
+const Spec: any = jest.requireMock('./native/IsoDatePickerViewNativeComponent');
 
 const Picker = engine('DatePicker', { marginTop: 8 });
 

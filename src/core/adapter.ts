@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType } from 'react';
+import type { ImageCacheApi } from './image';
 import type { PseudoName, StateName } from './types';
 
 /** Styles per pseudo-element (`'::before'`…), already merged into flat objects. */
@@ -70,4 +71,6 @@ export interface PlatformAdapter {
   resolveComponent?(component: ComponentType<any>, compiled: unknown): ComponentType<any>;
   /** Server-side rendering: the CSS generated so far (only platforms that generate CSS). */
   getStyleText?(): string;
+  /** Optional: the image cache behind `prefetchImages` and `clearImageCache` (the `image` module). */
+  readonly images?: ImageCacheApi;
 }

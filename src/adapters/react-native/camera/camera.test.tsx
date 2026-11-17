@@ -26,9 +26,9 @@ jest.mock('react-native', () => {
   };
 });
 
-jest.mock('./native/OmniCameraViewNativeComponent', () => ({
+jest.mock('./native/IsoCameraViewNativeComponent', () => ({
   __esModule: true,
-  default: function OmniCameraView() {
+  default: function IsoCameraView() {
     return null;
   },
   Commands: {
@@ -45,7 +45,7 @@ import { engine } from '../../../core/engine';
 import { reactNativeAdapter } from '../adapter';
 
 const RN: any = jest.requireMock('react-native');
-const Spec: any = jest.requireMock('./native/OmniCameraViewNativeComponent');
+const Spec: any = jest.requireMock('./native/IsoCameraViewNativeComponent');
 
 const Preview = engine('Camera', { height: 300 });
 

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- omnistyle.mediaSession: background audio with notification controls -->
+  <!-- isoform.mediaSession: background audio with notification controls -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
   <!-- Android 13+: without the runtime grant the notification is hidden (playback still works) -->
@@ -7,7 +7,7 @@
 
   <application>
     <service
-      android:name="com.omnistyle.OmniMediaService"
+      android:name="com.isoform.IsoMediaService"
       android:exported="true"
       android:foregroundServiceType="mediaPlayback">
       <intent-filter>

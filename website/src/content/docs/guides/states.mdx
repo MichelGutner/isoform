@@ -1,0 +1,47 @@
+---
+title: Interaction states
+description: Style hover, focus, focus-visible and pressed with when('state:…'), on the web and on mobile.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import StatesDemo from '../../../components/demos/StatesDemo.tsx';
+import statesSource from '../../../components/demos/StatesDemo.tsx?raw';
+
+```tsx
+const Button = engine('Pressable', { backgroundColor: '#6366f1' })
+  .when('state:hover', { style: { opacity: 0.85 } })
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } })
+  .when('platform:web', { style: { transition: 'opacity .15s, transform .1s' } });
+
+const Field = engine('Input', { borderColor: '#e4e7ee' })
+  .when('state:focus', { style: { borderColor: '#6366f1' } });
+```
+
+<LiveExample code={statesSource}>
+  <StatesDemo client:only="react" />
+</LiveExample>
+
+## Per platform
+
+| State | Web | Mobile |
+|---|---|---|
+| `'state:hover'` | `:hover`, inside `@media (hover: hover)` so touch devices never get a stuck hover | ignored |
+| `'state:focus'` | `:focus` | `Input` only (focus state of the `TextInput`) |
+| `'state:focus-visible'` | `:focus-visible` | same as `focus` on `Input` |
+| `'state:pressed'` | `:active` | `Pressable` only (its `pressed` state) |
+
+`hover` is typed `@platform web` (`HoverState`): touch screens have no hover.
+
+## How they are compiled
+
+State rules only take `{ style }` (other props are ignored with a development warning). They are compiled once as variants, not evaluated per render, so they do not re-render anything:
+
+- **Web**: each declaration becomes `.o-x:hover{…}`, `:focus`, `:focus-visible` or `:active`. They sit in later rank blocks (hover → focus → focus-visible → pressed), so `:active` beats `:hover` when both set the same property.
+- **Mobile**: `pressed` turns the `Pressable` style into `({ pressed }) => …`; `focus` is tracked by a shared style host through `onFocus`/`onBlur`, so focus changes can be transitioned and combine with breakpoints.
+
+<Aside>
+A prop with the same name as a state (`pressed`, `focus`…) never clashes: it is checked with `'props:pressed'`. State changes can be animated with a CSS `transition` on both platforms: see [Animations](/isoform/guides/animations/#transitions).
+</Aside>
+
+`onPressIn` and `onPressOut` work on both platforms (pointer events on the web) if you need the state in JavaScript.

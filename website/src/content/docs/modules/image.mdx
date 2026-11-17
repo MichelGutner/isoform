@@ -1,0 +1,102 @@
+---
+title: Image pipeline
+description: The lib's own image with memory and disk caches, blurhash, crossfade, animated pictures and zoom, the same design on iOS and Android.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import ImageDemo from '../../../components/demos/ImageDemo.tsx';
+import imageSource from '../../../components/demos/ImageDemo.tsx?raw';
+
+With the module on, [`Image`](/isoform/primitives/image/) is the lib's own picture, **the same pipeline design on iOS and Android** with no extra dependency. iOS uses URLSession, ImageIO and CoreImage; Android uses React Native's own OkHttp client (its cookies and interceptors) and `ImageDecoder`.
+
+- Pictures are kept in a memory cache and a disk cache (300 MB, least recently used first).
+- A download is shared by every view that shows the same picture, and cancelled when no view waits for it.
+- Pictures are decoded off the main thread, at the size the view needs, with the EXIF orientation applied.
+- Animated GIF/WebP/APNG play with their own frame delays.
+
+On the web it is `<img>` with the same props.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "image": { "enabled": true } } }
+```
+
+<LiveExample code={imageSource} title="Drag to pan while zoomed; ctrl + wheel or double click also zoom on the web.">
+  <ImageDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | `string \| number \| ImageSource` | | A URL, a `require('./pic.png')` or `{ uri, headers, cacheKey }` (`file://`, `data:` and `content://` too). |
+| `contentFit` | `'cover' \| 'contain' \| 'fill' \| 'none' \| 'scale-down'` | `'cover'` | How the picture fills its box (CSS `object-fit`). |
+| `contentPosition` | `'center' \| 'top' \| 'bottom left'`… | `'center'` | Where it sits when it does not fill the box (CSS `object-position`). |
+| `placeholder` | `ImageSourceInput` | | Shown until the picture loads (and after an error): a small file or thumbnail URL. |
+| `blurhash` | `string` | | A [blurhash](https://blurha.sh) string, drawn as `cover`. Wins over `placeholder`. |
+| `transition` | `number` | `250` | Crossfade in ms when the picture was not in memory; `0` turns it off. |
+| `tintColor` | `string` | | Paints every non-transparent pixel (icons, monochrome logos). |
+| `blurRadius` | `number` | `0` | Gaussian blur in points (on the GPU on Android 12+). |
+| `cachePolicy` | `'memory-disk' \| 'memory' \| 'disk' \| 'none'` | `'memory-disk'` | Which caches keep it. **Native only.** |
+| `priority` | `'low' \| 'normal' \| 'high'` | `'normal'` | Download order (`fetchpriority` on the web). |
+| `autoplay` | `boolean` | `true` | Plays animated pictures; `false` shows the first frame. |
+| `zoomable` | `boolean` | `false` | Viewer gestures: pinch, drag while zoomed (it stays inside the box), double tap. Inside a scroll view the gestures win only while zoomed or with two fingers. |
+| `maxZoom` | `number` | `4` | Largest zoom. |
+| `doubleTapZoom` | `number` | `2.5` | Zoom of a double tap. |
+| `rotatable` | `boolean` | `false` | With `zoomable`: two-finger rotation that snaps to right angles. |
+
+`ImageSource`: `{ uri, headers?, cacheKey? }`. `headers` (auth tokens…) and `cacheKey` (for signed URLs that change while the picture does not) are **native only**.
+
+## Events
+
+| Event | Payload | Notes |
+|---|---|---|
+| `onLoadStart` | | The download started. |
+| `onProgress` | `{ loaded, total }` | Bytes received (`total` is `0` when unknown). **Native only.** |
+| `onLoad` | `{ width, height, cacheType }` | The picture is on screen. `cacheType` is `'memory'`, `'disk'` or `'none'` (always `'none'` on the web). |
+| `onError` | `{ message }` | It could not be loaded or decoded (the placeholder stays). |
+| `onZoomChange` | `{ scale, x, y, rotation }` | Zoom, offset or rotation changed (gesture or `ref`). |
+
+## Ref: `ImageHandle`
+
+| Method | Description |
+|---|---|
+| `zoomTo(scale, { focusX?, focusY?, animated? })` | Zooms (clamped to `1…maxZoom`) keeping the focus point still. Works without `zoomable`. |
+| `resetZoom(animated?)` | Back to scale 1, centered, without rotation. |
+| `rotateTo(degrees, animated?)` | Rotates clockwise. Works without `rotatable`. |
+| `play()`, `pause()` | Plays or pauses an animated picture. |
+| `reload()` | Loads it again, skipping the memory and disk caches. |
+
+## Prefetch and cache
+
+```ts
+import { prefetchImages, clearImageCache } from 'isoform';
+
+await prefetchImages([next1, next2]); // to the disk by default
+await prefetchImages(next1, { cachePolicy: 'memory-disk' }); // also decodes, shows with no wait
+await clearImageCache({ disk: false }); // memory only
+```
+
+See [`prefetchImages` and `clearImageCache`](/isoform/reference/images/).
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Loading | `<img>`, the browser's cache | URLSession | React Native's OkHttp client |
+| Decoding | the browser | ImageIO, at view size, off the main thread | `ImageDecoder`, at view size, off the main thread |
+| Caches, `cachePolicy`, `headers`, `cacheKey`, `onProgress` | – | ✓ | ✓ |
+| Tint and blur | CSS (the tint works without CORS) | CoreImage | GPU blur on Android 12+ |
+| Zoom gestures | pointers, ctrl + wheel, double click | ✓ | ✓ |
+| `pause()` | does nothing | ✓ | ✓ |
+| `clearImageCache` | does nothing | ✓ | ✓ |
+
+## When the module is off
+
+`Image` stays the platform's plain image (React Native's `Image`, a plain `<img>`), which still applies `contentFit`, `tintColor` and `blurRadius`. `prefetchImages` resolves `false`.
+
+<Aside>
+The `image` module adds a TurboModule (`IsoImageModule`) for `prefetchImages` and `clearImageCache` on native.
+</Aside>

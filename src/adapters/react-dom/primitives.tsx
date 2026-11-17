@@ -16,7 +16,6 @@ const make = (tag: string, name: string) => {
 export const Box = make('div', 'Box');
 export const Text = make('span', 'Text');
 export const Pressable = make('div', 'Pressable');
-export const Image = make('img', 'Image');
 
 export const Input = forwardRef<any, any>(({ multiline, ...props }, ref) =>
   createElement(multiline ? 'textarea' : 'input', { ...props, ref }),

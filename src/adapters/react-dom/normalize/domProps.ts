@@ -1,5 +1,5 @@
 /**
- * Props de componentes omnistyle servem também para dirigir estilo
+ * Props de componentes isoform servem também para dirigir estilo
  * (`<Button variant="primary" outlined />`). No RN elas chegam ao componente e
  * são ignoradas; no DOM viram atributos inválidos e geram warnings do React.
  * Por isso, nas primitivas, só repassamos o que é válido para o elemento.
@@ -95,6 +95,21 @@ const IMAGE = [
   "referrerPolicy",
   "useMap",
   "fetchPriority",
+  // the `image` module (read by the web `Image`, never put on the element as is)
+  "contentFit",
+  "contentPosition",
+  "placeholder",
+  "blurhash",
+  "transition",
+  "tintColor",
+  "blurRadius",
+  "cachePolicy",
+  "priority",
+  "autoplay",
+  "zoomable",
+  "maxZoom",
+  "doubleTapZoom",
+  "rotatable",
 ];
 
 const SCROLL = [
@@ -233,6 +248,17 @@ const ALLOWED: Record<string, Set<string>> = {
     "dismissible",
     "modal",
     "grabber",
+    "label",
+  ]),
+  Modal: new Set([
+    ...GLOBAL,
+    "open",
+    "visible",
+    "presentation",
+    "animation",
+    "animationType",
+    "dismissible",
+    "backdropColor",
     "label",
   ]),
   Pdf: new Set([

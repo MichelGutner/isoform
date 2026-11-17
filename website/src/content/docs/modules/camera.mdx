@@ -1,0 +1,79 @@
+---
+title: Camera
+description: Camera preview with your own UI on top, photos, video recording and a code scanner. CameraX on Android, AVFoundation on iOS, getUserMedia on the web.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import CameraDemo from '../../../components/demos/CameraDemo.tsx';
+import cameraSource from '../../../components/demos/CameraDemo.tsx?raw';
+
+`engine('Camera')` is the live camera preview with **your own interface on top**: the children of `Camera` are drawn over the preview, so the shutter, switches and overlays are regular Isoform components. The `ref` takes photos and records.
+
+## Enable it
+
+Each feature only enters the app when it is on, so a photo-only app ships neither the video recorder nor the barcode model:
+
+```json title="isoform.config.json"
+{ "modules": { "camera": { "enabled": true, "video": true, "codeScanner": true } } }
+```
+
+| Option | What it adds | Android | iOS | Web |
+|---|---|---|---|---|
+| `"camera": true` | preview, `takePhoto`, flash, torch, zoom (pinch), tap to focus | CameraX 1.6 with the Compose viewfinder (`CameraXViewfinder`), zero-shutter-lag capture where supported | `AVCaptureSession`; lens switching on multi-camera iPhones (0.5× is the ultra wide), rotation coordinator and responsive capture on iOS 17+, the Camera Control zoom on iPhone 16 (iOS 18) | `getUserMedia` in a `<video>`; flash through `ImageCapture` (Chromium) |
+| `"video": true` | `startRecording` / `stopRecording`, microphone | CameraX `VideoCapture` (Full HD MP4), `RECORD_AUDIO` | movie output (MOV), `NSMicrophoneUsageDescription` | `MediaRecorder` (MP4 on Safari, WebM elsewhere) |
+| `"codeScanner": true` | `onCodeScanned` (QR, EAN, Code 128…) | ML Kit barcode scanning, model bundled (~2.4 MB) | `AVCaptureMetadataOutput` (no extra size) | `BarcodeDetector` (Chromium only) |
+
+<LiveExample code={cameraSource} title="The browser asks for the camera after you press Start.">
+  <CameraDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `facing` | `'back' \| 'front'` | `'back'` | Which camera. |
+| `active` | `boolean` | `true` | `false` stops the camera (and the light) while the component stays on screen: use it for hidden tabs and screens. |
+| `flash` | `'off' \| 'on' \| 'auto'` | `'off'` | Flash for photos. |
+| `torch` | `boolean` | `false` | Keeps the light on (back camera with a flash). |
+| `zoom` | `number` | `1` | `1` is no zoom (the main lens), `2` twice as close; clamped to the device. |
+| `onZoomChange` | `(zoom) => void` | | Pinching changed the zoom. |
+| `zoomGesture` | `boolean` | `true` | Pinch to zoom. |
+| `focusGesture` | `boolean` | `true` | Tap to focus and expose there. |
+| `video` | `boolean` | `false` | Enables recording and asks for the microphone. Needs `camera.video`. |
+| `audio` | `boolean` | `true` | Records sound with the video. |
+| `onCodeScanned` | `(codes: CameraCode[]) => void` | | Codes in sight, whenever they change (not every frame). Setting it turns the scanner on. Needs `camera.codeScanner`. |
+| `codeTypes` | `CameraCodeType[]` | `['qr']` | Kinds to look for (fewer kinds scan faster): `'qr'`, `'aztec'`, `'data-matrix'`, `'pdf417'`, `'ean-13'`, `'ean-8'`, `'upc-a'`, `'upc-e'`, `'code-128'`, `'code-39'`, `'code-93'`, `'codabar'`, `'itf'`. |
+| `onReady` | `() => void` | | The preview is showing frames. |
+| `onError` | `(message) => void` | | The camera failed (no camera, in use by another app…). |
+| `onPermissionChange` | `({ camera, microphone }) => void` | | A permission changed: `'undetermined'`, `'granted'`, `'denied'` or `'blocked'`. |
+| `permissionMessage` | `string` | `'Allow camera access to use the camera.'` | Shown over the preview while the camera is not allowed. |
+| `permissionButtonLabel` | `string` | `'Allow camera'` / `'Open settings'` | The button under the message: asks again, or opens the system settings once blocked. |
+
+The style sizes the preview, which fills its box (cropping, like `objectFit: 'cover'`).
+
+## Ref: `CameraHandle`
+
+| Method | Returns | Description |
+|---|---|---|
+| `takePhoto({ flash? })` | `Promise<{ uri, width, height }>` | Takes a JPEG. Rejects when the camera is not ready. Size is as the photo is meant to be seen (rotation applied). |
+| `startRecording()` | `Promise<void>` | Starts recording (needs `video`). Resolves once recording has started. |
+| `stopRecording()` | `Promise<{ uri, duration }>` | Stops and resolves with the file (duration in seconds). |
+
+Files go to the app's cache folder (`isoform-camera/`): move them to keep them. On the web, `uri` is a `blob:` URL.
+
+## Permissions
+
+The camera asks for permission itself the first time it becomes active (and for the microphone when `video` and `audio` are on). While the camera is not allowed, the preview shows `permissionMessage` with a button that asks again or, once the permission is blocked, opens the system settings. The system dialog uses the platform's text:
+
+- **iOS**: `NSCameraUsageDescription` (and `NSMicrophoneUsageDescription` with `video`) in `Info.plist`. The build adds a generic text when it is missing; set your own (in Expo, `ios.infoPlist` in `app.json`).
+- **Android**: the lib's manifest adds `CAMERA` (and `RECORD_AUDIO` with `video`); the dialog text is the system's.
+- **Web**: the browser asks; it needs `https` (or `localhost`).
+
+## When the module is off
+
+`Camera` renders nothing on iOS and Android and an empty box with the same style on the web, with one development warning.
+
+<Aside>
+A code scanner without `camera.codeScanner` (or recording without `camera.video`) is not compiled in: turn the option on in `isoform.config.json` and rebuild.
+</Aside>

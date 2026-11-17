@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { engine, type CameraCode, type CameraFacing, type CameraFlash, type CameraHandle } from 'omnistyle';
+import { engine, type CameraCode, type CameraFacing, type CameraFlash, type CameraHandle } from 'isoform';
 import { Body, Button, ButtonLabel, Row, themeFade } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 
@@ -92,7 +92,7 @@ const FLASHES = ['off', 'auto', 'on'] as const;
 /** Seconds as `0:07`. */
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 
-/** Camera: a full camera screen drawn with omnistyle over the native preview. */
+/** Camera: a full camera screen drawn with isoform over the native preview. */
 export function CameraPage() {
   const camera = useRef<CameraHandle>(null);
   const [active, setActive] = useState(true);
@@ -141,7 +141,7 @@ export function CameraPage() {
       title="Camera"
       summary="The device camera with your own interface on top: CameraX with the Jetpack Compose viewfinder on Android, AVFoundation on iOS, getUserMedia on the web. Pinch to zoom, tap to focus."
     >
-      <Section title="Camera screen" hint="Everything over the preview is regular omnistyle components passed as children.">
+      <Section title="Camera screen" hint="Everything over the preview is regular isoform components passed as children.">
         <Preview
           ref={camera}
           active={active}
@@ -212,7 +212,7 @@ export function CameraPage() {
 
       <Section title="In code">
         <Code>{`
-// omnistyle.config.json
+// isoform.config.json
 { "modules": { "camera": { "enabled": true, "video": true, "codeScanner": true } } }
 
 const Preview = engine('Camera', { width: '100%', height: 420, borderRadius: 20 });

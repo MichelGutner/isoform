@@ -53,7 +53,14 @@ export interface LocatedMatch extends PdfMatch {
   top: number;
 }
 
-const percentBox = ([x1, y1, x2, y2]: number[], size: PageSize): PageBox => ({
+/** A PDF rectangle `[x1, y1, x2, y2]` in viewport coordinates (pdf.js 6 dropped `PageViewport.convertToViewportRectangle`). */
+export const viewportRect = (viewport: Pick<PageViewport, 'convertToViewportPoint'>, [x1, y1, x2, y2]: number[]): number[] => [
+  ...viewport.convertToViewportPoint(x1, y1),
+  ...viewport.convertToViewportPoint(x2, y2),
+];
+
+/** A viewport rectangle (corners in any order) as percentages of a page of `size`. */
+export const percentBox = ([x1, y1, x2, y2]: number[], size: PageSize): PageBox => ({
   left: (Math.min(x1, x2) / size.width) * 100,
   top: (Math.min(y1, y2) / size.height) * 100,
   width: (Math.abs(x2 - x1) / size.width) * 100,
@@ -107,7 +114,7 @@ export class PdfDocument {
       const links = annotations.filter((a: any) => a.subtype === 'Link' && (a.url || a.dest));
       return Promise.all(
         links.map(async (a: any) => ({
-          box: percentBox(viewport.convertToViewportRectangle(a.rect), this.sizes[index]),
+          box: percentBox(viewportRect(viewport, a.rect), this.sizes[index]),
           url: a.url || undefined,
           page: a.dest ? (await this.destinationPage(a.dest)) ?? undefined : undefined,
         })),

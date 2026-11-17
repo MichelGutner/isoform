@@ -20,7 +20,7 @@ import { ensureVideoStyles } from './videoStyles';
 /**
  * `Video` na web: um container com o `<video>` do navegador e os controles da
  * lib por cima (os mesmos do Android/iOS). Os eventos do elemento são
- * traduzidos para o contrato do omnistyle (`onTimeUpdate({ currentTime, duration })`,
+ * traduzidos para o contrato do isoform (`onTimeUpdate({ currentTime, duration })`,
  * `onSeek({ from, to })`…).
  *
  * O estilo do `engine('Video', …)` vai para o container; o vídeo o preenche.
@@ -168,7 +168,7 @@ export const Video = forwardRef<WithoutPlaylist<VideoHandle>, VideoElementProps>
       onBuffering?.(value);
     };
 
-    /** Eventos do `<video>` → estado dos controles + contrato do omnistyle. */
+    /** Eventos do `<video>` → estado dos controles + contrato do isoform. */
     const events: React.VideoHTMLAttributes<HTMLVideoElement> = {
       onPlay: () => {
         patch({ playing: true });

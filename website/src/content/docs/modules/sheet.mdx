@@ -1,0 +1,68 @@
+---
+title: Bottom sheet
+description: A panel that slides up from the bottom with detents and drag. <dialog> on the web, SwiftUI on iOS, Compose on Android.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import SheetDemo from '../../../components/demos/SheetDemo.tsx';
+import sheetSource from '../../../components/demos/SheetDemo.tsx?raw';
+
+`engine('BottomSheet')` uses each platform's own sheet, so it feels native everywhere. The content is regular Isoform / React Native components.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "sheet": { "enabled": true } } }
+```
+
+<LiveExample code={sheetSource}>
+  <SheetDemo client:only="react" />
+</LiveExample>
+
+```tsx
+<Sheet open modal={false} dismissible={false} detents={[160, '50%']} /> {/* the screen behind keeps working */}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `open` | `boolean` | (required) | Shown or hidden. It animates both ways. |
+| `onOpenChange` | `(open) => void` | | The user closed it (drag down, backdrop, Escape on the web, back button on Android). Set your state to the value. |
+| `detents` | `SheetDetent[]` | `['fit']` | Heights it snaps to, smallest first: `'fit'` (content height), `'full'`, a number (px/dp/pt) or a percentage of the screen (`'40%'`). |
+| `detent` | `number` | `0` | Index in `detents` to show when it opens (and to move to while open). |
+| `onDetentChange` | `({ index }) => void` | | It moved to another detent (drag or `snapTo`). |
+| `dismissible` | `boolean` | `true` | Whether the user can close it. |
+| `modal` | `boolean` | `true` | `true`: a dimmed backdrop blocks the screen behind. `false`: no backdrop; the screen behind stays usable (like Maps). |
+| `grabber` | `boolean` | `true` | Shows the small handle on top. |
+| `onClosed` | `() => void` | | After the closing animation ends (the content is then unmounted). |
+| `label` | `string` | | Accessible name (`aria-label` on the web). |
+
+The `style` styles the surface: `backgroundColor` and the top corner radius go to the native sheet; padding and gap go to the content. Leave `backgroundColor` out for the system look (Liquid Glass on iOS 26).
+
+## Ref: `BottomSheetHandle`
+
+| Method | Description |
+|---|---|
+| `snapTo(index)` | Moves to the detent at `index` (while open). Triggers `onDetentChange`. |
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Sheet | `<dialog>` in the top layer (`showModal`) | SwiftUI `.sheet` + `presentationDetents` | Jetpack Compose (spring snapping, scrim, keyboard-aware) |
+| Detents | `'fit'`, `'full'`, `'40%'`, a height | `.height` / `.large` / `.fraction` (iOS 16+; full height on iOS 15) | same values |
+| Dismiss | drag down, backdrop, Escape | swipe down, tap outside | drag down, scrim, back button |
+| Non-modal (`modal={false}`) | `dialog.show()`, the page stays usable | `presentationBackgroundInteraction(.enabled)` (iOS 16.4+) | drawn over its parent: put it at the screen root |
+| Focus and accessibility | focus moved in and restored, page made inert, `aria-label` from `label` | system | system |
+
+The content is React children: on iOS and Android the native side moves them into the sheet (with React Native's touch handling attached, as its own `Modal` does), and JS lays them out to the size the sheet reports, so `flex: 1` lists fill it. Scrolling content scrolls inside the sheet; on touch screens a sheet with scrolling content is dragged by its top area.
+
+<Aside>
+On the web the sheet code is a separate chunk, downloaded the first time a sheet opens.
+</Aside>
+
+## When the module is off
+
+`BottomSheet` renders nothing and logs one development warning.

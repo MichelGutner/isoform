@@ -13,7 +13,7 @@ export interface SvgElement {
   dom: string;
 }
 
-/** Every SVG primitive, by its omnistyle name. */
+/** Every SVG primitive, by its isoform name. */
 export const SVG_ELEMENTS = {
   Svg: { native: 'Svg', dom: 'svg' },
   G: { native: 'G', dom: 'g' },

@@ -1,0 +1,82 @@
+---
+title: Video
+description: A video player with the lib's own controls. <video> on the web, AVPlayer on iOS, Media3 on Android.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import VideoDemo from '../../../components/demos/VideoDemo.tsx';
+import videoSource from '../../../components/demos/VideoDemo.tsx?raw';
+
+`engine('Video')` is a video player with the lib's own controls (play/pause, seek bar, speed, fullscreen, picture-in-picture on the web), and no external dependency.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "video": { "enabled": true } } }
+```
+
+<LiveExample code={videoSource}>
+  <VideoDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `src` | `string` | | Media URL: a file (`.mp4`, `.webm`…) or an HLS stream (`.m3u8`). HLS on the web needs Safari. Give either `src` or [`items`](/isoform/modules/playlists/). |
+| `poster` | `string` | | Image URL shown before playback starts. |
+| `controls` | `boolean` | `true` | Shows the player controls (play/pause, seek bar, speed, fullscreen…). |
+| `autoPlay` | `boolean` | `false` | Starts playing as soon as the media is ready. Browsers only allow it when `muted`. |
+| `loop` | `boolean` | `false` | Restarts from the beginning when the media ends. |
+| `muted` | `boolean` | `false` | Starts muted. The user can still unmute through the controls. |
+| `rate` | `number` | `1` | Playback speed: `1` normal, `0.5` half, `2` double. |
+| `volume` | `number` | `1` | Volume, from `0` (silent) to `1` (full). |
+
+Plus the [playlist props](/isoform/modules/playlists/) (`items`, `initialIndex`, `carousel`, `autoAdvance`, `onItemChange`).
+
+## Events
+
+| Event | Payload | When |
+|---|---|---|
+| `onPlay` | | Playback starts or resumes. |
+| `onPause` | | Playback pauses (by the user, `pause()` or the system). |
+| `onEnded` | | The media reaches the end (not while `loop` is on). |
+| `onTimeUpdate` | `{ currentTime, duration }` | About 4 times per second while playing (seconds; `duration` is `0` while unknown and for live streams). |
+| `onLoad` | `{ duration, width, height }` | The metadata is ready (natural size in pixels). |
+| `onError` | `message: string` | The media fails to load or play. |
+| `onSeek` | `{ from, to }` | The position jumps (seek bar, ±10 s buttons or `seekTo`). |
+| `onBuffering` | `boolean` | `true` when playback stalls waiting for data, `false` when it can continue. |
+| `onBufferedChange` | `seconds: number` | How far the media has been downloaded (at most every 0.5 s of new data). |
+| `onVolumeChange` | `{ volume, muted }` | The volume or mute state changes (controls or props). |
+| `onRateChange` | `rate: number` | The speed changes (speed menu or `rate` prop). |
+| `onFullscreenChange` | `boolean` | Entering (`true`) or leaving (`false`) fullscreen. |
+| `onPictureInPictureChange` | `boolean` | Entering or leaving picture-in-picture. **Web only** (not implemented on native yet). |
+
+## Ref: `VideoHandle`
+
+| Method | Description |
+|---|---|
+| `play()` | Starts or resumes playback. |
+| `pause()` | Pauses, keeping the position. |
+| `seekTo(seconds)` | Jumps to `seconds` (clamped to the duration). Triggers `onSeek`. |
+| `setFullscreen(fullscreen)` | Enters or leaves fullscreen. Triggers `onFullscreenChange`. On iOS it presents a fullscreen player sharing the same playback; it cannot close a fullscreen opened by the native button. |
+| `next()`, `previous()`, `goTo(index)` | List navigation with `items` (no-op without a list). |
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Engine | `<video>` | `AVPlayer` | Media3 ExoPlayer |
+| Controls | the lib's (DOM) | the lib's (UIKit) | the lib's (Jetpack Compose) |
+| HLS (`.m3u8`) | Safari only | ✓ | ✓ |
+| Picture-in-picture | ✓ | – | – |
+| Loading | a separate chunk, downloaded when a `Video` renders | compiled only when on | compiled only when on |
+
+## When the module is off
+
+`Video` renders an empty box with the same style (black on iOS and Android) and logs one development warning, so the layout does not jump.
+
+<Aside>
+The style sizes the player box. `aspectRatio: 16 / 9` with a `width` is a good default.
+</Aside>

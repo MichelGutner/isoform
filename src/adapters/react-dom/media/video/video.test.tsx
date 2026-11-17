@@ -64,7 +64,7 @@ describe('Video (web)', () => {
     expect(el.autoplay).toBe(true);
   });
 
-  it('translates DOM events to the omnistyle contract', async () => {
+  it('translates DOM events to the isoform contract', async () => {
     const onPlay = jest.fn();
     const onPause = jest.fn();
     const onEnded = jest.fn();
@@ -128,7 +128,7 @@ describe('Video (web)', () => {
     expect(first(container).volume).toBe(1);
   });
 
-  it('does not leak omnistyle props to the DOM (no React warnings)', async () => {
+  it('does not leak isoform props to the DOM (no React warnings)', async () => {
     await renderVideo(<Clip src="a.mp4" rate={2} volume={1} onTimeUpdate={() => {}} onLoad={() => {}} />);
     expect(errorSpy).not.toHaveBeenCalled();
   });

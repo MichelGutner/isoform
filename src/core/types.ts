@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { ComponentPropsWithRef, ComponentType, ForwardRefExoticComponent } from 'react';
-import type { OmniStyle } from './style/types';
+import type { IsoStyle } from './style/types';
 
 /* ───────────────────────── conditions ───────────────────────── */
 
@@ -127,13 +127,13 @@ export type PseudoName = UniversalPseudoName | WebOnlyPseudoName;
  *
  * To type your own names, augment this interface (and set the widths in `configure`):
  * ```ts
- * declare module 'omnistyle' {
- *   interface OmniBreakpointNames { tablet: unknown }
+ * declare module 'isoform' {
+ *   interface IsoBreakpointNames { tablet: unknown }
  * }
  * configure({ breakpoints: { tablet: 600 } });
  * ```
  */
-export interface OmniBreakpointNames {
+export interface IsoBreakpointNames {
   /** Small: large phones and up (default `480px`). */
   sm: unknown;
   /** Medium: tablets in portrait and up (default `768px`). */
@@ -143,7 +143,7 @@ export interface OmniBreakpointNames {
   /** Extra large: desktops and wide screens (default `1280px`). */
   xl: unknown;
 }
-// export interface OmniBreakpointNames {
+// export interface IsoBreakpointNames {
 //   /** Small: large phones and up (default `480px`). */
 //   large_phones_up: unknown;
 //   /** Medium: tablets in portrait and up (default `768px`). */
@@ -156,7 +156,7 @@ export interface OmniBreakpointNames {
 
 
 /** A configured breakpoint name (`'sm' | 'md' | 'lg' | 'xl'` plus any augmented ones). */
-export type BreakpointName = Extract<keyof OmniBreakpointNames, string>;
+export type BreakpointName = Extract<keyof IsoBreakpointNames, string>;
 
 /**
  * Breakpoint condition for `when()`: `'breakpoints:md'` applies from `md` and up.
@@ -229,9 +229,9 @@ export type ExtractStyle<C extends ComponentType<any>> =
     ? Exclude<S, (...args: any[]) => any>
     : never;
 
-/** The style type accepted by component `C`; falls back to {@link OmniStyle} when it cannot be inferred. */
+/** The style type accepted by component `C`; falls back to {@link IsoStyle} when it cannot be inferred. */
 export type ComponentStyle<C extends ComponentType<any>> = [ExtractStyle<C>] extends [never]
-  ? OmniStyle
+  ? IsoStyle
   : ExtractStyle<C>;
 
 /** A static style for component `C` (an object, or anything its `style` prop accepts). */

@@ -14,7 +14,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "omnistyle": ["./src/index.ts"]
+      "isoform": ["./src/index.ts"]
     },
     "plugins": [
       { "transform": "typescript-transform-paths", "afterDeclarations": true }
@@ -29,6 +29,7 @@
     "example",
     "example-web",
     "examples",
+    "website",
     "**/__tests__/*",
     "**/__mocks__/*",
     "**/*.test.ts",

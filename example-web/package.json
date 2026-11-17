@@ -1,5 +1,5 @@
 {
-  "name": "omnistyle-example-web",
+  "name": "isoform-example-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "pdfjs-dist": "5.6.205",
+    "pdfjs-dist": "6.5.438",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

@@ -1,7 +1,7 @@
-// Parte nativa do omnistyle. O plugin `com.facebook.react` roda o Codegen a partir
+// Parte nativa do isoform. O plugin `com.facebook.react` roda o Codegen a partir
 // do `codegenConfig` do package.json.
 //
-// Módulos opcionais: decididos pelo `omnistyle.config.json` na raiz do app
+// Módulos opcionais: decididos pelo `isoform.config.json` na raiz do app
 // (ao lado do package.json), o mesmo arquivo que o app passa ao `configure`:
 //   { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
 // (cada módulo aceita `true` ou `{ "enabled": true, ...opções }`)
@@ -25,36 +25,38 @@ buildscript {
 }
 
 // `android/` do app → a raiz do app é a pasta de cima
-def omnistyleConfigFile = new File(rootProject.projectDir.parentFile, "omnistyle.config.json")
-def omnistyleConfig = omnistyleConfigFile.exists() ? new groovy.json.JsonSlurper().parse(omnistyleConfigFile) : null
+def isoformConfigFile = new File(rootProject.projectDir.parentFile, "isoform.config.json")
+def isoformConfig = isoformConfigFile.exists() ? new groovy.json.JsonSlurper().parse(isoformConfigFile) : null
 // `true` ou `{ "enabled": true }`
-def omnistyleOn = { setting -> setting == true || (setting instanceof Map && setting.enabled == true) }
-def omnistyleModule = { String name -> omnistyleConfig == null || omnistyleOn(omnistyleConfig.modules?.get(name)) }
+def isoformOn = { setting -> setting == true || (setting instanceof Map && setting.enabled == true) }
+def isoformModule = { String name -> isoformConfig == null || isoformOn(isoformConfig.modules?.get(name)) }
 
-def videoEnabled = omnistyleModule("video")
-def audioEnabled = omnistyleModule("audio")
-def pdfEnabled = omnistyleModule("pdf")
-def sheetEnabled = omnistyleModule("sheet")
-def cameraEnabled = omnistyleModule("camera")
-def datePickerEnabled = omnistyleModule("datePicker")
+def videoEnabled = isoformModule("video")
+def audioEnabled = isoformModule("audio")
+def pdfEnabled = isoformModule("pdf")
+def sheetEnabled = isoformModule("sheet")
+def cameraEnabled = isoformModule("camera")
+def datePickerEnabled = isoformModule("datePicker")
+def imageEnabled = isoformModule("image")
+def modalEnabled = isoformModule("modal")
 // camera features: each one only with the module on and its option `true` (all on without the file)
-def cameraSetting = omnistyleConfig?.modules?.get("camera")
-def cameraFeature = { String name -> cameraEnabled && (omnistyleConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
+def cameraSetting = isoformConfig?.modules?.get("camera")
+def cameraFeature = { String name -> cameraEnabled && (isoformConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
 def cameraVideoEnabled = cameraFeature("video")
 def cameraCodesEnabled = cameraFeature("codeScanner")
 // player e interface (Media3 + Compose) são comuns aos dois módulos
 def mediaEnabled = videoEnabled || audioEnabled
 // foreground service + controles na notificação: só com `audio.mediaSession: true` explícito
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
-def audioSetting = omnistyleConfig?.modules?.get("audio")
+def audioSetting = isoformConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[omnistyle] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${omnistyleConfig == null ? "sem omnistyle.config.json" : omnistyleConfigFile})")
+logger.lifecycle("[isoform] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, image: ${imageEnabled ? "on" : "off"}, modal: ${modalEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${isoformConfig == null ? "sem isoform.config.json" : isoformConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 // Compose: controles do vídeo e do áudio, o leitor de PDF, o bottom sheet e o viewfinder da câmera
-def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled || datePickerEnabled
+def composeEnabled = mediaEnabled || pdfEnabled || sheetEnabled || cameraEnabled || datePickerEnabled || modalEnabled
 if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
 
 /**
@@ -62,14 +64,14 @@ if (composeEnabled) apply plugin: "org.jetbrains.kotlin.plugin.compose"
  * (Kotlin 2.1, compileSdk 36, AGP 8.11):
  *  · Media3 1.11.1 (compileSdk 36);
  *  · Compose BOM 2026.06.01 = Compose 1.11.4 (o 1.12 já exige compileSdk 37).
- * O app pode sobrescrever com `ext.omnistyleMedia3Version` / `ext.omnistyleComposeBomVersion`.
+ * O app pode sobrescrever com `ext.isoformMedia3Version` / `ext.isoformComposeBomVersion`.
  */
-def media3Version = safeExtGet("omnistyleMedia3Version", "1.11.1")
+def media3Version = safeExtGet("isoformMedia3Version", "1.11.1")
 // CameraX 1.6.2: the newest stable (compileSdk 36), with the Compose viewfinder (`camera-compose`)
-def cameraXVersion = safeExtGet("omnistyleCameraXVersion", "1.6.2")
+def cameraXVersion = safeExtGet("isoformCameraXVersion", "1.6.2")
 // ML Kit barcode scanning with the model inside the APK (works offline, no Play services download)
-def mlkitBarcodeVersion = safeExtGet("omnistyleMlkitBarcodeVersion", "17.3.0")
-def composeBomVersion = safeExtGet("omnistyleComposeBomVersion", "2026.06.01")
+def mlkitBarcodeVersion = safeExtGet("isoformMlkitBarcodeVersion", "17.3.0")
+def composeBomVersion = safeExtGet("isoformComposeBomVersion", "2026.06.01")
 
 /**
  * One manifest with what the enabled modules need: the main one, plus the pieces of
@@ -84,15 +86,15 @@ def manifestParts = [file("src/main/AndroidManifest.xml")]
 if (mediaSessionEnabled) manifestParts << file("src/mediaSession/AndroidManifest.xml")
 if (cameraEnabled) manifestParts << file("src/camera/AndroidManifest.xml")
 if (cameraVideoEnabled) manifestParts << file("src/cameraVideo/AndroidManifest.xml")
-def omnistyleManifest = new File(layout.buildDirectory.get().asFile, "generated/omnistyle/AndroidManifest.xml")
-omnistyleManifest.parentFile.mkdirs()
-omnistyleManifest.text = """<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+def isoformManifest = new File(layout.buildDirectory.get().asFile, "generated/isoform/AndroidManifest.xml")
+isoformManifest.parentFile.mkdirs()
+isoformManifest.text = """<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 ${manifestParts.collect(manifestBody).join("\n")}
 </manifest>
 """
 
 android {
-  namespace "com.omnistyle"
+  namespace "com.isoform"
   compileSdkVersion safeExtGet("compileSdkVersion", 36)
 
   defaultConfig {
@@ -112,7 +114,7 @@ android {
       if (videoEnabled) java.srcDirs += "src/video/java"
       if (audioEnabled) {
         java.srcDirs += "src/audio/java"
-        // o áudio sempre chama `OmniMediaSession`: a versão real (serviço) ou a vazia
+        // o áudio sempre chama `IsoMediaSession`: a versão real (serviço) ou a vazia
         java.srcDirs += (mediaSessionEnabled ? "src/mediaSession/java" : "src/mediaSessionOff/java")
       }
       // PDF: o `PdfRenderer` do sistema + Compose (sem dependência extra)
@@ -121,6 +123,10 @@ android {
       if (sheetEnabled) java.srcDirs += "src/sheet/java"
       // date picker: Material 3 DatePicker/TimePicker in Compose
       if (datePickerEnabled) java.srcDirs += "src/datePicker/java"
+      // image: the lib's pipeline (React Native's OkHttp, ImageDecoder) — no Compose, no extra dependency
+      if (imageEnabled) java.srcDirs += "src/image/java"
+      // modal: Compose (scrim, card, springs) hosting the React children
+      if (modalEnabled) java.srcDirs += "src/modal/java"
       // camera: CameraX + Compose; video and the code scanner add their code (or an empty
       // stand-in with the same API) only when their option is on
       if (cameraEnabled) {
@@ -130,7 +136,7 @@ android {
       }
       // permissions and services of the modules that are on, merged into one manifest
       // (a source set takes a single manifest file)
-      manifest.srcFile omnistyleManifest
+      manifest.srcFile isoformManifest
     }
   }
 

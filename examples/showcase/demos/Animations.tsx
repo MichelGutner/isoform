@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine, keyframes } from 'omnistyle';
+import { engine, keyframes } from 'isoform';
 import { Body, Button, ButtonLabel, Card, Heading, Row, themeFade } from '../ui';
 
 /**

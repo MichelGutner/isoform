@@ -5,8 +5,8 @@ import type { VideoHandle } from '../../../../core/media';
 import { warnModuleDisabled } from '../../../../core/modules';
 
 /**
- * `Video` sem player: o `omnistyle/metro` usa este arquivo no lugar de
- * `Video.tsx` quando o vídeo está desligado no `omnistyle.config.json`.
+ * `Video` sem player: o `isoform/metro` usa este arquivo no lugar de
+ * `Video.tsx` quando o vídeo está desligado no `isoform.config.json`.
  * Assim nem o player nem a spec nativa entram no bundle JS.
  */
 export const Video = forwardRef<VideoHandle, any>(({ style, testID }, _ref) => {

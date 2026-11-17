@@ -1,0 +1,37 @@
+---
+title: Input
+description: A text field. An input or textarea on the web, TextInput on mobile.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import InputDemo from '../../../components/demos/InputDemo.tsx';
+import inputSource from '../../../components/demos/InputDemo.tsx?raw';
+
+`Input` is an `<input>` (or a `<textarea>` with `multiline`) on the web and React Native's `TextInput` on mobile.
+
+<LiveExample code={inputSource}>
+  <InputDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `onChangeText` | `(text: string) => void` | Called with the new text (not the event) on every change, on both platforms. |
+| `onChange` | `(event) => void` | Called with the raw platform event on every change. Prefer `onChangeText`. |
+| `multiline` | `boolean` | Allows several lines. Web: renders a `<textarea>`. |
+| `numberOfLines` | `number` | Number of visible lines when `multiline` (web: `rows`). |
+| `placeholderTextColor` | `string` | Placeholder color. Prefer `when('::placeholder', { style: { color } })`. |
+| `onSubmitEditing` | `(event?) => void` | Called when the user submits (Enter on the web, the return key on native). |
+| `autoCorrect` | `boolean \| string` | Turns autocorrection on or off (web: the `autocorrect` attribute; `'on' \| 'off'` also accepted). |
+| `type` | `string` | The HTML type. `type="password"` becomes `secureTextEntry` on native. |
+| `secureTextEntry` | `boolean` | Deprecated: use `type="password"`. |
+| `editable` | `boolean` | Deprecated: use `readOnly`. |
+| `keyboardType` | `string` | Deprecated: use `inputMode`. |
+
+Plus the `<input>`/`<textarea>` DOM props (`value`, `placeholder`, `readOnly`, `inputMode`, `autoComplete`…) and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+
+## Styling states
+
+- `when('state:focus')` and `when('state:focus-visible')` work on `Input` on both platforms.
+- `when('::placeholder')` sets the placeholder color (`placeholderTextColor` on native) and `when('::selection')` the selection color (`selectionColor` on native).

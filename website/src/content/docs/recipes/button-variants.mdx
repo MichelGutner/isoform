@@ -1,0 +1,53 @@
+---
+title: A button with variants and sizes
+description: One Button component with variant, size and disabled props, states and a web cursor.
+---
+
+```tsx title="Button.tsx"
+import { engine } from 'isoform';
+
+type ButtonProps = {
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+};
+
+export const Button = engine<'Pressable', ButtonProps>('Pressable', ({ theme }) => ({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: theme.spacing.xs,
+  paddingBlock: theme.spacing.sm,
+  paddingInline: theme.spacing.md,
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: 'transparent',
+  backgroundColor: theme.color.primary,
+  transition: 'transform 120ms ease-out, opacity 150ms',
+}))
+  .when('props:variant=secondary', ({ theme }) => ({ style: { backgroundColor: theme.color.surface, borderColor: theme.color.border } }))
+  .when('props:variant=ghost', { style: { backgroundColor: 'transparent' } })
+  .when('props:size=sm', { style: { paddingBlock: 4, paddingInline: 10, borderRadius: 8 } })
+  .when('props:size=lg', { style: { paddingBlock: 14, paddingInline: 24, borderRadius: 16 } })
+  .when('props:disabled', { style: { opacity: 0.5 } })
+  .when('state:hover', { style: { opacity: 0.9 } })
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } })
+  .when('platform:web', { style: { cursor: 'pointer', userSelect: 'none' } })
+  .attrs({ role: 'button' });
+
+export const ButtonLabel = engine<'Text', ButtonProps>('Text', { color: '#fff', fontWeight: '600' })
+  .when('props:variant=secondary', ({ theme }) => ({ style: { color: theme.color.text } }))
+  .when('props:variant=ghost', ({ theme }) => ({ style: { color: theme.color.primary } }));
+```
+
+```tsx
+<Button variant="secondary" size="lg" onPress={save} disabled={saving}>
+  <ButtonLabel variant="secondary">Save</ButtonLabel>
+</Button>
+```
+
+- `disabled` is a `Pressable` prop: on the web it also sets `aria-disabled` and blocks `onPress`; here it doubles as a style condition.
+- `transition` animates `pressed` on the web and on mobile.
+- `userSelect` and `cursor` are web-only CSS, scoped with `platform:web` so mobile does not warn.
+- `variant` and `size` drive styles only: they are never forwarded to the DOM.
+
+See also the live examples in [Conditions](/isoform/guides/conditions/) and [Interaction states](/isoform/guides/states/).

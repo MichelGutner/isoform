@@ -1,0 +1,50 @@
+---
+title: Testing components
+description: Test Isoform components with Testing Library on jsdom, or with React Native's test tooling.
+---
+
+Component libraries built on Isoform can test with either platform's tooling.
+
+## React DOM (jsdom)
+
+With Jest (or Vitest) and `@testing-library/react` on jsdom, the bundled provider is the DOM adapter:
+
+```ts title="jest.setup.ts"
+import { configure } from 'isoform';
+
+configure({ provider: 'auto', theme: tokens });
+```
+
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+
+test('calls onPress', () => {
+  const onPress = jest.fn();
+  render(<Button onPress={onPress} testID="save" aria-label="Save" />);
+  fireEvent.click(screen.getByTestId('save')); // testID → data-testid
+  expect(onPress).toHaveBeenCalled();
+});
+```
+
+## React Native
+
+With the `react-native` Jest preset, Metro-style resolution picks the native provider, and `@testing-library/react-native` works as usual:
+
+```tsx
+import { render, fireEvent } from '@testing-library/react-native';
+
+test('calls onPress', () => {
+  const onPress = jest.fn();
+  const { getByTestId } = render(<Button onPress={onPress} testID="save" />);
+  fireEvent.press(getByTestId('save'));
+  expect(onPress).toHaveBeenCalled();
+});
+```
+
+## A specific provider
+
+For tests that need a given provider regardless of bundling, pass an adapter object: `configure({ provider: myAdapter })`. The repository's [`fakeAdapter`](https://github.com/MichelGutner/isoform/blob/main/src/core/testing/fakeAdapter.ts) is a minimal one.
+
+## Modules in tests
+
+Module components need their module on: `configure({ modules: { sheet: true } })`. Off, they render their fallback and log a development warning (see [When a module is off](/isoform/getting-started/configuration/#when-a-module-is-off)).

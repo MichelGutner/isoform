@@ -1,0 +1,76 @@
+---
+title: Conditions and variants
+description: when() applies styles and props by prop value, platform, interaction state, breakpoint, pseudo-element or any function.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import ConditionsDemo from '../../../components/demos/ConditionsDemo.tsx';
+import conditionsSource from '../../../components/demos/ConditionsDemo.tsx?raw';
+
+`when(condition, attrs)` applies props (including `style`) only when the condition holds. Declare custom props with the second type parameter of `engine` and they become typed conditions:
+
+```tsx
+const Tag = engine<'Box', { tone?: 'ok' | 'bad'; dense?: boolean }>('Box')
+  .style({ padding: 12 })
+  .when('props:tone=ok', { style: { backgroundColor: '#dcfce7' } }) // exact value match
+  .when('props:dense', { style: { padding: 6 } }) // truthy prop
+  .when(({ props, theme }) => props.tone === 'bad', ({ theme }) => ({ // function condition
+    style: { backgroundColor: theme.color.error },
+  }))
+  .when('platform:ios', { style: { shadowOpacity: 0.2 } }) // platform
+  .when('platform:native', { style: { elevation: 2 } }) // any non-web platform
+  .when('platform:web', { style: { cursor: 'pointer' } });
+```
+
+<LiveExample code={conditionsSource}>
+  <ConditionsDemo client:only="react" />
+</LiveExample>
+
+## Condition syntax
+
+Every string condition has a prefix that says what it checks, so it always reads unambiguously:
+
+| Kind | Syntax | Example |
+|---|---|---|
+| Platform | `'platform:<ios \| android \| web \| native>'` | `'platform:web'`, `'platform:native'` (iOS and Android) |
+| Interaction state | `'state:<hover \| focus \| focus-visible \| pressed>'` | `'state:pressed'` |
+| Breakpoint | `'breakpoints:<name>'`, `'breakpoints:<<name>'`, `'breakpoints:<a>..<b>'` | `'breakpoints:md'`, `'breakpoints:<md'` |
+| Prop (truthy) | `'props:<prop>'` | `'props:disabled'` |
+| Prop (value) | `'props:<prop>=<value>'` | `'props:variant=ghost'` |
+| Pseudo-element | the CSS name | `'::before'`, `'::placeholder'` |
+
+Plus `(ctx) => boolean` and a plain `boolean` (`true` always applies, `false` never does). An unknown condition (a typo, or the old unprefixed syntax such as `'web'`) never matches and logs a development warning.
+
+### Prop conditions are typed
+
+TypeScript derives the valid prop conditions from your custom props ([`PropConditionKeys`](/isoform/reference/types/#conditions)):
+
+- a boolean prop `disabled` gives `'props:disabled'`, `'props:disabled=true'` and `'props:disabled=false'`;
+- a string or number prop `variant: 'primary' | 'ghost'` gives `'props:variant'` (truthy), `'props:variant=primary'` and `'props:variant=ghost'`;
+- props of other types (objects, functions) give no condition.
+
+Value conditions are an **exact** match: `'props:status=active'` does not match `'inactive'`.
+
+## What `attrs` can be
+
+The second argument is either an object of props or a function of `{ theme, props, platform }` that returns one. Besides `style`, it can set any prop:
+
+```tsx
+const Field = engine<'Input', { secret?: boolean }>('Input')
+  .when('props:secret', { type: 'password', autoComplete: 'current-password' });
+```
+
+<Aside>
+State, breakpoint and pseudo-element conditions only take `{ style }`: other props in them are ignored with a development warning. They are compiled once as variants (a CSS rule on the web), not evaluated per render.
+</Aside>
+
+## Order and precedence
+
+Rules apply in the order they are chained; for the same property, **the last matching rule wins**. On top of all of them, the `style` prop passed at the call site always wins.
+
+## Related
+
+- [Interaction states](/isoform/guides/states/) · [Responsive design](/isoform/guides/responsive/) · [Pseudo-elements](/isoform/guides/pseudo-elements/)
+- [Composition and `extend`](/isoform/guides/composition/)
+- [`EngineComponent` reference](/isoform/reference/engine-component/)

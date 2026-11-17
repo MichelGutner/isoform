@@ -1,0 +1,41 @@
+---
+title: Playlists
+description: Pass an items list to Video, Audio or Pdf to get a carousel and next/previous navigation.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import PlaylistDemo from '../../../components/demos/PlaylistDemo.tsx';
+import playlistSource from '../../../components/demos/PlaylistDemo.tsx?raw';
+
+`Video`, `Audio` and `Pdf` accept an `items` list instead of one `src`. A playlist button inside the player opens a carousel panel over it. The list logic is shared by every platform; each adapter only draws the strip. The component's style keeps going to the player.
+
+<LiveExample code={playlistSource}>
+  <PlaylistDemo client:only="react" />
+</LiveExample>
+
+## Item types
+
+| Type | Fields |
+|---|---|
+| `PlaylistItem` | `src` (same formats as the primitive's `src`), `title?` |
+| `VideoItem` | + `poster?` (shown before playback and in the carousel card) |
+| `AudioItem` | + `artist?`, `artwork?` (player and card) |
+| `PdfItem` | + `thumbnail?` (carousel card; a document icon without it) |
+
+When `items` is given (non-empty), `src` and the per-entry props (`poster`, `title`, `artist`, `artwork`) come from the current entry.
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `items` | `Item[]` | | The list, played or read one after the other. |
+| `initialIndex` | `number` | `0` | Entry shown first. |
+| `carousel` | `boolean` | `true` | Shows the playlist button (which opens the carousel) when there is a list. |
+| `onItemChange` | `({ index, item }) => void` | | The current entry changed (carousel, `next()`/`previous()`/`goTo()` or the end of a video/audio). |
+| `autoAdvance` | `boolean` | `true` | `Video` and `Audio` only: goes to the next entry, and keeps playing, when one ends. |
+
+## Ref
+
+The `ref` of `Video`, `Audio` and `Pdf` gains `next()` (stops at the last entry), `previous()` (stops at the first) and `goTo(index)` (clamped to the list). They do nothing without `items`.
+
+A list may repeat the same file: moving to an entry with the same address restarts it.

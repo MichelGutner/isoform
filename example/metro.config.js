@@ -14,9 +14,9 @@ config.watchFolders = [libRoot];
 config.resolver.nodeModulesPaths = [path.resolve(projectRoot, 'node_modules')];
 config.resolver.disableHierarchicalLookup = true;
 
-// `import ... from 'omnistyle'` aponta direto para o código-fonte da lib.
+// `import ... from 'isoform'` aponta direto para o código-fonte da lib.
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName === 'omnistyle') {
+  if (moduleName === 'isoform') {
     return {
       type: 'sourceFile',
       filePath: path.resolve(libRoot, 'src/index.ts'),
@@ -25,7 +25,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return context.resolveRequest(context, moduleName, platform);
 };
 
-// Módulos desligados no omnistyle.config.json saem do bundle JS.
-const { withOmnistyle } = require('omnistyle/metro');
+// Módulos desligados no isoform.config.json saem do bundle JS.
+const { withIsoform } = require('isoform/metro');
 
-module.exports = withOmnistyle(config);
+module.exports = withIsoform(config);

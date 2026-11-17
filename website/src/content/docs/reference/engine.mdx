@@ -1,0 +1,61 @@
+---
+title: engine()
+description: Creates styled components from a primitive name, another engine component, or any React component.
+---
+
+```ts
+// 1. a primitive name
+engine<K extends keyof IsoPrimitives, P extends object = {}>(component: K, style?: StyleOrFn): EngineComponent;
+// 2. another engine component (composition)
+engine<C extends EngineComponent, P extends object = {}>(component: C, style?: StyleOrFn): EngineComponent;
+// 3. any React component
+engine<C extends ComponentType<any>, P extends object = {}>(component: C, style?: StyleOrFn): EngineComponent;
+```
+
+Creates styled components that work with any provider (React Native or React DOM). A primitive name (`engine('Box')`) is only resolved **at render time**, by the active provider, so components can be defined before `configure()` runs.
+
+```tsx
+const Card = engine('Box', ({ theme }) => ({
+  padding: theme.spacing.md,
+  borderRadius: 12,
+  boxShadow: '0 2px 8px rgba(0,0,0,.1)',
+}));
+
+const Button = engine('Pressable')
+  .style({ paddingInline: '1rem' })
+  .when('props:disabled', { style: { opacity: 0.5 } })
+  .when('platform:web', { style: { cursor: 'pointer' } });
+```
+
+## Parameters
+
+| Parameter | Description |
+|---|---|
+| `component` | A primitive name (see [`IsoPrimitives`](/isoform/primitives/overview/)), an existing engine component, or any React component. |
+| `style` | Optional initial style: an object, or a function of `{ theme, props, platform }`. |
+
+## Type parameters
+
+| Type parameter | Description |
+|---|---|
+| `P` | Custom props of the new component. They are accepted as props and become `when()` conditions such as `'props:variant=primary'`. When `component` is an engine component, its custom props are inherited and `P` adds to them. |
+
+## Returns
+
+An [`EngineComponent`](/isoform/reference/engine-component/): a React component (with `ref` forwarding) that also has `.style()`, `.when()`, `.attrs()` and `.extend()`.
+
+Primitives with methods type their `ref` with a handle: `Video` → `VideoHandle`, `Audio` → `AudioHandle`, `Pdf` → `PdfHandle`, `BottomSheet` → `BottomSheetHandle`, `Camera` → `CameraHandle`, `Image` → `ImageHandle`.
+
+## Style context
+
+Style functions and condition functions receive a `StyleContext<P>`:
+
+| Field | Type | Description |
+|---|---|---|
+| `theme` | `EngineTheme` | The active theme. |
+| `props` | `P` | The props the component was rendered with, including custom ones and props set by earlier `attrs`/`when` rules. |
+| `platform` | `string` | `'ios'`, `'android'`, `'web'`, or a custom adapter's name. |
+
+## Caching
+
+The result of the rules is cached per theme and per props hash; components whose rules do not depend on props skip hashing entirely. The display name is `Stylized(<Base>)`.

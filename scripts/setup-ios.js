@@ -3,12 +3,12 @@
  * Setup for `modules.mediaSession` on iOS: adds `UIBackgroundModes` → `audio` to
  * the app's Info.plist, so audio keeps playing with the screen locked or the app
  * in the background. A pod cannot declare this key, so the pod's build phase
- * (`omnistyle.podspec`) already does the same on every iOS build; this script is
+ * (`isoform.podspec`) already does the same on every iOS build; this script is
  * for running it by hand or in CI, without building.
  *
- *   node node_modules/omnistyle/scripts/setup-ios.js [app-root]
+ *   node node_modules/isoform/scripts/setup-ios.js [app-root]
  *
- * It only acts when `omnistyle.config.json` (at the app root) has
+ * It only acts when `isoform.config.json` (at the app root) has
  * `modules.audio: { enabled: true, mediaSession: true }` and is safe to run again (idempotent).
  * Android needs nothing: the library's own manifest is merged at build time.
  */
@@ -22,15 +22,15 @@ const MODE = 'audio';
 /** `true` or `{ enabled: true }`. */
 const isOn = (setting) => setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
-const log = (message) => console.log(`[omnistyle] ${message}`);
+const log = (message) => console.log(`[isoform] ${message}`);
 const fail = (message) => {
-  console.error(`[omnistyle] ${message}`);
+  console.error(`[isoform] ${message}`);
   process.exit(1);
 };
 
-/** `modules` of the app's `omnistyle.config.json` (or `{}` when there is none). */
+/** `modules` of the app's `isoform.config.json` (or `{}` when there is none). */
 function readModules() {
-  const file = path.join(root, 'omnistyle.config.json');
+  const file = path.join(root, 'isoform.config.json');
   if (!fs.existsSync(file)) return {};
   return JSON.parse(fs.readFileSync(file, 'utf8')).modules ?? {};
 }
@@ -69,7 +69,7 @@ function enableAudio(file) {
 function main() {
   const modules = readModules();
   if (!isOn(modules.audio) || modules.audio.mediaSession !== true) {
-    return log('modules.audio is not { enabled: true, mediaSession: true } in omnistyle.config.json: nothing to do.');
+    return log('modules.audio is not { enabled: true, mediaSession: true } in isoform.config.json: nothing to do.');
   }
   if (process.platform !== 'darwin') return fail('run this on macOS (it uses plutil).');
 

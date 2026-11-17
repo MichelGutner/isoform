@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from 'omnistyle';
+import { engine } from 'isoform';
 import { Body } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 import { LISTS, picture, song } from '../media';
@@ -21,7 +21,7 @@ export function AudioPage() {
           src={source === 'single' ? song(1) : undefined}
           title="Song 1"
           artist="SoundHelix"
-          artwork={picture('omni-a1', 600, 600)}
+          artwork={picture('iso-a1', 600, 600)}
           items={source === 'playlist' ? LISTS.audios : undefined}
           loop={loop}
           muted={muted}
@@ -37,7 +37,7 @@ export function AudioPage() {
           <Flag label="loop" on={loop} onChange={setLoop} />
           <Flag label="muted" on={muted} onChange={setMuted} />
         </Flags>
-        <Body muted>Background playback needs audio.mediaSession in omnistyle.config.json (this app has it on).</Body>
+        <Body muted>Background playback needs audio.mediaSession in isoform.config.json (this app has it on).</Body>
       </Section>
 
       <Section title="Events">

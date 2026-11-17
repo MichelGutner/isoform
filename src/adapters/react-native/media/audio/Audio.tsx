@@ -12,9 +12,9 @@ declare const require: (id: string) => any;
  * The spec is only loaded when an `Audio` renders: importing the adapter
  * (tests included) does not need the Codegen runtime.
  */
-type Spec = typeof import('./native/OmniAudioViewNativeComponent');
+type Spec = typeof import('./native/IsoAudioViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniAudioViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoAudioViewNativeComponent'));
 
 type Props = Partial<AudioOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void } };
 
@@ -34,7 +34,7 @@ Audio.displayName = 'Audio';
 
 /**
  * The player: the lib's native component (AVPlayer + UIKit on iOS, Media3 +
- * Compose on Android). It only translates the omnistyle contract to the native
+ * Compose on Android). It only translates the isoform contract to the native
  * props and events. The card draws its own background, so the style just sizes it.
  */
 const AudioPlayer = forwardRef<WithoutPlaylist<AudioHandle>, Props>(

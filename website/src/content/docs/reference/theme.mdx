@@ -1,0 +1,42 @@
+---
+title: Theme API
+description: updateTheme(), useTheme() and getTheme(), the global provider-less theme store.
+---
+
+```ts
+function updateTheme<T extends Partial<EngineTheme>>(input: T | ((prev: EngineTheme) => T)): void;
+function useTheme(): EngineTheme;
+function getTheme(): EngineTheme;
+```
+
+The theme is a global store compatible with React's `useSyncExternalStore`. No provider is needed.
+
+## `updateTheme(themeOrFn)`
+
+Deep-merges a partial theme into the current one and notifies every subscriber, so every component that reads the theme re-renders.
+
+```ts
+updateTheme({ color: { primary: '#f43f5e' } }); // deep merge
+updateTheme((prev) => ({ spacing: { md: prev.spacing.md * 1.25 } })); // a function of the previous theme
+```
+
+A function receives the current theme and returns the partial theme to merge.
+
+`configure({ theme })` is a shortcut for `updateTheme(theme)`.
+
+## `useTheme()`
+
+A reactive hook (`useSyncExternalStore`): returns the current theme and re-renders the component when it changes. Concurrent-safe and Strict Mode compatible.
+
+```tsx
+const theme = useTheme();
+return <Text style={{ color: theme.color.primary }}>Hi</Text>;
+```
+
+## `getTheme()`
+
+Returns the current theme outside React (event handlers, utilities).
+
+## `EngineTheme`
+
+The global type of your theme, `unknown` until your app declares it. See [TypeScript](/isoform/guides/typescript/#typing-your-theme).

@@ -1,0 +1,82 @@
+# Checks every pull request, and every push to main through release.yml.
+name: CI
+
+on:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  js:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn typecheck
+      - run: yarn test:coverage --ci
+      - run: yarn build
+      - name: Check the published files
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e '
+            const files = require("./pack.json")[0].files.map((f) => f.path);
+            const must = ["dist/index.js", "dist/index.d.ts", "isoform.podspec", "metro.js",
+              "src/adapters/react-native/image/native/IsoImageViewNativeComponent.ts",
+              "android/src/main/java/com/isoform/IsoformPackage.kt"];
+            const missing = must.filter((f) => !files.includes(f));
+            if (missing.length) { console.error("missing from the package:", missing); process.exit(1); }
+            console.log(files.length + " files in the package");
+          '
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  android:
+    name: Android (Kotlin compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            example/yarn.lock
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v6
+      - run: yarn install --frozen-lockfile
+      - name: Generate the example's Android project
+        working-directory: example
+        run: |
+          yarn install --frozen-lockfile
+          npx expo prebuild --platform android --no-install
+      - name: Compile the library (every module on, see example/isoform.config.json)
+        working-directory: example/android
+        run: ./gradlew :isoform:compileDebugKotlin --no-daemon
+
+  ios:
+    name: iOS (Swift typecheck)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/check-swift.sh

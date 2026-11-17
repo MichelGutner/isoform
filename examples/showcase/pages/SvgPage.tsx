@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from 'omnistyle';
+import { engine } from 'isoform';
 import { Body, Button, ButtonLabel, Row, themeFade } from '../ui';
 import { Code, PageShell, Section } from '../kit';
 
@@ -132,7 +132,7 @@ export function SvgPage() {
           <Dot cx="250" cy="48" r="26" />
           <Triangle points="40,130 90,40 140,130" />
           <Caption x="200" y="128">
-            omnistyle
+            isoform
           </Caption>
         </Canvas>
       </Section>
@@ -158,7 +158,7 @@ export function SvgPage() {
 
       <Section title="In code">
         <Code>{`
-// omnistyle.config.json → { "modules": { "svg": true } }
+// isoform.config.json → { "modules": { "svg": true } }
 // iOS/Android: npx expo install react-native-svg
 
 const Icon = engine('Svg', ({ theme }) => ({ width: 24, height: 24, color: theme.color.text }));

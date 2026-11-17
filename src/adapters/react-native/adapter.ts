@@ -17,15 +17,17 @@ import { BottomSheet } from './sheet/BottomSheet';
 import { SvgPrimitives } from './svg/Svg';
 import { Camera } from './camera/Camera';
 import { DatePicker } from './datePicker/DatePicker';
+import { Image } from './image/Image';
+import { nativeImageCache } from './image/imageCache';
+import { Modal } from './modal/Modal';
 
-/** Nome omnistyle → nome do componente no `react-native`. */
+/** Nome isoform → nome do componente no `react-native`. */
 const PRIMITIVES: Record<string, string> = {
   // universais
   Box: 'View',
   Text: 'Text',
   Pressable: 'Pressable',
   Input: 'TextInput',
-  Image: 'Image',
   Scroll: 'ScrollView',
   // legado / só-mobile (o nome é o mesmo do RN)
   View: 'View',
@@ -36,7 +38,6 @@ const PRIMITIVES: Record<string, string> = {
   TouchableWithoutFeedback: 'TouchableWithoutFeedback',
   Switch: 'Switch',
   ActivityIndicator: 'ActivityIndicator',
-  Modal: 'Modal',
   StatusBar: 'StatusBar',
   KeyboardAvoidingView: 'KeyboardAvoidingView',
   ImageBackground: 'ImageBackground',
@@ -58,7 +59,8 @@ for (const name of Object.keys(PRIMITIVES)) {
 }
 
 // vídeo e áudio: componentes nativos da própria lib (ios/ e android/ na raiz do pacote)
-Object.assign(primitives, { Video, Audio, Pdf, BottomSheet, Camera, DatePicker }, SvgPrimitives);
+// `Image` and `Modal`: the lib's own with `modules.image` / `modules.modal` on, React Native's otherwise
+Object.assign(primitives, { Video, Audio, Pdf, BottomSheet, Camera, DatePicker, Image, Modal }, SvgPrimitives);
 
 const PRESSABLE = new Set(['Pressable']);
 /** Primitivas sem `children`: não recebem `::before`/`::after`. */
@@ -198,7 +200,7 @@ function applyPseudos(out: Record<string, any>, p: NativePseudos, primitive?: st
     const kids = out.children;
     if (primitive === 'Text' && typeof kids === 'string' && kids.length > 0) {
       out.children = [
-        React.createElement(RN.Text, { key: 'omni-first-letter', style: p.firstLetter }, kids[0]),
+        React.createElement(RN.Text, { key: 'iso-first-letter', style: p.firstLetter }, kids[0]),
         kids.slice(1),
       ];
     } else {
@@ -216,9 +218,9 @@ function applyPseudos(out: Record<string, any>, p: NativePseudos, primitive?: st
         ? React.createElement(RN.Text, { key, style: g.style }, g.content)
         : React.createElement(RN.View, { key, style: g.style });
     const wrap = (kids: unknown) => [
-      p.before ? make('omni-before', p.before) : null,
-      React.createElement(React.Fragment, { key: 'omni-children' }, kids as React.ReactNode),
-      p.after ? make('omni-after', p.after) : null,
+      p.before ? make('iso-before', p.before) : null,
+      React.createElement(React.Fragment, { key: 'iso-children' }, kids as React.ReactNode),
+      p.after ? make('iso-after', p.after) : null,
     ];
     const original = out.children;
     out.children = typeof original === 'function' ? (state: unknown) => wrap(original(state)) : wrap(original);
@@ -231,6 +233,8 @@ export const reactNativeAdapter: PlatformAdapter = {
   os: () => RN.Platform.OS,
 
   primitives,
+
+  images: nativeImageCache,
 
   compileStyle(
     style,
@@ -316,8 +320,8 @@ export const reactNativeAdapter: PlatformAdapter = {
 
     if (c.pseudos) applyPseudos(out, c.pseudos, primitive);
 
-    if (c.animation) out.__omniAnimation = c.animation;
-    if (c.transition && !c.animation) out.__omniTransition = c.transition;
+    if (c.animation) out.__isoAnimation = c.animation;
+    if (c.transition && !c.animation) out.__isoTransition = c.transition;
 
     const flags = hostFlags(c);
     const pressedStyle =
@@ -348,7 +352,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     };
 
     if (flags) {
-      out.__omniStyleFor = build; // o host de estilo chama com largura, pressed e focus
+      out.__isoStyleFor = build; // o host de estilo chama com largura, pressed e focus
     } else if (pressedStyle) {
       out.style = ({ pressed }: { pressed: boolean }) => build(undefined, !!pressed);
     } else {

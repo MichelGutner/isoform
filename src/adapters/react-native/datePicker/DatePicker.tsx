@@ -17,9 +17,9 @@ import { warnModuleDisabled } from '../../../core/modules';
 declare const require: (id: string) => any;
 
 /** The spec is only loaded when a picker renders: importing the adapter (tests included) does not need Codegen. */
-type Spec = typeof import('./native/OmniDatePickerViewNativeComponent');
+type Spec = typeof import('./native/IsoDatePickerViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniDatePickerViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoDatePickerViewNativeComponent'));
 
 type Props = DatePickerOwnProps & { style?: any; testID?: string };
 

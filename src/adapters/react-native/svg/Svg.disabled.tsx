@@ -4,8 +4,8 @@ import { warnModuleDisabled } from '../../../core/modules';
 import { SVG_ELEMENTS, type SvgElementName } from '../../../core/svg';
 
 /**
- * The SVG primitives without `react-native-svg`: `omnistyle/metro` uses this file instead
- * of `Svg.tsx` when `svg` is off in `omnistyle.config.json`, so `react-native-svg` is
+ * The SVG primitives without `react-native-svg`: `isoform/metro` uses this file instead
+ * of `Svg.tsx` when `svg` is off in `isoform.config.json`, so `react-native-svg` is
  * neither in the JS bundle nor needed in the app.
  */
 function element(name: SvgElementName): ComponentType<any> {

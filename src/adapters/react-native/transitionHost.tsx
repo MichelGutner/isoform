@@ -81,7 +81,7 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
   let Host = hosts.get(Component);
   if (Host) return Host;
 
-  const Created = forwardRef<any, any>(({ __omniTransition: tr, style, ...rest }, ref) => {
+  const Created = forwardRef<any, any>(({ __isoTransition: tr, style, ...rest }, ref) => {
     const spec = tr as ResolvedTransition;
     const store = useRef(new Map<string, Track>()).current;
     const started: Track[] = [];

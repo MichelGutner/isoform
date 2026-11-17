@@ -1,0 +1,31 @@
+---
+/**
+ * A live example: the component rendered by Isoform's React DOM adapter (in the
+ * default slot, as a React island) above the source that produced it.
+ */
+import { Code } from '@astrojs/starlight/components';
+
+interface Props {
+  /** The example's source (import it with `?raw`). */
+  code: string;
+  /** Optional caption shown above the preview. */
+  title?: string;
+}
+
+const { code, title } = Astro.props;
+// The shared `configure()` call is site plumbing, not part of the example.
+const source = code
+  .split('\n')
+  .filter((line) => !/^import '\.\/setup';/.test(line))
+  .join('\n')
+  .trim();
+---
+
+<figure class="live-example not-content">
+  {title && <figcaption>{title}</figcaption>}
+  <div class="live-example__preview">
+    <span class="live-example__badge">Live · React DOM</span>
+    <slot />
+  </div>
+  <Code code={source} lang="tsx" />
+</figure>

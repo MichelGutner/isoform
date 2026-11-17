@@ -1,18 +1,18 @@
 ---
-title: omnistyle Documentation
+title: isoform Documentation
 description: One styling API for React and React Native
 ---
 
-# omnistyle
+# isoform
 
 One styling API for **React** and **React Native**. Write a component once, run it on web and mobile.
 
 ```bash
-npm install omnistyle
+npm install isoform
 ```
 
 ```tsx
-import { configure, engine } from 'omnistyle';
+import { configure, engine } from 'isoform';
 
 configure({ provider: 'auto', theme: { color: { primary: '#6366f1' } } });
 

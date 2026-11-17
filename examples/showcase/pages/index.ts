@@ -3,6 +3,8 @@ import { AnimationsPage } from './AnimationsPage';
 import { AudioPage } from './AudioPage';
 import { CameraPage } from './CameraPage';
 import { DatePickerPage } from './DatePickerPage';
+import { ImagePage } from './ImagePage';
+import { ModalPage } from './ModalPage';
 import { ComponentsPage } from './ComponentsPage';
 import { PdfPage } from './PdfPage';
 import { PlatformPage } from './PlatformPage';
@@ -38,4 +40,6 @@ export const PAGES: PageEntry[] = [
   { id: 'svg', title: 'Svg', Component: SvgPage },
   { id: 'camera', title: 'Camera', Component: CameraPage },
   { id: 'datepicker', title: 'DatePicker', Component: DatePickerPage },
+  { id: 'image', title: 'Image', Component: ImagePage },
+  { id: 'modal', title: 'Modal', Component: ModalPage },
 ];

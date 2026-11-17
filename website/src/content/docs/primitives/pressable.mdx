@@ -1,0 +1,38 @@
+---
+title: Pressable
+description: Anything that reacts to a tap or a click. An accessible div[role=button] on the web, Pressable on mobile.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import ButtonDemo from '../../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../../components/demos/ButtonDemo.tsx?raw';
+
+`Pressable` is a `<div role="button">` on the web (focusable; Enter and Space call `onPress`) and React Native's `Pressable` on mobile.
+
+<LiveExample code={buttonSource}>
+  <ButtonDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `onPress` | `(event?) => void` | Called on tap (native) or on click / Enter / Space (web). |
+| `onLongPress` | `(event?) => void` | Called when the element is held down for a while. |
+| `onPressIn` | `(event?) => void` | Called when the press starts. Web: `pointerdown`. |
+| `onPressOut` | `(event?) => void` | Called when the press ends (release, leaving the area or cancel). Web: `pointerup` / `pointerleave` / `pointercancel`. |
+| `disabled` | `boolean` | Disables presses. Web: also sets `aria-disabled`. |
+
+Plus the `<div>` DOM props and the [shared props](/isoform/primitives/overview/#props-every-primitive-shares).
+
+## Pressed and hover styles
+
+Use states instead of `TouchableOpacity`-style props:
+
+```tsx
+const Button = engine('Pressable', { backgroundColor: '#6366f1' })
+  .when('state:hover', { style: { opacity: 0.85 } }) // web
+  .when('state:pressed', { style: { transform: 'scale(0.97)' } }); // both
+```
+
+See [Interaction states](/isoform/guides/states/).

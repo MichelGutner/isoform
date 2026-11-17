@@ -86,7 +86,7 @@ export class AtomicSheet {
     if (this.cssSheet) return this.cssSheet;
     if (typeof document === 'undefined') return null;
     const el = document.createElement('style');
-    el.setAttribute('data-omnistyle', 'client');
+    el.setAttribute('data-isoform', 'client');
     document.head.appendChild(el);
     this.cssSheet = el.sheet;
     return this.cssSheet;

@@ -1,4 +1,4 @@
-import { engine } from 'omnistyle';
+import { engine } from 'isoform';
 import { Body, Card, Heading, themeFade } from '../ui';
 
 /**

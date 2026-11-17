@@ -1,0 +1,84 @@
+---
+title: Style vocabulary
+description: The CSS names and values Isoform understands, and how each platform handles them.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import VocabularyDemo from '../../../components/demos/VocabularyDemo.tsx';
+import vocabularySource from '../../../components/demos/VocabularyDemo.tsx?raw';
+
+Rule of thumb: **use the standard CSS / HTML / ARIA name whenever React Native also understands it.** The style type, [`IsoStyle`](/isoform/reference/types/#style), is the full `React.CSSProperties` plus a few React Native aliases.
+
+## Two value rules, identical everywhere
+
+1. **A number is px** (dp on mobile), except for unitless properties (`opacity`, `flex`, `zIndex`, `fontWeight`, `aspectRatio`…).
+2. **A string is a CSS value, exactly as on the web**: `'1rem'`, `'2em'`, `'50%'`, `'100vh'`, `'calc(100% - 16px)'`, `'1.5'` (unitless `lineHeight`), `'0 4px 10px rgba(0,0,0,.1)'`.
+
+On the web strings go straight to CSS. On mobile the adapter converts what it can (`rem`, `em`, `vh`, `vw`, `px`, multi-value `padding`/`margin`, unitless `lineHeight`) and drops what it cannot (`calc()`, `var()`, `cursor`, `transition` outside its own support, grid…) with **one** development warning per property.
+
+<LiveExample code={vocabularySource}>
+  <VocabularyDemo client:only="react" />
+</LiveExample>
+
+## Style
+
+| Concept | Write | Web | Mobile |
+|---|---|---|---|
+| Axis spacing | `paddingInline`, `paddingBlock`, `marginInline`, `marginBlock` | mapped to physical sides | native |
+| Shadow | `boxShadow: '0 4px 10px rgba(0,0,0,.1)'` | CSS | native (RN ≥ 0.76, new architecture) |
+| Transform | `'translateX(10px) rotate(-2deg)'` or the React Native array | CSS | native |
+| Any other CSS | `cursor`, `backdropFilter`, `gridTemplateColumns`… | CSS | ignored (dev warning) |
+| React Native aliases | `paddingHorizontal`, `shadow*`, `elevation`, `resizeMode` | converted | native |
+
+`transition` and `animation` are the exception to "web-only CSS": both run on mobile too, through `Animated`. See [Animations](/isoform/guides/animations/).
+
+## How mobile converts values
+
+The React Native adapter turns the vocabulary into React Native styles once per cached combination:
+
+| Input | Output |
+|---|---|
+| `'10px'` | `10` |
+| `'1rem'`, `'1.5rem'` | `16`, `24` (`configure({ native: { remBase } })`) |
+| `'2em'` | 2 × the `fontSize` of the same style (for `fontSize` itself, the parent size, as in CSS) |
+| `'50%'`, `'auto'` | unchanged |
+| `'10vh'`, `'25vw'` | proportion of the window |
+| `lineHeight: '1.5'` | `1.5 × fontSize` |
+| `padding: '1rem 2rem'` | the four sides |
+| `fontWeight: 600` | `'600'` |
+| `calc()`, `var()`, `ch`… on length properties | dropped, one dev warning |
+| `cursor`, `grid*`, `backdropFilter`… | dropped, one dev warning |
+
+## How the web handles styles
+
+- Strings pass through untouched (`rem`, `em`, `vh`, `calc()`, `var()`…); every CSS property is accepted.
+- Numbers become `px`, except unitless properties.
+- Axis aliases (`paddingInline`, `paddingHorizontal`…) map to physical sides, and a specific side always beats an axis alias, as in React Native.
+- `flex: 1` (a number) follows React Native semantics (`grow 1, shrink 1, basis 0%`); `flex: '1 1 auto'` is plain CSS.
+- React Native aliases convert: `shadow*`/`elevation` become `box-shadow`, `resizeMode` becomes `object-fit`, `transform` arrays become strings. Mobile-only keys (`tintColor`, `includeFontPadding`…) are dropped.
+- Primitives get React Native-like defaults: `Box` is `display: flex; flex-direction: column`, and borders are `solid` with width `0`, so `borderWidth` alone draws a border, as in React Native.
+- Values containing `{`, `}` or `</style` are refused (this protects the generated CSS, mainly for SSR).
+
+## Props
+
+Props follow the same rule: the web-standard name when React Native understands it.
+
+| Concept | Write | Web | Mobile |
+|---|---|---|---|
+| Press | `onPress` | `onClick` + Enter/Space | native |
+| Text changed | `onChangeText(text)` | `onChange` → `e.target.value` | native |
+| Accessibility | `role`, `aria-*` | DOM | native |
+| Test id | `testID` | `data-testid` | native |
+| Image | `src`, `alt` | DOM | native |
+| Password input | `type="password"` | DOM | `secureTextEntry` |
+| Disabled | `disabled` | `aria-disabled`, and blocks `onPress` | native |
+| Anything else | web: `href`, `id`, `onMouseEnter`, `data-*`… · mobile: `hitSlop`, `onLayout`… | passed to the DOM element if valid for it | passed to the React Native component |
+
+<Aside>
+Props that only drive styling (`variant`, `outlined`, `dense`…) are **not** forwarded to DOM elements, so React never warns about unknown attributes. Valid HTML attributes, `data-*`, `aria-*` and `on*` handlers always pass.
+</Aside>
+
+## The `style` prop
+
+Every component also takes a `style` prop: an object, a falsy value (ignored, handy for `cond && style`) or a nested array of those, merged in order. It always wins over the `engine()` styles. On the web it is normalized and applied inline; `className` is concatenated.

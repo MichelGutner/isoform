@@ -2,8 +2,8 @@
 import { warnModuleDisabled } from '../../../core/modules';
 
 /**
- * `DatePicker` without the native picker: `omnistyle/metro` uses this file instead of
- * `DatePicker.tsx` when the date picker is off in `omnistyle.config.json`, so neither the
+ * `DatePicker` without the native picker: `isoform/metro` uses this file instead of
+ * `DatePicker.tsx` when the date picker is off in `isoform.config.json`, so neither the
  * picker nor its native spec enter the JS bundle.
  */
 export const DatePicker = (_props: any) => {

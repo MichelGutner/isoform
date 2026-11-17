@@ -7,10 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — `Image` pipeline (optional `image` module)
+- With the module on, `engine('Image')` becomes the lib's own picture, with the same pipeline design on iOS (URLSession, ImageIO, CoreImage) and Android (React Native's OkHttp, `ImageDecoder`) and no extra dependency. It keeps a memory cache and a 300 MB disk cache. A download is shared by the views that show the same picture and cancelled when no view waits for it. Pictures are decoded at the size on screen with the EXIF orientation applied, and animated GIF/WebP/APNG play with their own frame delays. Web: `<img>` with the same props.
+- `contentFit` / `contentPosition` (the CSS names), `blurhash` and `placeholder`, crossfade `transition`, `tintColor`, `blurRadius`, `cachePolicy`, `priority`, `autoplay`, `src` with `headers` and `cacheKey`, and the events `onLoadStart`, `onProgress`, `onLoad` (`cacheType`) and `onError`.
+- Viewer gestures: `zoomable` (pinch, drag while zoomed, double tap), `maxZoom`, `doubleTapZoom`, `rotatable` and `onZoomChange`. Inside scroll views they take over only while zoomed or with two fingers. On the web: pointers, ctrl + wheel and double click.
+- `ref` (`ImageHandle`): `zoomTo`, `resetZoom`, `rotateTo`, `play`, `pause`, `reload`. New exports: `prefetchImages` and `clearImageCache` (a TurboModule on native; the lib's codegen is now `type: "all"`).
+- With the module off, `Image` stays React Native's `Image` and a plain `<img>`, which still apply `contentFit`, `tintColor` and `blurRadius`.
+
+### Added — `Modal` (optional `modal` module)
+- With the module on, `engine('Modal')` becomes the lib's own modal, with the same design on iOS (UIKit), Android (Jetpack Compose) and the web (a native `<dialog>`). It is a centered dialog as tall as its content, or `presentation="fullScreen"` with the content in the safe area. Animations: `'scale'`, `'slide'`, `'fade'` or `'none'`. It has a backdrop (`backdropColor`), keyboard avoidance, a focus trap, `dismissible` (backdrop, back button, Escape, VoiceOver escape) and `onClosed`.
+- Controlled with `open` / `onOpenChange`. The style's `backgroundColor`, `borderRadius` and `width`/`maxWidth` go to the card; the rest goes to the content. React Native's `visible`, `onRequestClose` and `animationType` still work (deprecated).
+- With the module off, `Modal` stays React Native's `Modal` (written the old way it is passed through untouched). `Modal` now also exists on the web, with the module on.
+
 ### Added — `DatePicker` (optional `datePicker` module)
 - `engine('DatePicker')`: a date, a time or both. iOS (SwiftUI) and Android (Jetpack Compose) draw the lib's own picker with the same design: a calendar with a month/year panel, wheels that snap and tick (a real nested scroll view on iOS, so they work inside scroll views), and compact pills that open a bottom sheet. Web: the browser's `<input type="date | time | datetime-local">`.
 - Controlled `value` / `onValueChange` (already clamped to `minimumDate` / `maximumDate`), `mode`, `display` (`'inline'`, `'wheel'`, `'compact'`), `locale`, `is24Hour`, `tintColor`, `disabled`, `label`. The native view takes the natural height the picker reports.
-- Turned on with `"datePicker": { "enabled": true }` in `omnistyle.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
+- Turned on with `"datePicker": { "enabled": true }` in `isoform.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
 
 ### Added — `Camera` (optional `camera` module)
 - `engine('Camera')`: the camera preview with the app's own interface on top (children are drawn over it). Android: CameraX 1.6 with the Jetpack Compose viewfinder (`CameraXViewfinder`); iOS: AVFoundation; web: `getUserMedia`.
@@ -23,16 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added — SVG (optional `svg` module)
 - Every SVG element is a primitive: `Svg`, `G`, `Path`, `Circle`, `Rect`, `Ellipse`, `Line`, `Polyline`, `Polygon`, `TSpan`, `Defs`, `Stop`, and, where the name clashes, `SvgText`, `SvgImage`, `SvgLinearGradient`, `SvgRadialGradient`, `SvgClipPath`, `SvgMask`, `SvgPattern`, `SvgSymbol`, `SvgUse`.
 - Presentation properties (`fill`, `stroke`, `strokeWidth`, `stopColor`…) go in the style, so they follow the theme and `when()`. Web: the browser's own SVG elements, styled with classes. iOS/Android: `react-native-svg`, with the style turned into the element's props.
-- Turned on with `"svg": { "enabled": true }` in `omnistyle.config.json`. `react-native-svg` is an optional peer dependency the app installs only for this module; `omnistyle/metro` leaves the SVG code out of the bundle when it is off and stops with a clear message when it is on but the package is missing.
+- Turned on with `"svg": { "enabled": true }` in `isoform.config.json`. `react-native-svg` is an optional peer dependency the app installs only for this module; `isoform/metro` leaves the SVG code out of the bundle when it is off and stops with a clear message when it is on but the package is missing.
 
 ### Added — `BottomSheet` (optional `sheet` module)
 - `engine('BottomSheet')`: the platform's own sheet. Web: a native `<dialog>` with drag and snapping; iOS: SwiftUI `.sheet` with `presentationDetents` (Liquid Glass on iOS 26); Android: a Jetpack Compose sheet. The content is regular components.
 - Detents (`'fit'`, `'full'`, `'40%'`, a height), `detent` + `onDetentChange`, `dismissible`, non-modal sheets (`modal={false}`), `grabber`, `onClosed`, `label`, and `ref.snapTo(index)`.
-- Turned on with `"sheet": { "enabled": true }` in `omnistyle.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
+- Turned on with `"sheet": { "enabled": true }` in `isoform.config.json` (Gradle, CocoaPods and Metro leave it out otherwise).
 - `engine('Video' | 'Audio' | 'Pdf' | 'BottomSheet')` now types its `ref` with the primitive's handle (`VideoHandle`, `BottomSheetHandle`…).
 
 ### Added — multi-platform (React + React Native)
-- **The package is now `omnistyle`** and runs on both React Native and React DOM from a single entry. Write a component once, use it on web and mobile.
+- **The package is now `isoform`** and runs on both React Native and React DOM from a single entry. Write a component once, use it on web and mobile.
 - **`configure({ provider, theme, native })`**: choose the platform once at startup, like `updateTheme`. `provider` is `'auto'` (default), `'react-native'`, `'react'` or a custom `PlatformAdapter`. `theme` is a shortcut for `updateTheme`.
 - **Platform selection by the bundler**: `providers/index.native.ts` (Metro iOS/Android) registers the React Native adapter; `providers/index.ts` (Vite, webpack, Next, Metro-web) registers the React DOM adapter. A web bundle never contains `react-native`.
 - **Neutral primitives**: `Box`, `Text`, `Pressable`, `Input`, `Image`, `Scroll`. Primitive names are resolved at render time, so components can be defined before `configure()` runs.
@@ -55,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Example apps: `examples/showcase` (an interactive showcase with one page per feature: theme, components, states, responsive, animations, platform, Video, Audio, Pdf), the Expo app (`example/`) and a Vite + React DOM app (`example-web/`) render the same pages.
 
 ### Changed
-- **BREAKING:** package renamed from `react-native-stylized` to `omnistyle`; the `/react-native` subpath export was removed — import everything from the root.
+- **BREAKING:** package renamed from `react-native-stylized` to `isoform`; the `/react-native` subpath export was removed — import everything from the root.
 - `react-native` peer dependency is now `>=0.76` and optional, alongside optional `react-dom` (props such as `paddingInline` and `boxShadow` need RN ≥ 0.76).
 - The core, theme, cache and hash modules no longer import `react-native`; only the adapters do (enforced by `src/boundaries.test.ts`).
 - `StyleSheet.flatten` replaced by a platform-independent `flattenStyle`.

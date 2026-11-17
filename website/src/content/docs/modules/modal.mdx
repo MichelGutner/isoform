@@ -1,0 +1,49 @@
+---
+title: Modal
+description: A centered dialog or full-screen cover with spring animations, backdrop and focus trap. UIKit on iOS, Compose on Android, <dialog> on the web.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import ModalDemo from '../../../components/demos/ModalDemo.tsx';
+import modalSource from '../../../components/demos/ModalDemo.tsx?raw';
+
+With the module on, `engine('Modal')` is the lib's own modal, **the same design on iOS, Android and the web**. It is either a centered dialog as tall as its content (up to the screen; a `Scroll` inside it scrolls) or a full-screen cover with the content inside the safe area. It comes with spring animations, a backdrop, keyboard avoidance and a focus trap.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "modal": { "enabled": true } } }
+```
+
+<LiveExample code={modalSource}>
+  <ModalDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `open` | `boolean` | | Shown or hidden (animated both ways). |
+| `onOpenChange` | `(open) => void` | | The user closed it (backdrop tap, back button on Android, Escape on the web, the VoiceOver escape gesture on iOS). |
+| `presentation` | `'dialog' \| 'fullScreen'` | `'dialog'` | A centered card, or the whole screen with the content in the safe area. |
+| `animation` | `'scale' \| 'slide' \| 'fade' \| 'none'` | `'scale'` for a dialog, `'slide'` for full screen | Enter and exit animation. |
+| `dismissible` | `boolean` | `true` | Whether backdrop, back button and Escape close it. |
+| `backdropColor` | `string` | `'rgba(0,0,0,0.4)'` | Backdrop behind a dialog. |
+| `onClosed` | `() => void` | | After the closing animation (the content is then unmounted). |
+| `label` | `string` | | Accessible name (`aria-label` on the web). |
+| `visible`, `onRequestClose`, `animationType` | | | React Native `Modal`'s names. Still accepted, deprecated. |
+
+The style's `backgroundColor`, `borderRadius` and `width`/`maxWidth` (default 420, with 24 points kept around the dialog) go to the card; padding, gap and the rest go to the content.
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Drawn with | a native `<dialog>` (top layer) | UIKit, over a transparent React Native `Modal` that owns the window | Jetpack Compose |
+| Closes with | Escape, backdrop | backdrop, the VoiceOver escape gesture | back button, backdrop |
+| Focus | focus trap | VoiceOver stays inside | system |
+| Keyboard | | keyboard avoidance | keyboard insets |
+
+## When the module is off
+
+On iOS and Android, `Modal` stays React Native's `Modal`, untouched when written the old way (`visible`, `transparent`, `presentationStyle`, `onShow`…). On the web it renders nothing and logs one development warning.

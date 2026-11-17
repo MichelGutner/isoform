@@ -1,0 +1,60 @@
+---
+title: Native-only and legacy primitives
+description: React Native names that still work, and mobile-only primitives that throw a clear error on the web.
+---
+
+## Legacy React Native names
+
+These keep existing React Native code working. They are marked `@deprecated` with the universal replacement:
+
+| Legacy name | Use instead |
+|---|---|
+| `View` | `Box` |
+| `TextInput` | `Input` |
+| `ScrollView` | `Scroll` |
+| `TouchableOpacity` (`activeOpacity`) | `Pressable` + `when('state:pressed', { style: { opacity } })` |
+| `TouchableHighlight` (`underlayColor`) | `Pressable` + `when('state:pressed', { style: { backgroundColor } })` |
+| `TouchableWithoutFeedback` | `Pressable` |
+
+## Native-only primitives
+
+These map to React Native components and are loosely typed (any prop is accepted). They work on iOS and Android and **throw a clear error on the web**, naming the primitive and the provider (the message reads `a primitiva "Switch" não existe no provedor "react"`):
+
+| Name | React Native component |
+|---|---|
+| `Switch` | `Switch` |
+| `ActivityIndicator` | `ActivityIndicator` |
+| `StatusBar` | `StatusBar` |
+| `KeyboardAvoidingView` | `KeyboardAvoidingView` |
+| `ImageBackground` | `ImageBackground` |
+| `SafeAreaView` | `SafeAreaView` |
+| `FlatList` | `FlatList` |
+| `SectionList` | `SectionList` |
+
+`Modal` is React Native's `Modal` on mobile while the [`modal` module](/isoform/modules/modal/) is off, and the lib's own modal (also on the web) when it is on.
+
+To use a native-only primitive in shared code, give it a web variant with platform files: Metro prefers `.native.tsx`, web bundlers take the plain file.
+
+```tsx title="Spinner.native.tsx"
+import { engine } from 'isoform';
+
+export const Spinner = engine('ActivityIndicator').attrs({ color: '#6366f1' });
+```
+
+```tsx title="Spinner.tsx"
+import { engine, keyframes } from 'isoform';
+
+const spin = keyframes({ to: { transform: 'rotate(360deg)' } });
+
+export const Spinner = engine('Box', {
+  width: 20,
+  height: 20,
+  borderRadius: 10,
+  borderWidth: 2,
+  borderColor: '#6366f1',
+  borderTopColor: 'transparent',
+  animation: `${spin} 800ms linear infinite`,
+});
+```
+
+Deprecated React Native exports are read lazily, so you only get React Native's own deprecation warning (for example for `SafeAreaView`) if you use them.

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from 'omnistyle';
+import { engine } from 'isoform';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 import { LISTS, VIDEOS, picture } from '../media';
 
@@ -29,7 +29,7 @@ export function VideoPage() {
         <Player
           src={source === 'single' ? VIDEOS.bunny : undefined}
           items={source === 'playlist' ? LISTS.videos : undefined}
-          poster={source === 'single' ? picture('omni-v1', 640, 360) : undefined}
+          poster={source === 'single' ? picture('iso-v1', 640, 360) : undefined}
           controls={controls}
           loop={loop}
           muted={muted}

@@ -18,7 +18,7 @@ export type {
   ConfigureOptions,
   ModuleName,
   ModuleOptions,
-  OmniModules,
+  IsoModules,
   ProviderName,
 } from './config';
 export type { PlatformAdapter, ApplyPropsInput, StateStyles } from './core/adapter';
@@ -29,7 +29,7 @@ export type {
   StyleContext,
   Platform,
   StateName,
-  OmniBreakpointNames,
+  IsoBreakpointNames,
   BreakpointName,
   BreakpointCondition,
   BreakpointRangeCondition,
@@ -39,10 +39,10 @@ export type {
   PropConditionKeys,
   PseudoName,
 } from './core/types';
-export type { OmniStyle, StyleInput, LegacyRNStyle } from './core/style/types';
+export type { IsoStyle, StyleInput, LegacyRNStyle } from './core/style/types';
 export type {
-  OmniPrimitives,
-  OmniNativeProps,
+  IsoPrimitives,
+  IsoNativeProps,
   BoxProps,
   TextProps,
   PressableProps,
@@ -57,6 +57,7 @@ export type {
   SvgElementProps,
   CameraProps,
   DatePickerProps,
+  ModalProps,
 } from './core/primitives';
 export type {
   MediaHandle,
@@ -83,6 +84,26 @@ export type {
   DatePickerMode,
   DatePickerOwnProps,
 } from './core/datePicker';
+export { prefetchImages, clearImageCache } from './core/image';
+export type {
+  ClearImageCacheOptions,
+  ImageCachePolicy,
+  ImageCacheType,
+  ImageContentFit,
+  ImageContentPosition,
+  ImageErrorEvent,
+  ImageHandle,
+  ImageLoadEvent,
+  ImageOwnProps,
+  ImagePriority,
+  ImageProgressEvent,
+  ImageSource,
+  ImageSourceInput,
+  ImageZoomEvent,
+  ImageZoomOptions,
+  PrefetchOptions,
+} from './core/image';
+export type { ModalAnimation, ModalOwnProps, ModalPresentation } from './core/modal';
 export type {
   BottomSheetHandle,
   BottomSheetOwnProps,

@@ -28,21 +28,21 @@ export const song = (n: number) => `https://www.soundhelix.com/examples/mp3/Soun
 /** The lists the pages pass as `items`. */
 export const LISTS = {
   videos: [
-    { src: VIDEOS.bunny, title: 'Big Buck Bunny', poster: picture('omni-v1', 640, 360) },
-    { src: VIDEOS.flower, title: 'Flower', poster: picture('omni-v2', 640, 360) },
-    { src: VIDEOS.hls, title: 'Apple bipbop (HLS)', poster: picture('omni-v3', 640, 360) },
-    { src: VIDEOS.bunny, title: 'Big Buck Bunny again', poster: picture('omni-v4', 640, 360) },
+    { src: VIDEOS.bunny, title: 'Big Buck Bunny', poster: picture('iso-v1', 640, 360) },
+    { src: VIDEOS.flower, title: 'Flower', poster: picture('iso-v2', 640, 360) },
+    { src: VIDEOS.hls, title: 'Apple bipbop (HLS)', poster: picture('iso-v3', 640, 360) },
+    { src: VIDEOS.bunny, title: 'Big Buck Bunny again', poster: picture('iso-v4', 640, 360) },
     { src: VIDEOS.sintel, title: 'Sintel' }
   ],
   audios: [1, 2, 3, 8].map((n) => ({
     src: song(n),
     title: `Song ${n}`,
     artist: 'SoundHelix',
-    artwork: picture(`omni-a${n}`, 600, 600),
+    artwork: picture(`iso-a${n}`, 600, 600),
   })),
   pdfs: [
-    { src: PDFS.paper, title: 'pdf.js paper', thumbnail: picture('omni-p1', 300, 400) },
-    { src: PDFS.review, title: 'Review article', thumbnail: picture('omni-p2', 300, 400) },
+    { src: PDFS.paper, title: 'pdf.js paper', thumbnail: picture('iso-p1', 300, 400) },
+    { src: PDFS.review, title: 'Review article', thumbnail: picture('iso-p2', 300, 400) },
     { src: PDFS.hello, title: 'Hello world' },
   ],
 };

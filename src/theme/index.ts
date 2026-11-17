@@ -20,7 +20,7 @@ import { themeStore } from './store';
  *
  * @example Basic Usage
  * ```tsx
- * import { useTheme } from 'omnistyle';
+ * import { useTheme } from 'isoform';
  * 
  * const MyComponent = () => {
  *   const theme = useTheme();

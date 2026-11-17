@@ -1,0 +1,38 @@
+---
+title: PlatformAdapter
+description: The interface a provider implements. Pass one to configure({ provider }) to render on a custom platform.
+---
+
+A provider implements `PlatformAdapter` and is passed with `configure({ provider: myAdapter })`. The built-in React DOM and React Native adapters implement the same interface.
+
+```ts
+interface PlatformAdapter {
+  /** Matches configure({ provider }). */
+  name: string;
+  /** Drives when('platform:ios' | 'android' | 'web' | 'native'). */
+  os(): string;
+  /** 'Box' → the real component. */
+  primitives: Record<string, ComponentType<any>>;
+  /** Cached per (theme, props). */
+  compileStyle(style, states?: StateStyles, breakpoints?: BreakpointStyle[], pseudos?: PseudoStyles): unknown;
+  /** Optional: swaps the component for a host (animations, breakpoints…). */
+  resolveComponent?(component: ComponentType<any>, compiled: unknown): ComponentType<any>;
+  /** Final props of the base component, every render. */
+  applyProps(input: ApplyPropsInput): Record<string, any>;
+  /** SSR. */
+  getStyleText?(): string;
+  /** prefetchImages / clearImageCache. */
+  images?: ImageCacheApi;
+}
+```
+
+`ApplyPropsInput` carries `primitive` (the primitive name, if any), `compiled` (the result of `compileStyle`), `props` (attrs + user props, without `style`) and `userStyle`. `StateStyles` maps `hover`, `focus`, `focus-visible` and `pressed` to their styles.
+
+The repository's [`src/core/testing/fakeAdapter.ts`](https://github.com/MichelGutner/isoform/blob/main/src/core/testing/fakeAdapter.ts) is a minimal reference implementation.
+
+```ts
+import { configure } from 'isoform';
+import { myAdapter } from './myAdapter';
+
+configure({ provider: myAdapter });
+```

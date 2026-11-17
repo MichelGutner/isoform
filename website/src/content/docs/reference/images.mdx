@@ -1,0 +1,42 @@
+---
+title: prefetchImages() and clearImageCache()
+description: Download pictures before they are shown, and empty the image caches. Part of the image module.
+---
+
+```ts
+function prefetchImages(urls: string | string[], options?: PrefetchOptions): Promise<boolean>;
+function clearImageCache(options?: ClearImageCacheOptions): Promise<void>;
+```
+
+Both need the [`image` module](/isoform/modules/image/).
+
+## `prefetchImages(urls, options?)`
+
+Downloads pictures before they are shown (the next screen, the next page of a list), so they appear at once.
+
+| Parameter | Description |
+|---|---|
+| `urls` | One URL or many (empty values are ignored). |
+| `options.cachePolicy` | `'disk'` (default: the files only, light on memory, decoded when shown), `'memory-disk'` or `'memory'` (also decoded right away at full size, so they show with no wait). Native only. |
+| `options.headers` | HTTP headers of the requests. Native only. |
+
+Resolves `true` when every picture was cached, `false` otherwise, with an empty list, or when the platform has no image cache API (for example with the module off).
+
+```ts
+const ok = await prefetchImages([nextPage[0].url, nextPage[1].url]);
+```
+
+## `clearImageCache(options?)`
+
+Empties the image caches.
+
+| Option | Default | Description |
+|---|---|---|
+| `memory` | `true` | Empties the memory cache. |
+| `disk` | `true` | Deletes the files of the disk cache. |
+
+On the web it does nothing (the browser owns its cache).
+
+```ts
+await clearImageCache({ disk: false }); // memory only
+```

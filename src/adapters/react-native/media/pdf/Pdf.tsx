@@ -12,9 +12,9 @@ declare const require: (id: string) => any;
  * The spec is only loaded when a `Pdf` renders: importing the adapter
  * (tests included) does not need the Codegen runtime.
  */
-type Spec = typeof import('./native/OmniPdfViewNativeComponent');
+type Spec = typeof import('./native/IsoPdfViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniPdfViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoPdfViewNativeComponent'));
 
 type Props = Partial<PdfOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void } };
 
@@ -34,7 +34,7 @@ Pdf.displayName = 'Pdf';
 
 /**
  * The viewer: the lib's native component (PDFKit + UIKit on iOS, PdfRenderer +
- * Compose on Android). It only translates the omnistyle contract to the native
+ * Compose on Android). It only translates the isoform contract to the native
  * props and events.
  */
 const PdfViewer = forwardRef<WithoutPlaylist<PdfHandle>, Props>(

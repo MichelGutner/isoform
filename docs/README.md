@@ -1,4 +1,4 @@
-# omnistyle — Guide
+# isoform — Guide
 
 One styling API for React and React Native. See the [README](../README.md) for the overview and quick start; this guide covers how it works under the hood.
 
@@ -45,7 +45,7 @@ Render pipeline of an engine component:
 The provider that actually ships is picked by the **bundler**, through platform file resolution (`index.native.ts` vs `index.ts`), so a web bundle never sees `react-native`. `configure` validates your choice against what was bundled:
 
 ```
-[omnistyle] provider "react-native" não está disponível neste bundle (disponível: "react"). Use "auto" ou o provider que a plataforma atual carrega.
+[isoform] provider "react-native" não está disponível neste bundle (disponível: "react"). Use "auto" ou o provider que a plataforma atual carrega.
 ```
 
 Call `configure()` once, at boot. Switching providers after the first render only produces a dev warning.
@@ -54,7 +54,7 @@ Call `configure()` once, at boot. Switching providers after the first render onl
 
 ### React Native (`adapters/react-native`)
 
-`normalizeNative` turns the omnistyle vocabulary into RN styles (once per cached combination):
+`normalizeNative` turns the isoform vocabulary into RN styles (once per cached combination):
 
 | Input | Output |
 |---|---|
@@ -108,7 +108,7 @@ So `{ padding: 4, paddingLeft: 8 }` yields `padding-left: 8px` regardless of key
 
 Highly dynamic values (a `width` that changes with props) create one class per distinct value, the usual atomic-CSS trade-off. For fully dynamic values, use the inline `style` prop.
 
-In the browser rules go into `<style data-omnistyle="client">`. On the server, `getStyleText()` returns the CSS collected so far.
+In the browser rules go into `<style data-isoform="client">`. On the server, `getStyleText()` returns the CSS collected so far.
 
 ## States, breakpoints, pseudo-elements and animations
 
@@ -132,7 +132,7 @@ In the browser rules go into `<style data-omnistyle="client">`. On the server, `
 
 **Transitions on mobile** (`transition` / `transition*`): the adapter takes the keys out of the style (like `animation*`), parses them (`transition.ts`) and `resolveComponent` wraps the component in `transitionHost`, which keeps one `Animated.Value` progress per transitioned property. On each render it compares the new target with the previous one; when it differs it starts from the current value (using the last progress seen by a listener), resets progress to 0 and animates to 1 after commit. Values are interpolated with `Animated` (`interpolate`), and the current value of an interrupted transition is computed by `lerpValue` (numbers, colors, strings with matching numbers). Transforms are tracked per function. All the values of one host use the same driver: native only when the spec lists just `opacity`/`transform` (no `all`).
 
-**The style host**: a single `styleHost` tracks what the style depends on at render time — window width (breakpoints), `pressed` (`onPressIn`/`onPressOut`, only when the style must be an object: with transition, or when a host already exists) and `focus` (`onFocus`/`onBlur`) — and asks `applyProps` for the final style via `__omniStyleFor(width, pressed, focused)`. Hosts are cached per component and per flag combination, so the hook order is fixed. Chain order: `styleHost` → `transitionHost` → `animatedHost` → component; only the needed hosts are created, and one decision function (`hostFlags`) is shared by `applyProps` and `resolveComponent` so they can never disagree.
+**The style host**: a single `styleHost` tracks what the style depends on at render time — window width (breakpoints), `pressed` (`onPressIn`/`onPressOut`, only when the style must be an object: with transition, or when a host already exists) and `focus` (`onFocus`/`onBlur`) — and asks `applyProps` for the final style via `__isoStyleFor(width, pressed, focused)`. Hosts are cached per component and per flag combination, so the hook order is fixed. Chain order: `styleHost` → `transitionHost` → `animatedHost` → component; only the needed hosts are created, and one decision function (`hostFlags`) is shared by `applyProps` and `resolveComponent` so they can never disagree.
 
 **Keyframes**: `keyframes(frames)` only stores the definition in a platform-agnostic registry (in `core/`) and returns a content-hashed name (`o-kf-<hash>`). It never touches the active provider, so it can be called at module top level, before `configure()`, and works with custom adapters. Each adapter materializes the name **when a style that uses it is compiled**:
 
@@ -164,11 +164,11 @@ Pass it with `configure({ provider: myAdapter })`. `src/core/testing/fakeAdapter
 
 ## Testing
 
-Component libraries built on omnistyle can test with either platform's tooling:
+Component libraries built on isoform can test with either platform's tooling:
 
 ```ts
 // jest + @testing-library/react (jsdom): the default provider is the DOM adapter
-import { configure } from 'omnistyle';
+import { configure } from 'isoform';
 configure({ provider: 'auto' });
 ```
 
@@ -178,7 +178,7 @@ For tests that need a specific provider regardless of bundling, pass an adapter 
 
 | Symptom | Cause / fix |
 |---|---|
-| `nenhum provedor disponível` | The entry wasn't imported before rendering (a custom bundler skipped `providers/*`). Import `omnistyle` first, or pass `provider: <adapter>`. Make sure `sideEffects` isn't stripping `providers/*`. |
+| `nenhum provedor disponível` | The entry wasn't imported before rendering (a custom bundler skipped `providers/*`). Import `isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` isn't stripping `providers/*`. |
 | `provider "react-native" não está disponível neste bundle` | You forced a provider that the current bundle doesn't include. Use `'auto'`. |
 | `a primitiva "Switch" não existe no provedor "react"` | A mobile-only primitive was rendered on the web. Branch with `Platform`/`when('platform:native')` or build the web variant. |
 | A CSS property has no effect on mobile | It has no React Native equivalent; check the dev warning. Scope it with `.when('platform:web', …)`. |

@@ -1,0 +1,63 @@
+---
+title: A form field
+description: A labelled input with focus, error and placeholder styles that works on both platforms.
+---
+
+```tsx title="TextField.tsx"
+import { engine } from 'isoform';
+
+const Label = engine('Text', ({ theme }) => ({ fontSize: 13, fontWeight: '600', color: theme.color.text }));
+
+const Field = engine<'Input', { invalid?: boolean }>('Input', ({ theme }) => ({
+  paddingBlock: 10,
+  paddingInline: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: theme.color.border,
+  backgroundColor: theme.color.surface,
+  color: theme.color.text,
+  fontSize: 16, // 16px avoids the zoom on focus in iOS Safari
+  transition: 'border-color 150ms',
+}))
+  .when('state:focus', ({ theme }) => ({ style: { borderColor: theme.color.primary } }))
+  .when('props:invalid', ({ theme }) => ({ style: { borderColor: theme.color.error } }))
+  .when('::placeholder', ({ theme }) => ({ style: { color: theme.color.muted } }))
+  .when('platform:web', { style: { outline: 'none' } });
+
+const Hint = engine<'Text', { invalid?: boolean }>('Text', ({ theme }) => ({ fontSize: 12, color: theme.color.muted }))
+  .when('props:invalid', ({ theme }) => ({ style: { color: theme.color.error } }));
+
+const Group = engine('Box', { gap: 6 });
+
+type Props = {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  error?: string;
+  secret?: boolean;
+};
+
+export function TextField({ label, value, onChangeText, error, secret }: Props) {
+  return (
+    <Group>
+      <Label>{label}</Label>
+      <Field
+        aria-label={label}
+        value={value}
+        onChangeText={onChangeText}
+        invalid={Boolean(error)}
+        type={secret ? 'password' : 'text'}
+        aria-invalid={Boolean(error)}
+      />
+      {error ? <Hint invalid>{error}</Hint> : null}
+    </Group>
+  );
+}
+```
+
+- `onChangeText` receives the text on both platforms.
+- `type="password"` becomes `secureTextEntry` on mobile.
+- `'::placeholder'` becomes `placeholderTextColor` on mobile.
+- `state:focus` works on `Input` on both platforms.
+
+Try the interactive version in [Input](/isoform/primitives/input/).

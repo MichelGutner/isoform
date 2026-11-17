@@ -1,0 +1,56 @@
+---
+title: Contributing
+description: Set up the repository, run the checks, and how releases happen.
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+The full guide is [`CONTRIBUTING.md`](https://github.com/MichelGutner/isoform/blob/main/CONTRIBUTING.md) in the repository. In short:
+
+```bash
+git clone https://github.com/MichelGutner/isoform.git
+cd isoform
+nvm use          # Node from .nvmrc
+yarn install
+```
+
+| Command | What it does |
+|---|---|
+| `yarn lint` | ESLint over `src`, `metro.js`, `react-native.config.js` and `scripts` |
+| `yarn typecheck` | TypeScript, no output |
+| `yarn test` | Jest (core, both adapters, codegen specs) |
+| `yarn build` | Compiles `src` to `dist` |
+| `yarn check:swift` | Type-checks every iOS module's Swift sources (macOS + Xcode) |
+
+## Running the showcase
+
+The same showcase (`examples/showcase`) runs in two apps that import the library from source:
+
+```bash
+cd example && yarn install && yarn ios        # or: yarn android
+cd example-web && yarn install && yarn dev    # React DOM + Vite
+```
+
+## This documentation site
+
+The site lives in [`website/`](https://github.com/MichelGutner/isoform/tree/main/website) (Astro Starlight). Its live examples import the library from `../src`, like `example-web` does.
+
+```bash
+cd website
+npm install
+npm run dev     # http://localhost:4321/isoform/
+npm run build   # also checks every internal link
+```
+
+Pages are MDX files under `website/src/content/docs/`; live examples are React components under `website/src/components/demos/`. Every page has an "Edit page" link at the bottom.
+
+## Pull requests
+
+- PRs are squash-merged; the **PR title** follows [Conventional Commits](https://www.conventionalcommits.org) (`feat(image): pinch zoom`, `fix(modal): …`, `docs: …`). A check enforces it.
+- CI runs lint, types, tests, the build, a check of the published files, a Kotlin compile of every module and a Swift type-check.
+- Add or update tests for behavior changes, and these docs for API changes.
+- Exported types need English JSDoc on every member.
+
+Releases are automatic: every push to `main` runs [semantic-release](https://semantic-release.gitbook.io), which picks the next version from the commit types.
+
+<LinkCard title="CONTRIBUTING.md" href="https://github.com/MichelGutner/isoform/blob/main/CONTRIBUTING.md" description="The full contributor guide, code of conduct and security policy live in the repository." />

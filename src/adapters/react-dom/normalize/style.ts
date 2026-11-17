@@ -79,7 +79,7 @@ function transformToString(items: Array<Record<string, number | string | undefin
 }
 
 /**
- * Estilo omnistyle → declarações CSS (`{ paddingLeft: '8px' }`).
+ * Estilo isoform → declarações CSS (`{ paddingLeft: '8px' }`).
  *
  * - strings passam intactas (`rem`, `em`, `vh`, `calc()`, `var()`…)
  * - número vira `px`, exceto props sem unidade

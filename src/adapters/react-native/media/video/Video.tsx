@@ -12,9 +12,9 @@ declare const require: (id: string) => any;
  * A spec só é carregada quando um `Video` é renderizado: assim importar o
  * adaptador (inclusive em testes) não exige o runtime do Codegen.
  */
-type Spec = typeof import('./native/OmniVideoViewNativeComponent');
+type Spec = typeof import('./native/IsoVideoViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniVideoViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoVideoViewNativeComponent'));
 
 type Props = Partial<VideoOwnProps> & { style?: any; testID?: string; /** Drawn over the player (the playlist button and panel). */ overlay?: React.ReactNode; /** List position for the playlist button in the native controls (set by the playlist wrapper). */ playlist?: { index: number; count: number; onPress(): void; /** Entries for the carousel the fullscreen draws natively. */ items?: Array<{ title: string; image: string }>; /** An entry picked in that carousel. */ onSelect?(index: number): void }; /** Any touch on the player (also on the native controls): the overlay uses it to show itself like the controls do. */ onPlayerTouch?: () => void };
 
@@ -34,7 +34,7 @@ Video.displayName = 'Video';
 
 /**
  * O player: o componente nativo da lib (AVPlayer no iOS, Media3 no Android).
- * Aqui só traduzimos o contrato do omnistyle para as props e os eventos
+ * Aqui só traduzimos o contrato do isoform para as props e os eventos
  * nativos, e mostramos o `poster` até o primeiro play.
  */
 const VideoPlayer = forwardRef<WithoutPlaylist<VideoHandle>, Props>(

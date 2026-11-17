@@ -1,0 +1,41 @@
+---
+title: Primitives
+description: The neutral building blocks every engine() component starts from, and what they render on each platform.
+---
+
+A primitive is a name passed to `engine()`. It is resolved **at render time** by the active provider, so the same component renders DOM elements on the web and React Native components on mobile.
+
+| Name | Web | Mobile |
+|---|---|---|
+| [`Box`](/isoform/primitives/box/) | `div` (flex column, React Native-like defaults) | `View` |
+| [`Text`](/isoform/primitives/text/) | `span` | `Text` |
+| [`Pressable`](/isoform/primitives/pressable/) | `div[role=button]`, keyboard accessible | `Pressable` |
+| [`Input`](/isoform/primitives/input/) | `input` / `textarea` (`multiline`) | `TextInput` |
+| [`Image`](/isoform/primitives/image/) | `img` (with the `image` module: blurhash, crossfade, tint, zoom) | `Image` (with the `image` module: the lib's pipeline) |
+| [`Scroll`](/isoform/primitives/scroll/) | scrollable `div` | `ScrollView` |
+| [`Video`](/isoform/modules/video/), [`Audio`](/isoform/modules/audio/), [`Pdf`](/isoform/modules/pdf/) | optional players and PDF viewer | native players and viewer |
+| [`BottomSheet`](/isoform/modules/sheet/) | optional `<dialog>` sheet | SwiftUI sheet (iOS), Compose sheet (Android) |
+| [`Svg`, `Path`, `Circle`…](/isoform/modules/svg/) | optional SVG elements | `react-native-svg` |
+| [`Camera`](/isoform/modules/camera/) | optional `getUserMedia` preview | CameraX + Compose (Android), AVFoundation (iOS) |
+| [`DatePicker`](/isoform/modules/date-picker/) | optional `<input type="date">` | the lib's picker, same design on iOS (SwiftUI) and Android (Compose) |
+| [`Modal`](/isoform/modules/modal/) | optional `<dialog>` | the lib's modal: UIKit (iOS), Compose (Android); React Native's `Modal` with the module off |
+
+React Native names (`View`, `TouchableOpacity`, `TextInput`, `ScrollView`…) still work and are marked deprecated. Mobile-only names (`Switch`, `SafeAreaView`, `FlatList`…) work on mobile and throw a clear error on the web. See [Native-only and legacy primitives](/isoform/primitives/native-and-legacy/).
+
+You can also wrap any component: `engine(MyComponent, style)`. See [Composition](/isoform/guides/composition/#wrapping-any-react-component).
+
+## Props every primitive shares
+
+| Prop | Type | Description |
+|---|---|---|
+| `style` | `StyleInput` | Style overrides. Always wins over the `engine()` styles. Web: applied inline. |
+| `children` | `ReactNode` | Child elements. |
+| `testID` | `string` | Test identifier. Web: rendered as `data-testid`. Native: `testID`. |
+| `hitSlop` | number or `{ top, left, bottom, right }` | Extra touch area around the element. **Native only**, ignored on the web. |
+| `onLayout` | `(event) => void` | Called with the element's layout after it is laid out. **Native only.** |
+| `accessibilityLabel` | `string` | Deprecated: use `aria-label`. |
+| `accessibilityRole` | `string` | Deprecated: use `role`. |
+| `accessibilityState` | `{ disabled, selected, checked, busy, expanded }` | Deprecated: use the `aria-*` props. |
+| `accessibilityHint` | `string` | Deprecated: use `aria-description`. |
+
+Any other DOM prop (`href`, `onMouseEnter`, `data-*`…) is accepted and goes straight to the element on the web; extra native props go straight to the React Native component.

@@ -1,5 +1,5 @@
 {
-  "name": "rn-stylish",
+  "name": "isoform-example",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -21,7 +21,7 @@
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
     "expo-splash-screen": "~31.0.13",
-    "omnistyle": "link:..",
+    "isoform": "link:..",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",

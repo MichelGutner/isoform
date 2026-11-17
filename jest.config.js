@@ -7,8 +7,8 @@ const config = {
   collectCoverage: false,
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   testTimeout: 20000,
-  // o exemplo compartilhado importa 'omnistyle' como um app real faria
-  moduleNameMapper: { '^omnistyle$': '<rootDir>/src/index.ts' },
+  // o exemplo compartilhado importa 'isoform' como um app real faria
+  moduleNameMapper: { '^isoform$': '<rootDir>/src/index.ts' },
   // os exemplos têm o próprio tsconfig (estrito, com o EngineTheme do app); aqui só executamos
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { diagnostics: { exclude: ['**/examples/**'] } }],

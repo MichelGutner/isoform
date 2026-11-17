@@ -1,0 +1,45 @@
+name: Bug report
+description: Something renders or behaves differently from what the docs say
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest component (and `isoform.config.json`, for native modules) that shows it. A repository link is best.
+      render: tsx
+    validations:
+      required: true
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: Platforms
+      options:
+        - label: iOS
+        - label: Android
+        - label: Web
+  - type: dropdown
+    id: device
+    attributes:
+      label: Where
+      options: [Physical device, Simulator / emulator, Browser, Several]
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: isoform 1.2.0, react-native 0.81.5, expo 54, iOS 26 / Android 16, Chrome 142
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Red box, Xcode / Logcat output or the browser console.
+      render: shell

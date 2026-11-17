@@ -11,7 +11,7 @@
       "@/*": [
         "./*"
       ],
-      "omnistyle": [
+      "isoform": [
         "../src/index.ts"
       ]
     }

@@ -27,6 +27,7 @@ export const CANONICAL: Record<string, string> = {
   BottomSheet: 'BottomSheet',
   Camera: 'Camera',
   DatePicker: 'DatePicker',
+  Modal: 'Modal',
   // SVG: each element is its own primitive (`Svg`, `Path`, `SvgLinearGradient`…)
   ...Object.fromEntries(Object.keys(SVG_ELEMENTS).map((name) => [name, name])),
 };
@@ -52,6 +53,8 @@ const BASE: Record<string, string> = {
   Audio: 'box-sizing:border-box;max-width:100%;flex-shrink:0',
   // PDF: the viewer (`.op`) defines layout and colors; a default height keeps the pages scrolling inside it
   Pdf: 'box-sizing:border-box;max-width:100%;height:420px;flex-shrink:0',
+  // modal: the `<dialog>` (`.om`) positions itself; nothing here may fight it
+  Modal: 'box-sizing:border-box',
   // bottom sheet: the `<dialog>` (`.os`) positions itself; nothing here may fight it
   BottomSheet: 'box-sizing:border-box',
   // camera: the preview (`<video>`) covers this box; the children are drawn over it

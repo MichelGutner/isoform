@@ -1,0 +1,30 @@
+---
+title: keyframes()
+description: Declares an animation once and returns its name, for the CSS animation properties on both platforms.
+---
+
+```ts
+function keyframes(frames: Keyframes): string;
+```
+
+Declares an animation and returns its name, to use in `animation` / `animationName`. Works on both platforms: `@keyframes` on the web, `Animated` on native.
+
+It does not depend on the active provider: it only stores the definition, and each adapter materializes it when a style that uses the name is compiled. So it can be called at the top of a module, before `configure()`. The name is derived from the content (`o-kf-<hash>`): deterministic and safe for SSR.
+
+```ts
+const pulse = keyframes({ '0%': { opacity: 1 }, '50%': { opacity: 0.3 }, '100%': { opacity: 1 } });
+const Dot = engine('Box', { animation: `${pulse} 1s ease-in-out infinite alternate` });
+```
+
+## `Keyframes`
+
+| Key | Type | Description |
+|---|---|---|
+| `from` | `IsoStyle` | The starting frame (same as `'0%'`). |
+| `to` | `IsoStyle` | The final frame (same as `'100%'`). |
+| `` `${number}%` `` | `IsoStyle` | A frame at a point of the animation, e.g. `'50%'`. |
+| `` `${number}%, ${string}` `` | `IsoStyle` | The same frame at several points, e.g. `'0%, 100%'`. |
+
+Frames can also be inlined: `animationName: { from: {…}, to: {…} }` registers them for you.
+
+See [Animations and transitions](/isoform/guides/animations/) for what each platform supports.

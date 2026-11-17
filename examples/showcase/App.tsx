@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { engine, getProvider } from 'omnistyle';
+import { engine, getProvider } from 'isoform';
 import { PAGES } from './pages';
 import { OverlayProvider, SettingsProvider, useSettings } from './settings';
 import { Body, Button, ButtonLabel, Title, themeFade } from './ui';
@@ -113,7 +113,7 @@ function Shell() {
     <OverlayProvider value={setOverlay}>
       <Layout>
         <Sidebar>
-          <Title>omnistyle</Title>
+          <Title>isoform</Title>
           <Body muted>One style, every platform.</Body>
           <Nav horizontal showsHorizontalScrollIndicator={false}>
             <NavList>

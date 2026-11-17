@@ -42,7 +42,7 @@ export function animatedHost(Component: React.ComponentType<any>): React.Compone
 
   const AnimatedComponent = Animated.createAnimatedComponent(Component as any) as any;
 
-  const Created = forwardRef<any, any>(({ __omniAnimation: anim, style, ...rest }, ref) => {
+  const Created = forwardRef<any, any>(({ __isoAnimation: anim, style, ...rest }, ref) => {
     const spec = anim as NativeAnimation;
     const startsBackwards = isReversed(spec.direction, 0);
     const progress = useRef(new Animated.Value(startsBackwards ? 1 : 0)).current;

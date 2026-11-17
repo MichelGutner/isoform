@@ -1,0 +1,33 @@
+---
+title: Box
+description: The layout container. A div on the web, a View on iOS and Android.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import CardDemo from '../../../components/demos/CardDemo.tsx';
+import cardSource from '../../../components/demos/CardDemo.tsx?raw';
+
+`Box` is the layout container: a `<div>` with React Native defaults (flex column) on the web, a `View` on mobile.
+
+```tsx
+const Row = engine('Box', { flexDirection: 'row', gap: 12, alignItems: 'center' });
+```
+
+<LiveExample code={cardSource}>
+  <CardDemo client:only="react" />
+</LiveExample>
+
+## Props
+
+`BoxProps` = the `<div>` DOM props (minus `style`, `onChange` and `autoCorrect`) + the [shared props](/isoform/primitives/overview/#props-every-primitive-shares) + `IsoNativeProps`.
+
+## Web defaults
+
+On the web `Box` starts as `display: flex; flex-direction: column`, with `border-style: solid` and `border-width: 0`, so layouts behave as they do in React Native and `borderWidth` alone draws a border. These defaults are low-priority base rules: any style you set wins.
+
+| | Web | Mobile |
+|---|---|---|
+| Element | `<div>` | `View` |
+| Default direction | column | column |
+| `flex: 1` | `1 1 0%` (React Native semantics) | native |
+| Legacy name | `View` (deprecated) | `View` (deprecated) |

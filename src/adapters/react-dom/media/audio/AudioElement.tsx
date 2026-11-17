@@ -8,7 +8,7 @@ import { bufferedEnd, changeVolume, classNames, finite, playSafely, seek, toggle
 
 /**
  * `Audio` on the web: a card with the browser's `<audio>` (hidden) and the lib's
- * controls. Element events are translated to the omnistyle contract
+ * controls. Element events are translated to the isoform contract
  * (`onTimeUpdate({ currentTime, duration })`, `onSeek({ from, to })`…).
  *
  * The style of `engine('Audio', …)` goes to the card.
@@ -124,7 +124,7 @@ export const Audio = forwardRef<WithoutPlaylist<AudioHandle>, AudioElementProps>
       onBuffering?.(value);
     };
 
-    /** `<audio>` events → controls state + omnistyle contract. */
+    /** `<audio>` events → controls state + isoform contract. */
     const events: React.AudioHTMLAttributes<HTMLAudioElement> = {
       onPlay: () => {
         patch({ playing: true });

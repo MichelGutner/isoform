@@ -163,7 +163,7 @@ function expandBox<T>(parts: T[]): T[] | undefined {
 }
 
 /**
- * Estilo omnistyle → estilo que o React Native entende.
+ * Estilo isoform → estilo que o React Native entende.
  * Roda uma vez por combinação (tema, props): o builder cacheia a saída.
  */
 export function normalizeNative(style: Record<string, any>, env: NormalizeEnv): Record<string, any> {

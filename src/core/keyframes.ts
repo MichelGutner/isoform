@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { stringHash } from '../hash/stringHash';
-import type { OmniStyle } from './style/types';
+import type { IsoStyle } from './style/types';
 
 /**
  * The frames of an animation, written with the same style vocabulary as the
@@ -8,13 +8,13 @@ import type { OmniStyle } from './style/types';
  */
 export type Keyframes = {
   /** The starting frame (same as `'0%'`). */
-  from?: OmniStyle;
+  from?: IsoStyle;
   /** The final frame (same as `'100%'`). */
-  to?: OmniStyle;
+  to?: IsoStyle;
   /** A frame at a point of the animation, e.g. `'50%'`. */
-  [percent: `${number}%`]: OmniStyle;
+  [percent: `${number}%`]: IsoStyle;
   /** The same frame at several points, e.g. `'0%, 100%'`. */
-  [list: `${number}%, ${string}`]: OmniStyle;
+  [list: `${number}%, ${string}`]: IsoStyle;
 };
 
 /** Prefix of the generated names (`o-kf-<hash>`). */

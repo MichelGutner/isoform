@@ -24,7 +24,7 @@ export interface ConfigureOptions {
    * Minimum widths (px) of the breakpoints used by `when('breakpoints:md')` and friends.
    * Mobile-first: a rule applies when the screen is at least that wide.
    * Replaces the whole set. Default `{ sm: 480, md: 768, lg: 1024, xl: 1280 }`.
-   * To type new names, augment `OmniBreakpointNames`.
+   * To type new names, augment `IsoBreakpointNames`.
    */
   breakpoints?: Record<string, number>;
   /** Settings of the CSS → React Native conversion. */
@@ -34,17 +34,17 @@ export interface ConfigureOptions {
   };
   /**
    * Optional modules. **All off by default.** The recommended way is an
-   * `omnistyle.config.json` at the app root, passed here:
+   * `isoform.config.json` at the app root, passed here:
    * ```ts
-   * // omnistyle.config.json → { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
-   * import omnistyle from './omnistyle.config.json';
-   * configure({ modules: omnistyle.modules });
+   * // isoform.config.json → { "modules": { "video": true, "audio": { "enabled": true, "mediaSession": true }, "pdf": true } }
+   * import isoform from './isoform.config.json';
+   * configure({ modules: isoform.modules });
    * ```
    * The same file drives the build: Gradle and CocoaPods only compile the
-   * enabled modules, and `omnistyle/metro` removes the disabled ones from the
+   * enabled modules, and `isoform/metro` removes the disabled ones from the
    * JS bundle. On the web, a disabled module's code is never downloaded.
    */
-  modules?: OmniModules;
+  modules?: IsoModules;
 }
 
 /** Options every optional module accepts when it is turned on with an object. */
@@ -59,7 +59,7 @@ export interface AudioModuleOptions extends ModuleOptions {
    * Background audio with system controls: Android foreground service and media
    * notification (Media3 `MediaSession`), iOS lock screen / Control Center
    * (`MPNowPlayingInfoCenter`). **Build-time only**: Gradle and CocoaPods read it
-   * from `omnistyle.config.json`; it is ignored in JS. Only applies when `enabled` is `true`.
+   * from `isoform.config.json`; it is ignored in JS. Only applies when `enabled` is `true`.
    * Extra app setup: Android 13+ runtime `POST_NOTIFICATIONS` permission to show the
    * notification. (On iOS the build adds `UIBackgroundModes` → `audio` to Info.plist.)
    * Default `false`.
@@ -98,7 +98,7 @@ export interface PdfModuleOptions extends ModuleOptions {
  * The lib's optional modules. Every one is off unless turned on, either with
  * `true` or with an object (`{ enabled: true, ...options }`).
  */
-export interface OmniModules {
+export interface IsoModules {
   /**
    * `engine('Video')`: a video player. Web: `<video>` with the lib's controls
    * (loaded on demand). iOS: AVPlayer. Android: Media3 ExoPlayer with Jetpack Compose controls.
@@ -126,7 +126,7 @@ export interface OmniModules {
    * `engine('BottomSheet')`: a panel that slides up from the bottom, with detents,
    * drag, backdrop and the platform's own feel. Web: a native `<dialog>` (top layer,
    * focus trap, Escape). iOS: a SwiftUI sheet (`presentationDetents`). Android: a
-   * Jetpack Compose sheet. The content is regular omnistyle/React Native children.
+   * Jetpack Compose sheet. The content is regular isoform/React Native children.
    * Default `false`.
    */
   sheet?: boolean | ModuleOptions;
@@ -154,18 +154,37 @@ export interface OmniModules {
    * Default `false`.
    */
   datePicker?: boolean | ModuleOptions;
+  /**
+   * `engine('Image')` becomes the lib's own image: memory and disk caches, downloads
+   * shared between views, progress, decoding at the size on screen, animated GIF/WebP,
+   * blurhash placeholders, crossfade, tint and blur, plus `prefetchImages` and
+   * `clearImageCache`. iOS (URLSession, ImageIO) and Android (OkHttp, ImageDecoder) run
+   * the same pipeline design; no extra dependency. Web: `<img>` with the same props.
+   * Off: `Image` stays the platform's plain image.
+   * Default `false`.
+   */
+  image?: boolean | ModuleOptions;
+  /**
+   * `engine('Modal')` becomes the lib's own modal: a centered dialog or a full-screen
+   * cover with spring animations, backdrop, keyboard avoidance and a focus trap. iOS:
+   * UIKit. Android: Jetpack Compose. Web: a native `<dialog>`. The content is regular
+   * isoform/React Native children.
+   * Off: `Modal` stays React Native's `Modal` (native only).
+   * Default `false`.
+   */
+  modal?: boolean | ModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'` | `'datePicker'`). */
-export type ModuleName = keyof OmniModules;
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'` | `'datePicker'` | `'image'` | `'modal'`). */
+export type ModuleName = keyof IsoModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
 const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<OmniModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false, datePicker: false };
-let modules: OmniModules = { ...DEFAULT_MODULES };
+export const DEFAULT_MODULES: Readonly<IsoModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false, datePicker: false, image: false, modal: false };
+let modules: IsoModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */
 let bundled: PlatformAdapter | null = null;
@@ -226,7 +245,7 @@ export function peekProvider(): PlatformAdapter {
   const provider = active ?? bundled;
   if (!provider) {
     throw new Error(
-      '[omnistyle] nenhum provedor disponível. Importe `omnistyle` (o bundler escolhe o provedor) ' +
+      '[isoform] nenhum provedor disponível. Importe `isoform` (o bundler escolhe o provedor) ' +
         'ou chame configure({ provider: <adapter> }).',
     );
   }
@@ -244,7 +263,7 @@ export function getBreakpoints(): Readonly<Record<string, number>> {
 }
 
 /**
- * Configures omnistyle: provider, theme, breakpoints, native conversion and
+ * Configures isoform: provider, theme, breakpoints, native conversion and
  * optional modules. Call it once, when the app starts, before the first render.
  *
  * @example
@@ -258,14 +277,14 @@ export function configure(options: ConfigureOptions = {}): void {
     next = provider;
   } else if (provider === 'auto') {
     if (!bundled) {
-      throw new Error('[omnistyle] provider "auto" sem provedor no bundle. Passe um adapter.');
+      throw new Error('[isoform] provider "auto" sem provedor no bundle. Passe um adapter.');
     }
     next = bundled;
   } else {
     if (!bundled || bundled.name !== provider) {
       const available = bundled ? `"${bundled.name}"` : 'nenhum';
       throw new Error(
-        `[omnistyle] provider "${provider}" não está disponível neste bundle (disponível: ${available}). ` +
+        `[isoform] provider "${provider}" não está disponível neste bundle (disponível: ${available}). ` +
           `Use "auto" ou o provider que a plataforma atual carrega.`,
       );
     }
@@ -283,13 +302,13 @@ export function configure(options: ConfigureOptions = {}): void {
   if (bps) {
     for (const [name, min] of Object.entries(bps)) {
       if (!/^[A-Za-z_][\w-]*$/.test(name)) {
-        throw new Error(`[omnistyle] nome de breakpoint inválido: "${name}" (use letras, números, _ ou -).`);
+        throw new Error(`[isoform] nome de breakpoint inválido: "${name}" (use letras, números, _ ou -).`);
       }
       if (RESERVED.has(name)) {
-        throw new Error(`[omnistyle] "${name}" não pode ser nome de breakpoint (já é uma condição de when()).`);
+        throw new Error(`[isoform] "${name}" não pode ser nome de breakpoint (já é uma condição de when()).`);
       }
       if (typeof min !== 'number' || !Number.isFinite(min) || min < 0) {
-        throw new Error(`[omnistyle] breakpoint "${name}" precisa de uma largura mínima em px (número >= 0).`);
+        throw new Error(`[isoform] breakpoint "${name}" precisa de uma largura mínima em px (número >= 0).`);
       }
     }
     breakpoints = { ...bps };

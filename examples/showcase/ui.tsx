@@ -1,7 +1,7 @@
-import { engine, keyframes } from 'omnistyle';
+import { engine, keyframes } from 'isoform';
 
 /**
- * Biblioteca de componentes ESCRITA UMA VEZ: só importa de 'omnistyle'
+ * Biblioteca de componentes ESCRITA UMA VEZ: só importa de 'isoform'
  * (nada de react-native nem react-dom) e usa as primitivas neutras.
  */
 

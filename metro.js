@@ -1,10 +1,10 @@
 /**
  * Helper do Metro (opcional): tira do bundle JS o código dos módulos desligados
- * no `omnistyle.config.json` da raiz do app.
+ * no `isoform.config.json` da raiz do app.
  *
  *   // metro.config.js
- *   const { withOmnistyle } = require('omnistyle/metro');
- *   module.exports = withOmnistyle(getDefaultConfig(__dirname));
+ *   const { withIsoform } = require('isoform/metro');
+ *   module.exports = withIsoform(getDefaultConfig(__dirname));
  *
  * Sem o arquivo (ou sem este helper), nada muda: o código fica no bundle e o
  * `configure` decide em runtime.
@@ -12,7 +12,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_FILE = 'omnistyle.config.json';
+const CONFIG_FILE = 'isoform.config.json';
 
 /** Arquivo de cada módulo → versão vazia (mesmo nome + `.disabled`, mesma extensão). */
 const MODULE_FILES = {
@@ -23,6 +23,8 @@ const MODULE_FILES = {
   svg: /[\\/]adapters[\\/]react-native[\\/]svg[\\/]Svg\.(tsx|js)$/,
   camera: /[\\/]adapters[\\/]react-native[\\/]camera[\\/]Camera\.(tsx|js)$/,
   datePicker: /[\\/]adapters[\\/]react-native[\\/]datePicker[\\/]DatePicker\.(tsx|js)$/,
+  image: /[\\/]adapters[\\/]react-native[\\/]image[\\/]Image\.(tsx|js)$/,
+  modal: /[\\/]adapters[\\/]react-native[\\/]modal[\\/]Modal\.(tsx|js)$/,
 };
 
 /** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */
@@ -48,14 +50,14 @@ function checkAppPackages(modules, projectRoot) {
       require.resolve(`${pkg}/package.json`, { paths: [projectRoot] });
     } catch {
       throw new Error(
-        `[omnistyle] o módulo "${name}" está ligado no ${CONFIG_FILE}, mas o pacote "${pkg}" não está instalado. ` +
+        `[isoform] o módulo "${name}" está ligado no ${CONFIG_FILE}, mas o pacote "${pkg}" não está instalado. ` +
           `Rode \`npx expo install ${pkg}\` (ou \`yarn add ${pkg}\`) e, no iOS, \`pod install\`; ou desligue o módulo.`,
       );
     }
   }
 }
 
-function withOmnistyle(config, { projectRoot = config.projectRoot ?? process.cwd() } = {}) {
+function withIsoform(config, { projectRoot = config.projectRoot ?? process.cwd() } = {}) {
   const modules = readModules(projectRoot);
   if (!modules) return config;
   checkAppPackages(modules, projectRoot);
@@ -76,4 +78,4 @@ function withOmnistyle(config, { projectRoot = config.projectRoot ?? process.cwd
   return { ...config, resolver: { ...config.resolver, resolveRequest } };
 }
 
-module.exports = { withOmnistyle, readModules };
+module.exports = { withIsoform, readModules };

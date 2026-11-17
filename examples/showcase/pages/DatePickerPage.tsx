@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine, type DatePickerDisplay, type DatePickerMode } from 'omnistyle';
+import { engine, type DatePickerDisplay, type DatePickerMode } from 'isoform';
 import { Body } from '../ui';
 import { Choice, Code, Flag, Flags, PageShell, Section } from '../kit';
 
@@ -73,7 +73,7 @@ export function DatePickerPage() {
 
       <Section title="In code">
         <Code>{`
-// omnistyle.config.json
+// isoform.config.json
 { "modules": { "datePicker": true } }
 
 const Picker = engine('DatePicker', { alignSelf: 'stretch', borderRadius: 20 });

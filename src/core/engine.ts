@@ -2,14 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType, ForwardRefExoticComponent, RefAttributes } from 'react';
 import { StylizedBuilder } from './builder';
-import type { OmniPrimitiveHandles, OmniPrimitives } from './primitives';
+import type { IsoPrimitiveHandles, IsoPrimitives } from './primitives';
 import { makeProxy } from './proxy';
 import type { EngineComponent, StyleOrFn } from './types';
 
 /** The component behind a primitive name; primitives with a `ref` API get a typed `ref` (`VideoHandle`…). */
-type PrimitiveComponent<K extends keyof OmniPrimitives> = K extends keyof OmniPrimitiveHandles
-  ? ForwardRefExoticComponent<OmniPrimitives[K] & RefAttributes<OmniPrimitiveHandles[K]>>
-  : ComponentType<OmniPrimitives[K]>;
+type PrimitiveComponent<K extends keyof IsoPrimitives> = K extends keyof IsoPrimitiveHandles
+  ? ForwardRefExoticComponent<IsoPrimitives[K] & RefAttributes<IsoPrimitiveHandles[K]>>
+  : ComponentType<IsoPrimitives[K]>;
 
 type ExtractComponent<T> = T extends { __engine: true; __component: infer C }
   ? C extends ComponentType<any>
@@ -26,11 +26,11 @@ export interface Engine {
   /**
    * Styles a universal primitive (`'Box'`, `'Text'`, `'Pressable'`, `'Input'`,
    * `'Image'`, `'Scroll'`, `'Video'`, `'Audio'`, `'Pdf'`) or a legacy React Native name (`'View'`…).
-   * @param component The primitive name (see `OmniPrimitives`).
+   * @param component The primitive name (see `IsoPrimitives`).
    * @param style An optional initial style: an object, or a function of `{ theme, props, platform }`.
    * @typeParam P Custom props of the new component (they become `when()` conditions such as `'props:variant=primary'`).
    */
-  <K extends keyof OmniPrimitives, P extends object = {}>(
+  <K extends keyof IsoPrimitives, P extends object = {}>(
     component: K,
     style?: StyleOrFn<PrimitiveComponent<K>, P>,
   ): EngineComponent<PrimitiveComponent<K>, P>;

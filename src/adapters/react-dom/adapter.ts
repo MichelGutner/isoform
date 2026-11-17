@@ -5,7 +5,9 @@ import { getKeyframes, keyframeNamesIn } from '../../core/keyframes';
 import { sheet, toKebab } from './css/sheet';
 import { applyWebProps } from './normalize/props';
 import { normalizeWebStyle } from './normalize/style';
-import { Box, Image, Input, Pressable, Scroll, Text } from './primitives';
+import { Box, Input, Pressable, Scroll, Text } from './primitives';
+import { Image, webImageCache } from './image/Image';
+import { Modal } from './modal/Modal';
 import { Audio, Pdf, Video } from './media';
 import { BottomSheet } from './sheet/LazySheet';
 import { SvgPrimitives } from './svg/elements';
@@ -59,6 +61,8 @@ export const reactDomAdapter: PlatformAdapter = {
 
   os: () => 'web',
 
+  images: webImageCache,
+
   primitives: {
     Box,
     Text,
@@ -72,6 +76,7 @@ export const reactDomAdapter: PlatformAdapter = {
     BottomSheet,
     Camera,
     DatePicker,
+    Modal,
     ...SvgPrimitives,
     // nomes legados do RN que têm equivalente na web
     View: Box,

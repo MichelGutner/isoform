@@ -8,9 +8,9 @@ import { DEFAULT_DETENTS, SHEET_TOP_GAP, encodeDetents, resolveDetents, type Bot
 declare const require: (id: string) => any;
 
 /** The spec is only loaded when a sheet renders: importing the adapter (tests included) does not need Codegen. */
-type Spec = typeof import('./native/OmniSheetViewNativeComponent');
+type Spec = typeof import('./native/IsoSheetViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniSheetViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoSheetViewNativeComponent'));
 
 type Props = Omit<BottomSheetOwnProps, 'children'> & { children?: ReactNode; style?: any; testID?: string };
 

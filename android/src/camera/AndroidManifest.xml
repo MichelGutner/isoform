@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- omnistyle.camera: the preview and photos (asked at runtime by the Camera component) -->
+  <!-- isoform.camera: the preview and photos (asked at runtime by the Camera component) -->
   <uses-permission android:name="android.permission.CAMERA" />
   <!-- not required: the app still installs on devices without a camera (the Camera reports an error) -->
   <uses-feature android:name="android.hardware.camera.any" android:required="false" />

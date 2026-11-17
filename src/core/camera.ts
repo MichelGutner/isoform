@@ -126,14 +126,14 @@ export interface CameraOwnProps {
   focusGesture?: boolean;
   /**
    * Enables recording (`startRecording`): adds the video output and asks for the
-   * microphone. Requires `camera.video` in `omnistyle.config.json`. Default `false`.
+   * microphone. Requires `camera.video` in `isoform.config.json`. Default `false`.
    */
   video?: boolean;
   /** Records sound with the video. Default `true`. */
   audio?: boolean;
   /**
    * Called with the codes in sight whenever they change (not on every frame).
-   * Setting it turns the scanner on. Requires `camera.codeScanner` in `omnistyle.config.json`.
+   * Setting it turns the scanner on. Requires `camera.codeScanner` in `isoform.config.json`.
    */
   onCodeScanned?: (codes: CameraCode[]) => void;
   /** Code kinds to look for. Default `['qr']` (fewer kinds scan faster). */

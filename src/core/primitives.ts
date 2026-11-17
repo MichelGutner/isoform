@@ -13,6 +13,8 @@ import type { PdfHandle, PdfOwnProps } from './pdf';
 import type { BottomSheetHandle, BottomSheetOwnProps } from './sheet';
 import type { CameraHandle, CameraOwnProps } from './camera';
 import type { DatePickerOwnProps } from './datePicker';
+import type { ImageHandle, ImageOwnProps, ImageSourceInput } from './image';
+import type { ModalOwnProps } from './modal';
 
 /**
  * Props shared by every primitive on both platforms. Any other DOM prop
@@ -61,22 +63,22 @@ export interface CommonProps {
 /**
  * Augment this interface to type native props the lib does not list:
  * ```ts
- * declare module 'omnistyle' {
- *   interface OmniNativeProps { collapsable?: boolean }
+ * declare module 'isoform' {
+ *   interface IsoNativeProps { collapsable?: boolean }
  * }
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface OmniNativeProps {}
+export interface IsoNativeProps {}
 
-/** The element's DOM props, minus the ones omnistyle redefines (`style`, `onChange`, `autoCorrect`). */
+/** The element's DOM props, minus the ones isoform redefines (`style`, `onChange`, `autoCorrect`). */
 type Dom<T extends HTMLAttributes<any>> = Omit<T, 'style' | 'onChange' | 'autoCorrect'>;
 
 /**
  * Props of `Box`: a layout container.
  * Web: `<div>` with React Native defaults (flex column). Native: `View`.
  */
-export type BoxProps = Dom<HTMLAttributes<HTMLDivElement>> & CommonProps & OmniNativeProps;
+export type BoxProps = Dom<HTMLAttributes<HTMLDivElement>> & CommonProps & IsoNativeProps;
 
 /**
  * Props of `Text`: a piece of text.
@@ -84,7 +86,7 @@ export type BoxProps = Dom<HTMLAttributes<HTMLDivElement>> & CommonProps & OmniN
  */
 export type TextProps = Dom<HTMLAttributes<HTMLSpanElement>> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** Maximum number of lines; extra text is cut with an ellipsis. Web: `-webkit-line-clamp`. */
     numberOfLines?: number;
   };
@@ -95,7 +97,7 @@ export type TextProps = Dom<HTMLAttributes<HTMLSpanElement>> &
  */
 export type PressableProps = Dom<HTMLAttributes<HTMLDivElement>> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** Called on tap (native) or on click / Enter / Space (web). */
     onPress?: (event?: any) => void;
     /** Called when the element is held down for a while. */
@@ -114,7 +116,7 @@ export type PressableProps = Dom<HTMLAttributes<HTMLDivElement>> &
  */
 export type InputProps = Dom<InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** Called with the new text (not the event) on every change, on both platforms. */
     onChangeText?: (text: string) => void;
     /** Called with the raw platform event on every change. Prefer `onChangeText`. */
@@ -138,12 +140,18 @@ export type InputProps = Dom<InputHTMLAttributes<HTMLInputElement> & TextareaHTM
   };
 
 /**
- * Props of `Image`: a picture.
- * Web: `<img>`. Native: `Image`. Use the web-standard `src` and `alt`.
+ * Props of `Image`: a picture. Use the web-standard `src` and `alt`.
+ * With the `image` module on (see {@link ImageOwnProps}): the lib's own pipeline on iOS and
+ * Android (caches, blurhash, crossfade, tint, blur, animated pictures) and `<img>` with the
+ * same props on the web. Off: React Native's `Image` and a plain `<img>` (the extra props
+ * that the plain image understands still apply: `contentFit`, `tintColor`, `blurRadius`).
  */
-export type ImageProps = Dom<ImgHTMLAttributes<HTMLImageElement>> &
+export type ImageProps = Omit<Dom<ImgHTMLAttributes<HTMLImageElement>>, 'src' | 'placeholder' | keyof ImageOwnProps> &
+  ImageOwnProps &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
+    /** The picture: a URL, a `require('./pic.png')` or `{ uri, headers, cacheKey }`. */
+    src?: ImageSourceInput;
     /** @deprecated Use `src`. */
     source?: { uri: string } | string | number;
   };
@@ -154,7 +162,7 @@ export type ImageProps = Dom<ImgHTMLAttributes<HTMLImageElement>> &
  */
 export type ScrollProps = Dom<HTMLAttributes<HTMLDivElement>> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** Scrolls sideways instead of vertically. */
     horizontal?: boolean;
     /** Style of the inner content container (padding, gap, alignment of the scrolled content). */
@@ -178,7 +186,7 @@ export type ScrollProps = Dom<HTMLAttributes<HTMLDivElement>> &
  * A media primitive: its own props (`src`, `onPlay`…) plus the common ones.
  * DOM props that clash with ours (`onPlay`, `onError`…) are omitted.
  */
-type Media<Own> = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Own> & Own & CommonProps & OmniNativeProps;
+type Media<Own> = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Own> & Own & CommonProps & IsoNativeProps;
 
 /**
  * Props of `Video`: a video player (see {@link VideoOwnProps} for the playback props).
@@ -206,7 +214,7 @@ export type PdfProps = Media<PdfOwnProps>;
 export type BottomSheetProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof BottomSheetOwnProps> &
   Omit<BottomSheetOwnProps, 'children'> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** The content of the sheet. */
     children?: ReactNode;
   };
@@ -219,7 +227,7 @@ export type BottomSheetProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof Bott
 export type CameraProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof CameraOwnProps> &
   CameraOwnProps &
   CommonProps &
-  OmniNativeProps;
+  IsoNativeProps;
 
 /**
  * Props of `DatePicker`: pick a date, a time or both (see {@link DatePickerOwnProps}).
@@ -229,7 +237,35 @@ export type CameraProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof CameraOwn
 export type DatePickerProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof DatePickerOwnProps> &
   DatePickerOwnProps &
   CommonProps &
-  OmniNativeProps;
+  IsoNativeProps;
+
+/**
+ * Props of `Modal`: content over the whole app (see {@link ModalOwnProps}). The `style` styles
+ * the card: `backgroundColor`, `borderRadius` and `width`/`maxWidth` go to the native
+ * surface, the rest (padding, gap…) to the content. With the `modal` module off it is
+ * React Native's `Modal` (native only).
+ */
+export type ModalProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof ModalOwnProps> &
+  Omit<ModalOwnProps, 'children'> &
+  CommonProps &
+  IsoNativeProps & {
+    /** The content of the modal. */
+    children?: ReactNode;
+    /** React Native `Modal` (module off, written the old way): no full-screen background. */
+    transparent?: boolean;
+    /** React Native `Modal` (module off): `'fullScreen'`, `'pageSheet'`, `'formSheet'` or `'overFullScreen'`. @platform ios */
+    presentationStyle?: 'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen';
+    /** React Native `Modal` (module off): draws under the status bar. @platform android */
+    statusBarTranslucent?: boolean;
+    /** React Native `Modal` (module off): draws under the navigation bar. @platform android */
+    navigationBarTranslucent?: boolean;
+    /** React Native `Modal` (module off): orientations allowed while it is shown. @platform ios */
+    supportedOrientations?: Array<'portrait' | 'portrait-upside-down' | 'landscape' | 'landscape-left' | 'landscape-right'>;
+    /** React Native `Modal` (module off): called once it is shown. */
+    onShow?: (event?: any) => void;
+    /** React Native `Modal` (module off): called once it is gone. Prefer `onClosed`. @platform ios */
+    onDismiss?: () => void;
+  };
 
 /**
  * Props of an SVG primitive: the element's SVG attributes (`d`, `cx`, `viewBox`, `fill`…,
@@ -239,7 +275,7 @@ export type DatePickerProps = Omit<Dom<HTMLAttributes<HTMLElement>>, keyof DateP
  */
 export type SvgElementProps<E extends SVGElement = SVGElement> = Omit<SVGProps<E>, 'style' | 'ref' | 'children'> &
   CommonProps &
-  OmniNativeProps & {
+  IsoNativeProps & {
     /** Called on tap (native) or click (web). */
     onPress?: (event?: any) => void;
   };
@@ -258,7 +294,7 @@ type NativeLoose = BoxProps & { [key: string]: any };
  * Primitive name → what its `ref` exposes, for the primitives that have methods.
  * `engine('Video')` and friends get a `ref` typed with it.
  */
-export interface OmniPrimitiveHandles {
+export interface IsoPrimitiveHandles {
   /** `play`, `pause`, `seekTo`, `setFullscreen` (+ `next`/`previous`/`goTo` with `items`). */
   Video: VideoHandle;
   /** `play`, `pause`, `seekTo` (+ `next`/`previous`/`goTo` with `items`). */
@@ -269,13 +305,15 @@ export interface OmniPrimitiveHandles {
   BottomSheet: BottomSheetHandle;
   /** `takePhoto`, `startRecording`, `stopRecording`. */
   Camera: CameraHandle;
+  /** `zoomTo`, `resetZoom`, `rotateTo`, `play`, `pause`, `reload` (with the `image` module on). */
+  Image: ImageHandle;
 }
 
 /**
  * Primitive name → props. This is what `engine('Name')` accepts.
  * Universal primitives come first; the rest are legacy or native-only.
  */
-export interface OmniPrimitives {
+export interface IsoPrimitives {
   /** Layout container. Web: `<div>` (flex column). Native: `View`. */
   Box: BoxProps;
   /** Text. Web: `<span>`. Native: `Text`. */
@@ -284,7 +322,10 @@ export interface OmniPrimitives {
   Pressable: PressableProps;
   /** Text field. Web: `<input>` / `<textarea>`. Native: `TextInput`. */
   Input: InputProps;
-  /** Picture. Web: `<img>`. Native: `Image`. */
+  /**
+   * Picture. Web: `<img>`. Native: `Image`. With `modules.image` on: the lib's own image
+   * (caches, blurhash, crossfade, tint, blur, animated pictures) on every platform.
+   */
   Image: ImageProps;
   /** Scrollable container. Web: `<div>` with `overflow: auto`. Native: `ScrollView`. */
   Scroll: ScrollProps;
@@ -406,8 +447,12 @@ export interface OmniPrimitives {
   Switch: NativeLoose;
   /** Loading spinner (React Native `ActivityIndicator`). @platform native */
   ActivityIndicator: NativeLoose;
-  /** Content shown over the app (React Native `Modal`). @platform native */
-  Modal: NativeLoose;
+  /**
+   * Content over the whole app. With `modules.modal` on: the lib's own modal (a centered
+   * dialog or full screen, the same design on iOS, Android and the web). Off: React
+   * Native's `Modal` (native only).
+   */
+  Modal: ModalProps;
   /** Controls the system status bar (React Native `StatusBar`). @platform native */
   StatusBar: NativeLoose;
   /** Moves its content out of the keyboard's way (React Native `KeyboardAvoidingView`). @platform native */

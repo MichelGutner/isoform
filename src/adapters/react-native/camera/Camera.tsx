@@ -21,9 +21,9 @@ import { CameraRequests } from '../../../core/cameraRequests';
 declare const require: (id: string) => any;
 
 /** The spec is only loaded when a camera renders: importing the adapter (tests included) does not need Codegen. */
-type Spec = typeof import('./native/OmniCameraViewNativeComponent');
+type Spec = typeof import('./native/IsoCameraViewNativeComponent');
 let spec: Spec | undefined;
-const nativeSpec = (): Spec => (spec ??= require('./native/OmniCameraViewNativeComponent'));
+const nativeSpec = (): Spec => (spec ??= require('./native/IsoCameraViewNativeComponent'));
 
 type Props = CameraOwnProps & { children?: ReactNode; style?: any; testID?: string };
 
@@ -46,7 +46,7 @@ function feature(name: 'video' | 'codeScanner', wanted: boolean): boolean {
   if (isCameraFeatureEnabled(name)) return true;
   warnOnce(
     `camera-${name}-off`,
-    `Camera: "${name}" está desligado. Ligue com "camera": { "enabled": true, "${name}": true } no omnistyle.config.json (e refaça o build nativo).`,
+    `Camera: "${name}" está desligado. Ligue com "camera": { "enabled": true, "${name}": true } no isoform.config.json (e refaça o build nativo).`,
   );
   return false;
 }
@@ -108,7 +108,7 @@ const NativeCamera = forwardRef<CameraHandle, Props>(
       () => ({
         takePhoto: (options) => photos.start((id) => Commands.takePhoto(view.current, id, options?.flash ?? flash)),
         startRecording: () => {
-          if (!recording) return Promise.reject(new Error('Camera: set the `video` prop (and camera.video in omnistyle.config.json) to record.'));
+          if (!recording) return Promise.reject(new Error('Camera: set the `video` prop (and camera.video in isoform.config.json) to record.'));
           return starts.start((id) => Commands.startRecording(view.current, id));
         },
         stopRecording: () => stops.start((id) => Commands.stopRecording(view.current, id)),

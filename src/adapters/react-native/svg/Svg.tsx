@@ -41,7 +41,7 @@ function nativeComponent(name: SvgElementName): ComponentType<any> | null {
 }
 
 /**
- * One SVG primitive on native: the omnistyle style (already converted for React Native)
+ * One SVG primitive on native: the isoform style (already converted for React Native)
  * becomes the element's props, as CSS would apply it on the web. Props written on the
  * element lose to the style, like SVG attributes lose to CSS. `onPress` is native already.
  */

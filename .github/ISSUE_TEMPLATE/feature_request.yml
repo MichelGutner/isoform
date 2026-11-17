@@ -1,0 +1,25 @@
+name: Feature request
+description: A style property, a primitive, a module or an API that is missing
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to build and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The API you would like
+      description: How you would write it with Isoform.
+      render: tsx
+  - type: checkboxes
+    id: platforms
+    attributes:
+      label: Platforms it matters on
+      options:
+        - label: iOS
+        - label: Android
+        - label: Web

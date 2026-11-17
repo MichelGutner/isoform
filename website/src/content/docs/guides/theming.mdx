@@ -1,0 +1,57 @@
+---
+title: Theme and configure
+description: A global, provider-less theme set with configure() and updateTheme(), read by style functions and useTheme().
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import ThemeDemo from '../../../components/demos/ThemeDemo.tsx';
+import themeSource from '../../../components/demos/ThemeDemo.tsx?raw';
+
+Isoform's theme is a **global store**. There is no provider to wrap your tree: set the theme once, change it from anywhere, and every component that reads it re-renders.
+
+```ts
+import { configure, updateTheme, useTheme, getTheme } from 'isoform';
+
+configure({ theme: lightTokens }); // once, at startup
+updateTheme(darkTokens); // anywhere, any time (deep merge, notifies subscribers)
+updateTheme((prev) => ({ ...prev, color: { ...prev.color, primary: '#f43f5e' } }));
+const theme = useTheme(); // reactive hook (useSyncExternalStore)
+const snapshot = getTheme(); // current value, outside React
+```
+
+## Reading the theme in styles
+
+Every style can be a function of `{ theme, props, platform }`. It runs at render time and its result is cached per theme and per props:
+
+```tsx
+const Title = engine('Text', ({ theme }) => ({
+  fontSize: theme.typography.fontSize.lg,
+  color: theme.color.text,
+}));
+
+const Tag = engine<'Box', { tone?: 'ok' | 'bad' }>('Box')
+  .when('props:tone=bad', ({ theme }) => ({ style: { backgroundColor: theme.color.error } }));
+```
+
+## Changing it at runtime
+
+`updateTheme()` deep-merges a partial theme (or takes a function of the previous one) and notifies every subscriber. Pick an accent below: every example on this page, and every other component that reads `color.primary`, follows.
+
+<LiveExample code={themeSource}>
+  <ThemeDemo client:only="react" />
+</LiveExample>
+
+Colors that change with the theme can fade with a CSS `transition`, on the web and on mobile.
+
+<Aside type="tip" title="This site does it too">
+The examples on this site follow the site's light/dark switch with one `updateTheme()` call, made from a `MutationObserver` on `<html data-theme>`. No provider wraps the islands.
+</Aside>
+
+## Typing the theme
+
+`EngineTheme` is a global type that your app declares once. See [TypeScript](/isoform/guides/typescript/#typing-your-theme).
+
+## Everything `configure()` sets
+
+Besides the theme, `configure()` picks the provider, the breakpoints, the `rem` base on native and the optional modules. See [Configuration](/isoform/getting-started/configuration/) and the [`configure` reference](/isoform/reference/configure/).

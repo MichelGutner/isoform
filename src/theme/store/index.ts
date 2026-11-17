@@ -100,7 +100,7 @@ export const themeStore = {
  *
  * @example Basic Usage
  * ```tsx
- * import { updateTheme } from 'omnistyle';
+ * import { updateTheme } from 'isoform';
  * 
  * // Update theme colors
  * updateTheme({
@@ -203,7 +203,7 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  *
  * @example
  * ```tsx
- * import { getTheme } from 'omnistyle';
+ * import { getTheme } from 'isoform';
  * 
  * // Get current theme for logging
  * const currentTheme = getTheme();
@@ -224,7 +224,7 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  * @example Server-Side Rendering
  * ```tsx
  * // In SSR context, you might want to set a theme and get it immediately
- * import { updateTheme, getTheme } from 'omnistyle';
+ * import { updateTheme, getTheme } from 'isoform';
  * 
  * // Set initial theme based on user preferences
  * updateTheme({ colors: { primary: userPrefersDark ? '#fff' : '#000' } });

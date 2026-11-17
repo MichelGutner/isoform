@@ -1,4 +1,4 @@
-import { engine, useTheme } from 'omnistyle';
+import { engine, useTheme } from 'isoform';
 import { Body, Button, ButtonLabel, Card, Chip, ChipLabel, Heading, Row, themeFade } from '../ui';
 import { Choice, Code, PageShell, Section } from '../kit';
 import { useSettings } from '../settings';
@@ -55,7 +55,7 @@ export function ThemePage() {
 
       <Section title="In code">
         <Code>{`
-import { configure, updateTheme, useTheme } from 'omnistyle';
+import { configure, updateTheme, useTheme } from 'isoform';
 
 configure({ theme: lightTokens });      // once, at startup
 updateTheme(darkTokens);                // anywhere, any time

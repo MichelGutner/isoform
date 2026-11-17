@@ -1,0 +1,57 @@
+---
+title: Date picker
+description: Pick a date, a time or both. The lib's own picker on iOS (SwiftUI) and Android (Compose), the browser's input on the web.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import DatePickerDemo from '../../../components/demos/DatePickerDemo.tsx';
+import datePickerSource from '../../../components/demos/DatePickerDemo.tsx?raw';
+
+On iOS (SwiftUI) and Android (Jetpack Compose) `engine('DatePicker')` is the lib's own picker, **the same design on both**: a calendar with round day cells and a month/year panel (tap the title), spinning wheels that snap and tick, and compact pills that open the picker in a bottom sheet. Colors follow light/dark mode and `tintColor`; labels follow `locale`. On the web it is the browser's `<input type="date | time | datetime-local">`.
+
+It is **controlled**: keep the value in state.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "datePicker": { "enabled": true } } }
+```
+
+<LiveExample code={datePickerSource}>
+  <DatePickerDemo client:only="react" />
+</LiveExample>
+
+```tsx
+<Picker value={date} onValueChange={setDate} mode="datetime" display="inline"
+  minimumDate={today} maximumDate={nextMonth} locale="pt-BR" is24Hour />
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `value` | `Date \| null` | now | The selected moment. |
+| `onValueChange` | `(date: Date) => void` | | The user changed it; the date is already inside the limits. |
+| `mode` | `'date' \| 'time' \| 'datetime'` | `'date'` | What it edits; what the mode does not edit keeps its value. |
+| `display` | `'inline' \| 'wheel' \| 'compact'` | `'inline'` | `'inline'`: a calendar (the time behind a pill in `datetime`), or the time wheels in `time`. `'wheel'`: day/month/year (in the locale's order) and time wheels. `'compact'`: pills that open the picker in a sheet. |
+| `minimumDate`, `maximumDate` | `Date` | | Limits; the native pickers grey out what is outside. |
+| `locale` | `string` | the device's | BCP 47 language and region of the labels. |
+| `is24Hour` | `boolean` | follows the locale | Forces the 24-hour or 12-hour clock. |
+| `tintColor` | `string` | the platform's | Accent color (selected day, clock hand). |
+| `disabled` | `boolean` | `false` | Blocks the picker. |
+| `label` | `string` | | Accessible name (`aria-label` on the web). |
+
+The picker has its own natural height (a calendar is taller than a pill): the view takes the height it reports, unless the style sets one. The style's background and corners frame it; the picker itself is transparent.
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Control | `<input type="date">`, `time` or `datetime-local` | the lib's SwiftUI picker | the lib's Compose picker |
+| `display` | ignored (the browser's input) | ✓ | ✓ |
+| `tintColor`, `is24Hour` | follow the browser and the user's locale | ✓ | ✓ |
+| Wheels inside scroll views | – | a real nested scroll view | ✓ |
+
+## When the module is off
+
+`DatePicker` renders nothing and logs one development warning.

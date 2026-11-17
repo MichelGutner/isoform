@@ -327,7 +327,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
 
       if (!Component) {
         throw new Error(
-          `[omnistyle] a primitiva "${primitive}" não existe no provedor "${adapter.name}".`,
+          `[isoform] a primitiva "${primitive}" não existe no provedor "${adapter.name}".`,
         );
       }
 
