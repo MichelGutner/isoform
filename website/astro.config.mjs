@@ -109,7 +109,6 @@ export default defineConfig({
           'recipes/troubleshooting',
         ]),
         group('Project', [
-          'project/migration',
           'project/contributing',
           'project/changelog',
         ]),

@@ -90,7 +90,6 @@ Everything else lives on the site, with live examples rendered by the library it
 - [Guides](https://isoform-kappa.vercel.app/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript.
 - [Primitives](https://isoform-kappa.vercel.app/primitives/overview/) and [native modules](https://isoform-kappa.vercel.app/modules/overview/).
 - [API reference](https://isoform-kappa.vercel.app/reference/configure/) and [recipes](https://isoform-kappa.vercel.app/recipes/button-variants/).
-- [Migrating from `react-native-stylized`](https://isoform-kappa.vercel.app/project/migration/).
 
 A runnable proof lives in this repo: [`examples/showcase`](./examples/showcase) is rendered by both the Expo app in [`example/`](./example) and the Vite app in [`example-web/`](./example-web).
 
