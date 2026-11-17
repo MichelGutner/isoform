@@ -16,7 +16,7 @@ const lib = fileURLToPath(new URL('../src/index.ts', import.meta.url));
  */
 const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const site =
-  process.env.SITE_URL ?? (productionDomain ? `https://${productionDomain}` : 'https://isoform.vercel.app');
+  process.env.SITE_URL ?? (productionDomain ? `https://${productionDomain}` : 'https://isoform-kappa.vercel.app');
 
 /** One sidebar group whose pages are listed in order (slugs under src/content/docs). */
 const group = (label, items) => ({ label, items });
