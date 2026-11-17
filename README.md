@@ -5,7 +5,6 @@
 **One styling and component API for React and React Native.**<br>
 Write a component once; it runs on the web, iOS and Android.
 
-[![CI](https://github.com/MichelGutner/isoform/actions/workflows/ci.yml/badge.svg)](https://github.com/MichelGutner/isoform/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/isoform.svg)](https://www.npmjs.com/package/isoform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-michelgutner.github.io%2Fisoform-6366f1.svg)](https://michelgutner.github.io/isoform/)

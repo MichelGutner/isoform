@@ -46,11 +46,11 @@ Pages are MDX files under `website/src/content/docs/`; live examples are React c
 
 ## Pull requests
 
-- PRs are squash-merged; the **PR title** follows [Conventional Commits](https://www.conventionalcommits.org) (`feat(image): pinch zoom`, `fix(modal): …`, `docs: …`). A check enforces it.
-- CI runs lint, types, tests, the build, a check of the published files, a Kotlin compile of every module and a Swift type-check.
+- PRs are squash-merged; the **PR title** follows [Conventional Commits](https://www.conventionalcommits.org) (`feat(image): pinch zoom`, `fix(modal): …`, `docs: …`).
+- There is no hosted CI: run `yarn lint`, `yarn typecheck`, `yarn test` and `yarn build` before opening a PR, plus `yarn check:swift` when you touch `ios/`.
 - Add or update tests for behavior changes, and these docs for API changes.
 - Exported types need English JSDoc on every member.
 
-Releases are automatic: every push to `main` runs [semantic-release](https://semantic-release.gitbook.io), which picks the next version from the commit types.
+Releases are published by the maintainer with [semantic-release](https://semantic-release.gitbook.io), which picks the next version from the commit types.
 
 <LinkCard title="CONTRIBUTING.md" href="https://github.com/MichelGutner/isoform/blob/main/CONTRIBUTING.md" description="The full contributor guide, code of conduct and security policy live in the repository." />

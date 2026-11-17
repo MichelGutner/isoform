@@ -1,9 +1,10 @@
 /**
- * semantic-release: on every push to `main`, the Conventional Commits since the last tag
- * decide the next version (fix → patch, feat → minor, `!`/BREAKING CHANGE → major).
- * It publishes to npm with provenance, creates the GitHub release and tag, and commits
- * the CHANGELOG and package.json back. The tools are installed by the release workflow,
- * not by the repo (they need a newer Node than local development).
+ * semantic-release, run by the maintainer on `main`: the Conventional Commits since the
+ * last tag decide the next version (fix → patch, feat → minor, `!`/BREAKING CHANGE → major).
+ * It publishes to npm, creates the GitHub release and tag, and commits the CHANGELOG and
+ * package.json back. The tools are not repo dependencies (they need a newer Node than
+ * local development), so run it with `npx -p semantic-release -p @semantic-release/changelog
+ * -p @semantic-release/git -p conventional-changelog-conventionalcommits semantic-release --no-ci`.
  */
 module.exports = {
   branches: ['main', { name: 'next', prerelease: true }],

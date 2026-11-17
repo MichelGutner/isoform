@@ -44,14 +44,14 @@ cd example-web && yarn install && yarn dev    # React DOM + Vite
 
 ## Pull requests
 
-- Squash-merged: the **PR title** becomes the commit and must follow [Conventional Commits](https://www.conventionalcommits.org): `feat(image): pinch zoom`, `fix(modal): content cut on iOS`, `docs: …`. A check enforces it.
-- CI runs lint, types, tests, the build, a check of the published files, a Kotlin compile of every module and a Swift type-check. All must pass.
+- Squash-merged: the **PR title** becomes the commit and must follow [Conventional Commits](https://www.conventionalcommits.org): `feat(image): pinch zoom`, `fix(modal): content cut on iOS`, `docs: …`.
+- There is no hosted CI. Before opening a PR, run `yarn lint`, `yarn typecheck`, `yarn test` and `yarn build`, and `yarn check:swift` if you touched `ios/`. For `android/`, compile with `./gradlew :isoform:compileDebugKotlin` from an app that uses the library (such as `example/`).
 - Add or update tests for behavior changes, and the README/docs for API changes.
 - Exported types need English JSDoc on every member.
 
 ## Releases
 
-Nobody publishes by hand. Every push to `main` runs CI and then [semantic-release](https://semantic-release.gitbook.io):
+The maintainer publishes from their own machine. The next version comes from the Conventional Commits since the last tag (`.releaserc.js` has the rules):
 
 | Commits since the last release | Next version |
 |---|---|
@@ -60,10 +60,4 @@ Nobody publishes by hand. Every push to `main` runs CI and then [semantic-releas
 | `feat!:` or a `BREAKING CHANGE:` footer | major |
 | only `docs:`, `chore:`, `ci:`, `test:`… | no release |
 
-It publishes to npm with provenance, creates the tag and the GitHub release, and commits `CHANGELOG.md` and `package.json` back with `[skip ci]`. Pushing to `next` publishes prereleases under the `next` dist-tag.
-
-### Maintainer setup (once)
-
-1. npm: create an automation token and save it as the `NPM_TOKEN` repository secret (Settings → Secrets and variables → Actions).
-2. After the first release, turn on **Trusted publishing** for `isoform` on npmjs.com (GitHub Actions, workflow `release.yml`) and delete `NPM_TOKEN`.
-3. If `main` is protected, allow GitHub Actions to push the release commit, or drop `@semantic-release/git` from `.releaserc.js`.
+Logged in to npm and to `gh`, run `npx semantic-release --no-ci` on `main` (it needs the tools in `.releaserc.js` and a Node version that satisfies semantic-release), or publish by hand with `npm publish` after bumping the version. Both build the package first (`prepack`).
