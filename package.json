@@ -33,11 +33,18 @@
     "lint:fix": "eslint src metro.js react-native.config.js scripts --fix",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "check:package": "node scripts/check-package.js",
     "check:swift": "scripts/check-swift.sh",
+    "check:android": "scripts/check-android.sh",
+    "verify": "yarn lint && yarn typecheck && yarn test && yarn build && yarn check:package",
+    "verify:all": "yarn verify && yarn check:swift && yarn check:android",
+    "release": "scripts/release.sh",
+    "release:dry": "scripts/release.sh --dry-run",
     "bench": "jest --config jest.bench.config.js",
     "build:dev": "yarn build && yalc push",
     "build:watch": "./watch.sh",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "prepare": "husky || true"
   },
   "dependencies": {
     "pdfjs-dist": "6.5.438"
