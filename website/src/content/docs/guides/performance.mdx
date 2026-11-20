@@ -1,0 +1,164 @@
+---
+title: Performance
+description: What a styled component costs, how the JSX runtime renders theme-free components with no wrapper, and the habits that keep lists fast.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every `engine()` component is a small React component that resolves its style and renders the component underneath (`View`, a `div`, your own component). Most of the time that is free: styles are compiled once and cached. What remains is the wrapper itself, one extra component per element, and in a long list that adds up.
+
+This page covers how to remove that wrapper, and the few habits that keep the cache doing its job.
+
+## What it costs
+
+Measured on a mid-range Android phone (development build, 300 list cells re-rendered with a new `testID` and `onPress`, the same styles every time):
+
+| | Time | Above plain React Native |
+|---|---|---|
+| Plain `View` with an inline style | ~70 ms | |
+| Styled components, with their wrapper | ~94 ms | **+25 ms (+37%)** |
+| Styled components, rendered through the JSX runtime | ~69 ms | **none measurable** |
+
+The style was never the expensive part. The cache hit, and compiling 300 brand-new styles cost about 11 ms more. The time went to the extra component per cell, and to its subscription to the theme.
+
+## Rendering without the wrapper
+
+Isoform ships a JSX runtime. Point your JSX at it and a styled component whose style **never reads the theme** is rendered directly as the component underneath: same props, same style, one component less, no hook. Every other element (strings, `Fragment`, your components, styled components that read the theme) goes to React's own runtime untouched.
+
+A Babel plugin, also optional, finds the style functions that cannot read the theme, so more components qualify.
+
+<Tabs>
+<TabItem label="Expo">
+
+```js title="babel.config.js"
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: [['babel-preset-expo', { jsxImportSource: '@michelgutner/isoform' }]],
+    plugins: ['@michelgutner/isoform/babel'],
+  };
+};
+```
+
+Restart Metro with a clean cache after changing it: `npx expo start -c`.
+
+</TabItem>
+<TabItem label="React Native CLI">
+
+```js title="babel.config.js"
+module.exports = {
+  presets: ['module:@react-native/babel-preset'],
+  plugins: [
+    // plugins run before presets: JSX is compiled here, with the isoform runtime
+    ['@babel/plugin-transform-react-jsx', { runtime: 'automatic', importSource: '@michelgutner/isoform' }],
+    '@michelgutner/isoform/babel',
+  ],
+};
+```
+
+Restart Metro with a clean cache after changing it: `npx react-native start --reset-cache`.
+
+</TabItem>
+<TabItem label="Vite">
+
+```ts title="vite.config.ts"
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxImportSource: '@michelgutner/isoform',
+      babel: { plugins: ['@michelgutner/isoform/babel'] },
+    }),
+  ],
+});
+```
+
+</TabItem>
+<TabItem label="Next.js / SWC">
+
+```json title="tsconfig.json"
+{ "compilerOptions": { "jsxImportSource": "@michelgutner/isoform" } }
+```
+
+SWC does not run Babel plugins: static styles are flattened, and style functions need [`themeFree()`](#marking-by-hand) by hand.
+
+</TabItem>
+</Tabs>
+
+Nothing else changes in your code. To turn flattening off without touching the build, use `configure({ performance: { inline: false } })` at startup.
+
+### What is flattened, and what keeps its wrapper
+
+| Component | Rendered |
+|---|---|
+| Static style: `engine('Box', { flexDirection: 'row' })` | without wrapper |
+| Style functions that only use `props` / `platform`: `({ props }) => ({ width: props.size })` | without wrapper |
+| A style, condition or attrs function that reads `theme` (or calls `getTheme()`) | with wrapper |
+| A function the plugin cannot prove (it passes the whole argument on, `(ctx) => helper(ctx)`) | with wrapper |
+
+Components that keep their wrapper behave exactly as before. They still benefit from the rest of this page.
+
+States (`pressed`, `hover`), breakpoints, pseudo-elements and animations are not a reason to keep the wrapper: the pieces that need React state live in their own small host component, as they always did.
+
+<Aside type="note" title="Why the theme decides it">
+A component that reads the theme must re-render when the theme changes, and only a component can subscribe. A style that never reads it gives the same result for any theme, so the element can be created once, during the parent's render, with nothing to follow.
+</Aside>
+
+### What the plugin recognizes
+
+The plugin only touches files that import from `@michelgutner/isoform`. It marks a function passed to `engine()`, `.style()`, `.when()` or `.attrs()` (or as `style` inside an attrs object) when:
+
+- it takes no argument, or
+- it destructures only `props` and `platform`: `({ props })`, `({ props: { size }, platform })`, or
+- it uses its argument only as `ctx.props` and `ctx.platform`,
+
+and its body never mentions `getTheme`, `useTheme` or `themeStore`.
+
+### Marking by hand
+
+Where the plugin does not run (SWC, a function defined elsewhere and passed by name), wrap the function in `themeFree()`:
+
+```ts
+import { engine, themeFree } from '@michelgutner/isoform';
+
+const sizeStyle = themeFree(({ props }: { props: { size: number } }) => ({ width: props.size }));
+const Cell = engine<'Box', { size: number }>('Box', sizeStyle);
+```
+
+In development, a function marked `themeFree` that reads the theme anyway logs a warning: rendered without its wrapper, that component would not follow a theme switch.
+
+### Good to know
+
+- **React DevTools** shows flattened components as what they render (`View`, `div`), not as `Stylized(Box)`.
+- **Set `performance.inline` once**, at startup. Changing it later remounts the components it affects.
+- **Tests** that look elements up by the styled component's type see the component underneath instead. Prefer `testID`, roles or text.
+
+## Habits that keep it fast
+
+### Values that change on every item go in `style`
+
+A style rule is cached by the props it reads. A prop with a different value on every item (a position, a progress, a timestamp) means a new compile per item:
+
+```tsx
+// a new style per item: compiled every time
+const Bar = engine<'Box', { progress: number }>('Box', ({ props }) => ({ width: `${props.progress}%` }));
+
+// one cached style, the changing value passed through
+const Bar = engine('Box', { height: 4, backgroundColor: 'teal' });
+<Bar style={{ width: `${progress}%` }} />;
+```
+
+When a component's style keeps seeing more than 300 combinations of the props it reads, a development warning names it.
+
+### Props the style does not read are free
+
+The cache learns which props each style actually reads. A `testID`, an `onPress` closure or `children` that change on every render do not recompile anything.
+
+### Theme switches
+
+A component re-renders on a theme switch only if its style read the theme. On the web, list your CSS-ready tokens in [`performance.themeVariables`](/getting-started/configuration/#theme-as-css-variables) and a switch becomes one `:root` rewrite, with no re-render at all for components that only read those tokens.
+
+### Load only what you use
+
+Optional modules that are off are left out of the bundle (see [`isoform.config.json`](/getting-started/configuration/#isoformconfigjson-and-optional-modules)). On the web, heavy components (players, playlists, modal, bottom sheet, camera) load in their own chunk the first time they render.

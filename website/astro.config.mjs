@@ -62,6 +62,7 @@ export default defineConfig({
           'guides/composition',
           'guides/typescript',
           'guides/server-side-rendering',
+          'guides/performance',
           'guides/how-it-works',
         ]),
         group('Primitives', [
@@ -97,6 +98,7 @@ export default defineConfig({
           'reference/get-style-text',
           'reference/platform-adapter',
           'reference/stylized',
+          'reference/jsx-runtime',
           'reference/types',
         ]),
         group('Recipes', [

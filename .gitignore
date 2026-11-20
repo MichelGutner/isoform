@@ -25,3 +25,6 @@ env.json
 # android (lib)
 android/build/
 android/.gradle/
+
+# benchmark output (BENCH_OUT)
+bench-results/

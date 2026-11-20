@@ -7,7 +7,7 @@ import { applyWebProps } from './normalize/props';
 import { normalizeWebStyle } from './normalize/style';
 import { Box, Input, Pressable, Scroll, Text } from './primitives';
 import { Image, webImageCache } from './image/Image';
-import { Modal } from './modal/Modal';
+import { Modal } from './modal/LazyModal';
 import { Audio, Pdf, Video } from './media';
 import { BottomSheet } from './sheet/LazySheet';
 import { SvgPrimitives } from './svg/elements';
@@ -115,6 +115,8 @@ export const reactDomAdapter: PlatformAdapter = {
   },
 
   applyProps: applyWebProps,
+
+  applyThemeVariables: (css) => sheet.setVariables(css),
 
   getStyleText: () => sheet.getText(),
 };

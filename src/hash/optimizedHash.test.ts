@@ -1,286 +1,170 @@
 import { optimizedHash } from './optimizedHash';
-import { BaseStyleContext } from '../core/types';
+import { beginPropReads, createReads, endPropReads, trackReads } from './trackReads';
+
+/** Runs `fn` with a recording active and returns what it read. */
+const recorded = (fn: () => void) => {
+  const reads = createReads();
+  const previous = beginPropReads(reads);
+  try {
+    fn();
+  } finally {
+    endPropReads(previous);
+  }
+  return reads;
+};
+
+const hash = (props: Record<string, unknown>, platform = 'ios', keys: ReadonlySet<string> | null = null) =>
+  optimizedHash({ theme: {} as any, platform, props }, keys);
 
 describe('optimizedHash', () => {
-  describe('hash with empty context', () => {
-    it('should generate hash with default platform when not specified', () => {
-      const ctx: BaseStyleContext<{}> = {
-        theme: {},
-        props: {},
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toBe('default');
+  describe('all props (no keys read yet)', () => {
+    it('is stable for the same input', () => {
+      expect(hash({ a: 1, b: 'x', c: true })).toBe(hash({ a: 1, b: 'x', c: true }));
     });
 
-    it('should generate hash with specified platform', () => {
-      const ctx: BaseStyleContext<{}> = {
-        theme: {},
-        props: {},
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toBe('ios');
-    });
-  });
-
-  describe('hash with simple props', () => {
-    it('should include string props in hash', () => {
-      const ctx: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'primary' },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('variant:primary');
+    it('changes with the platform', () => {
+      expect(hash({ a: 1 }, 'ios')).not.toBe(hash({ a: 1 }, 'android'));
     });
 
-    it('should include number props in hash', () => {
-      const ctx: BaseStyleContext<{ size: number }> = {
-        theme: {},
-        props: { size: 16 },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('size:16');
+    it('changes with a primitive value', () => {
+      expect(hash({ a: 1 })).not.toBe(hash({ a: 2 }));
+      expect(hash({ a: true })).not.toBe(hash({ a: false }));
+      expect(hash({ a: 'x' })).not.toBe(hash({ a: 'y' }));
     });
 
-    it('should include boolean props in hash', () => {
-      const ctx: BaseStyleContext<{ disabled: boolean }> = {
-        theme: {},
-        props: { disabled: true },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('disabled:true');
+    it('tells apart values of different types that print the same', () => {
+      expect(hash({ a: 1 })).not.toBe(hash({ a: '1' }));
+      expect(hash({ a: true })).not.toBe(hash({ a: 'true' }));
+      expect(hash({ a: 0 })).not.toBe(hash({ a: '' }));
+      expect(hash({ a: null })).not.toBe(hash({ a: 'null' }));
     });
 
-    it('should include multiple props in hash', () => {
-      const ctx: BaseStyleContext<{ variant: string; size: number; disabled: boolean }> = {
-        theme: {},
-        props: { variant: 'primary', size: 16, disabled: true },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('variant:primary');
-      expect(hash).toContain('size:16');
-      expect(hash).toContain('disabled:true');
+    it('cannot confuse two props with one prop whose value contains the separator', () => {
+      expect(hash({ a: 'x|b=s1:y' })).not.toBe(hash({ a: 'x', b: 'y' }));
+    });
+
+    it('keeps zero, empty string and false (they are values, not absence)', () => {
+      expect(hash({ a: 0 })).not.toBe(hash({}));
+      expect(hash({ a: '' })).not.toBe(hash({}));
+      expect(hash({ a: false })).not.toBe(hash({}));
+    });
+
+    it('ignores undefined props', () => {
+      expect(hash({ a: undefined })).toBe(hash({}));
+    });
+
+    it('ignores children, key, ref and style', () => {
+      const base = hash({ a: 1 });
+      expect(hash({ a: 1, children: 'x' })).toBe(base);
+      expect(hash({ a: 1, key: 'k' })).toBe(base);
+      expect(hash({ a: 1, ref: {} })).toBe(base);
+      expect(hash({ a: 1, style: { padding: 1 } })).toBe(base);
+    });
+
+    it('hashes objects, arrays and functions by identity', () => {
+      const obj = { x: 1 };
+      const fn = () => 1;
+      expect(hash({ a: obj })).toBe(hash({ a: obj }));
+      expect(hash({ a: obj })).not.toBe(hash({ a: { x: 1 } }));
+      expect(hash({ a: fn })).toBe(hash({ a: fn }));
+      expect(hash({ a: fn })).not.toBe(hash({ a: () => 1 }));
+      const list = [1, 2];
+      expect(hash({ a: list })).toBe(hash({ a: list }));
+      expect(hash({ a: list })).not.toBe(hash({ a: [1, 2] }));
     });
   });
 
-  describe('exclusion of special props', () => {
-    it('should exclude children prop from hash', () => {
-      const ctx: BaseStyleContext<{ children: string }> = {
-        theme: {},
-        props: { children: 'Hello World' },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('children');
+  describe('only the keys the style read', () => {
+    const keys = new Set(['size']);
+
+    it('ignores props the style never reads', () => {
+      expect(hash({ size: 1, testID: 'a', onPress: () => 1 }, 'ios', keys)).toBe(hash({ size: 1, testID: 'b' }, 'ios', keys));
     });
 
-    it('should exclude key prop from hash', () => {
-      const ctx: BaseStyleContext<{ key: string }> = {
-        theme: {},
-        props: { key: 'unique-key' },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('key');
+    it('changes when a read prop changes', () => {
+      expect(hash({ size: 1 }, 'ios', keys)).not.toBe(hash({ size: 2 }, 'ios', keys));
     });
 
-    it('should exclude ref prop from hash', () => {
-      const ctx: BaseStyleContext<{ ref: any }> = {
-        theme: {},
-        props: { ref: {} },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('ref');
+    it('treats a missing read prop as undefined', () => {
+      expect(hash({}, 'ios', keys)).toBe(hash({ size: undefined }, 'ios', keys));
     });
 
-    it('should include other props even with children, key, ref present', () => {
-      const ctx: BaseStyleContext<{ children: string; key: string; ref: any; variant: string }> = {
-        theme: {},
-        props: { children: 'text', key: 'key', ref: {}, variant: 'primary' },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('children');
-      expect(hash).not.toContain('key');
-      expect(hash).not.toContain('ref');
-      expect(hash).toContain('variant:primary');
+    it('still changes with the platform', () => {
+      expect(hash({ size: 1 }, 'ios', keys)).not.toBe(hash({ size: 1 }, 'web', keys));
     });
   });
+});
 
-  describe('hash with different platform', () => {
-    it('should generate different hash for different platforms', () => {
-      const ctxIos: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'primary' },
-        platform: 'ios',
-      };
-
-      const ctxAndroid: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'primary' },
-        platform: 'android',
-      };
-
-      const ctxWeb: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'primary' },
-        platform: 'web',
-      };
-
-      const hashIos = optimizedHash(ctxIos);
-      const hashAndroid = optimizedHash(ctxAndroid);
-      const hashWeb = optimizedHash(ctxWeb);
-
-      expect(hashIos).toContain('ios');
-      expect(hashAndroid).toContain('android');
-      expect(hashWeb).toContain('web');
-      expect(hashIos).not.toBe(hashAndroid);
-      expect(hashIos).not.toBe(hashWeb);
-      expect(hashAndroid).not.toBe(hashWeb);
+describe('trackReads', () => {
+  it('records the props read by name', () => {
+    const props = trackReads({ a: 1, b: 2, c: 3 });
+    const reads = recorded(() => {
+      void props.a;
+      void props.c;
     });
+    expect([...reads.keys]).toEqual(['a', 'c']);
+    expect(reads.all).toBe(false);
   });
 
-  describe('hash with undefined/null props', () => {
-    it('should ignore undefined props', () => {
-      const ctx: BaseStyleContext<{ variant: string | undefined }> = {
-        theme: {},
-        props: { variant: undefined },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('variant');
+  it('records `in` checks and returns the real values', () => {
+    const props = trackReads({ a: 1 } as Record<string, number>);
+    let value = 0;
+    const reads = recorded(() => {
+      expect('a' in props).toBe(true);
+      value = props.a;
     });
-
-    it('should ignore null props', () => {
-      const ctx: BaseStyleContext<{ variant: string | null }> = {
-        theme: {},
-        props: { variant: null },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).not.toContain('variant');
-    });
-
-    it('should include props with zero value', () => {
-      const ctx: BaseStyleContext<{ size: number }> = {
-        theme: {},
-        props: { size: 0 },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('size:0');
-    });
-
-    it('should include props with empty string', () => {
-      const ctx: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: '' },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('variant:');
-    });
-
-    it('should include props with false', () => {
-      const ctx: BaseStyleContext<{ disabled: boolean }> = {
-        theme: {},
-        props: { disabled: false },
-        platform: 'ios',
-      };
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('disabled:false');
-    });
+    expect(value).toBe(1);
+    expect(reads.keys.has('a')).toBe(true);
   });
 
-  describe('hash consistency', () => {
-    it('should generate same hash for same input', () => {
-      const ctx: BaseStyleContext<{ variant: string; size: number }> = {
-        theme: {},
-        props: { variant: 'primary', size: 16 },
-        platform: 'ios',
-      };
-
-      const hash1 = optimizedHash(ctx);
-      const hash2 = optimizedHash(ctx);
-      const hash3 = optimizedHash(ctx);
-
-      expect(hash1).toBe(hash2);
-      expect(hash2).toBe(hash3);
-    });
-
-    it('should generate different hashes for different inputs', () => {
-      const ctx1: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'primary' },
-        platform: 'ios',
-      };
-
-      const ctx2: BaseStyleContext<{ variant: string }> = {
-        theme: {},
-        props: { variant: 'secondary' },
-        platform: 'ios',
-      };
-
-      const hash1 = optimizedHash(ctx1);
-      const hash2 = optimizedHash(ctx2);
-
-      expect(hash1).not.toBe(hash2);
-    });
+  it('marks enumeration as reading everything', () => {
+    for (const read of [(p: object) => ({ ...p }), (p: object) => Object.keys(p), (p: object) => Object.entries(p)]) {
+      const props = trackReads({ a: 1, b: 2 });
+      expect(recorded(() => read(props)).all).toBe(true);
+    }
   });
 
-  describe('hash with multiple complex props', () => {
-    it('should generate consistent hash with many props', () => {
-      const ctx: BaseStyleContext<{
-        variant: string;
-        size: number;
-        disabled: boolean;
-        active: boolean;
-        color: string;
-      }> = {
-        theme: {},
-        props: {
-          variant: 'primary',
-          size: 16,
-          disabled: false,
-          active: true,
-          color: '#007AFF',
-        },
-        platform: 'ios',
-      };
+  it('does not record symbols', () => {
+    const props = trackReads({});
+    expect(recorded(() => void (props as any)[Symbol.iterator]).keys.size).toBe(0);
+  });
 
-      const hash = optimizedHash(ctx);
-      expect(hash).toContain('ios');
-      expect(hash).toContain('variant:primary');
-      expect(hash).toContain('size:16');
-      expect(hash).toContain('disabled:false');
-      expect(hash).toContain('active:true');
-      expect(hash).toContain('color:#007AFF');
+  it('records nothing outside a recording (a style that keeps props and reads them later)', () => {
+    const props = trackReads({ a: 1 });
+    const reads = createReads();
+    void props.a;
+    expect(reads.keys.size).toBe(0);
+  });
+
+  it('restores the previous recording when nested', () => {
+    const outer = createReads();
+    const inner = createReads();
+    const props = trackReads({ a: 1, b: 2 });
+    const a = beginPropReads(outer);
+    const b = beginPropReads(inner);
+    void props.a;
+    endPropReads(b);
+    void props.b;
+    endPropReads(a);
+    expect([...inner.keys]).toEqual(['a']);
+    expect([...outer.keys]).toEqual(['b']);
+  });
+
+  it('shares one handler: the Proxy is the only allocation per tracked props object', () => {
+    const NativeProxy = Proxy;
+    const handlers = new Set<object>();
+    (globalThis as any).Proxy = new NativeProxy(NativeProxy, {
+      construct(target, args) {
+        handlers.add(args[1]);
+        return new (target as any)(...args);
+      },
     });
-
-    it('should generate different hash when props order is different', () => {
-      const ctx1: BaseStyleContext<{ a: string; b: string; c: string }> = {
-        theme: {},
-        props: { a: '1', b: '2', c: '3' },
-        platform: 'ios',
-      };
-
-      const ctx2: BaseStyleContext<{ c: string; b: string; a: string }> = {
-        theme: {},
-        props: { c: '3', b: '2', a: '1' },
-        platform: 'ios',
-      };
-
-      const hash1 = optimizedHash(ctx1);
-      const hash2 = optimizedHash(ctx2);
-
-      // The order of props in the object affects the hash
-      // because we iterate over object keys with for...in
-      expect(hash1).not.toBe(hash2);
-    });
+    try {
+      trackReads({ a: 1 });
+      trackReads({ b: 2 });
+    } finally {
+      (globalThis as any).Proxy = NativeProxy;
+    }
+    expect(handlers.size).toBe(1);
   });
 });

@@ -1,6 +1,7 @@
 import type { PlatformAdapter } from '../core/adapter';
 import { warnOnce } from '../core/dev';
-import { updateTheme } from '../theme/store';
+import { getTheme, themeStore, updateTheme } from '../theme/store';
+import { themeCss, variablesOf } from '../theme/variables';
 
 /**
  * Built-in platform providers.
@@ -27,6 +28,31 @@ export interface ConfigureOptions {
    * To type new names, augment `IsoBreakpointNames`.
    */
   breakpoints?: Record<string, number>;
+  /**
+   * Performance switches. Defaults are right for almost every app.
+   */
+  performance?: {
+    /**
+     * With the isoform JSX runtime (`jsxImportSource: '@michelgutner/isoform'`), render a styled component
+     * whose style never reads the theme as the component underneath directly (`<View style={…}>`), with
+     * no wrapper component in between (default `true`). Set it once, at startup: switching it later
+     * remounts those components. Without the JSX runtime it has no effect.
+     */
+    inline?: boolean;
+    /**
+     * Web only. Top-level theme keys whose values are CSS-ready strings (`['color']` for `theme.color.bg`).
+     * Their tokens reach the style rules as `var(--iso-color-bg)`, and the real values live in one
+     * `:root` rule: a theme switch rewrites that rule instead of recompiling and re-rendering every
+     * component whose styles only read those tokens.
+     *
+     * The style must only pass those values through (`backgroundColor: theme.color.bg`, or inside a template
+     * string). Computing with them (`theme.color.bg + '80'`) would see a `var(...)` text. Numbers and other keys
+     * stay real values, and a style that reads one keeps depending on the theme. Define the tokens up front
+     * (in `configure({ theme })`): a token added later is not seen by styles already compiled.
+     * Ignored (with a development warning) on platforms without CSS variables. Default: off.
+     */
+    themeVariables?: readonly string[];
+  };
   /** Settings of the CSS → React Native conversion. */
   native?: {
     /** Pixel size of `1rem` (and the fallback for `em`) on native. Default `16`. */
@@ -192,6 +218,10 @@ let bundled: PlatformAdapter | null = null;
 let active: PlatformAdapter | null = null;
 let used = false;
 let remBase = 16;
+let inline = true;
+/** Top-level theme keys exposed as CSS variables, or `null` when the feature is off. */
+let themeVariableKeys: readonly string[] | null = null;
+let stopThemeVariables: (() => void) | null = null;
 
 /** Default breakpoint widths, in px (mobile-first minimums). */
 export const DEFAULT_BREAKPOINTS: Readonly<Record<string, number>> = { sm: 480, md: 768, lg: 1024, xl: 1280 };
@@ -211,6 +241,10 @@ export function resetProvider(): void {
   active = null;
   used = false;
   remBase = 16;
+  inline = true;
+  stopThemeVariables?.();
+  stopThemeVariables = null;
+  themeVariableKeys = null;
   breakpoints = { ...DEFAULT_BREAKPOINTS };
   modules = { ...DEFAULT_MODULES };
 }
@@ -256,6 +290,23 @@ export function peekProvider(): PlatformAdapter {
 export function getConfig(): { native: { remBase: number } } {
   return { native: { remBase } };
 }
+
+/**
+ * The theme keys exposed as CSS variables, or `null` when the feature is off. Only meaningful together with an
+ * adapter that has `applyThemeVariables` (the builder checks both).
+ */
+export const getThemeVariableKeys = (): readonly string[] | null => themeVariableKeys;
+
+/** Keeps the `:root` variables in step with the theme: once now, then on every change. */
+function syncThemeVariables(adapter: PlatformAdapter, keys: readonly string[]): void {
+  stopThemeVariables?.();
+  const write = () => adapter.applyThemeVariables?.(themeCss(variablesOf(getTheme(), keys)));
+  write();
+  stopThemeVariables = themeStore.subscribe(write);
+}
+
+/** Whether the JSX runtime may render theme-free styled components without their wrapper (see `configure({ performance })`). */
+export const isInlineEnabled = (): boolean => inline;
 
 /** The active breakpoints (name → minimum width in px). */
 export function getBreakpoints(): Readonly<Record<string, number>> {
@@ -314,7 +365,23 @@ export function configure(options: ConfigureOptions = {}): void {
     breakpoints = { ...bps };
   }
 
+  if (options.performance?.inline !== undefined) inline = options.performance.inline;
+  const variableKeys = options.performance?.themeVariables;
+  if (variableKeys !== undefined) {
+    stopThemeVariables?.();
+    stopThemeVariables = null;
+    themeVariableKeys = variableKeys.length > 0 ? [...variableKeys] : null;
+    if (!themeVariableKeys) next.applyThemeVariables?.(''); // turned off: the `:root` rule goes away with it
+    if (themeVariableKeys && !next.applyThemeVariables) {
+      warnOnce(
+        'theme-variables-unsupported',
+        `performance.themeVariables só vale em plataformas com CSS (a web). No provedor "${next.name}" os tokens continuam sendo valores.`,
+      );
+    }
+  }
   if (native?.remBase !== undefined) remBase = native.remBase;
   if (enabled) modules = { ...DEFAULT_MODULES, ...enabled };
   if (theme) updateTheme(theme);
+  // depois do tema inicial: as variáveis já nascem com os valores certos, antes do primeiro render
+  if (themeVariableKeys && next.applyThemeVariables) syncThemeVariables(next, themeVariableKeys);
 }

@@ -77,6 +77,8 @@ export interface NativeCompiled {
   /** Largura mínima → estilo, em ordem crescente (os maiores vencem). */
   breakpoints?: Array<{ min: number; max?: number; style: Record<string, any> }>;
   pseudos?: NativePseudos;
+  /** `hostFlags(this)`, computed once at compile time (it was recomputed twice per render). */
+  hostFlags?: StyleHostFlags;
 }
 
 /** Pseudo-elementos → o que o mobile consegue fazer com cada um. */
@@ -301,6 +303,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     if (compiled.animation && compiled.transition) {
       warnOnce('anim-and-transition', 'animation e transition no mesmo elemento: no mobile só a animation é executada.');
     }
+    compiled.hostFlags = hostFlags(compiled);
     return compiled;
   },
 
@@ -323,7 +326,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     if (c.animation) out.__isoAnimation = c.animation;
     if (c.transition && !c.animation) out.__isoTransition = c.transition;
 
-    const flags = hostFlags(c);
+    const flags = c.hostFlags;
     const pressedStyle =
       c.pressed && primitive && PRESSABLE.has(primitive) && !c.animation ? c.pressed : undefined;
     if (c.pressed && !pressedStyle) {
@@ -333,6 +336,12 @@ export const reactNativeAdapter: PlatformAdapter = {
           ? "when('state:pressed') e animation no mesmo Pressable: no mobile o pressed é ignorado."
           : "when('state:pressed') no mobile só vale para Pressable.",
       );
+    }
+
+    // caso comum (sem breakpoint, foco nem pressed): nada de closure nem array por render
+    if (!flags && !pressedStyle) {
+      out.style = userStyle ? [c.base, userStyle] : c.base;
+      return out;
     }
 
     /**
@@ -353,6 +362,8 @@ export const reactNativeAdapter: PlatformAdapter = {
 
     if (flags) {
       out.__isoStyleFor = build; // o host de estilo chama com largura, pressed e focus
+      // faixas dos breakpoints: o host só re-renderiza quando a faixa ativa muda, não a cada pixel de largura
+      if (flags.width) out.__isoRanges = c.breakpoints;
     } else if (pressedStyle) {
       out.style = ({ pressed }: { pressed: boolean }) => build(undefined, !!pressed);
     } else {
@@ -365,7 +376,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     const c = compiled as NativeCompiled;
     let result = c.animation ? animatedHost(component) : component;
     if (c.transition && !c.animation) result = transitionHost(result);
-    const flags = hostFlags(c);
+    const flags = c.hostFlags;
     return flags ? styleHost(result, flags) : result;
   },
 };

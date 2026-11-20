@@ -79,7 +79,7 @@ import pdfSource from '../../../components/demos/PdfDemo.tsx?raw';
 
 ## Web worker
 
-`pdfjs-dist` comes with Isoform and is only downloaded by the browser when a `Pdf` renders. By default the PDF is parsed on the main thread (no setup). For very large files, serve the worker (same `pdfjs-dist` version) and pass its URL:
+`pdfjs-dist` is an optional peer dependency (about 45 MB, so apps without PDFs do not install it). Add it to your web app with `yarn add pdfjs-dist`; the browser only downloads it when a `Pdf` renders. By default the PDF is parsed on the main thread (no setup). For very large files, serve the worker (same `pdfjs-dist` version) and pass its URL:
 
 ```bash
 cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/

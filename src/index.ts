@@ -9,6 +9,10 @@ import { getProvider } from './config';
 export { engine } from './core/engine';
 export type { Engine } from './core/engine';
 export { keyframes } from './core/keyframes';
+export { themeFree } from './core/inline';
+// With `jsxImportSource: '@michelgutner/isoform'`, Babel compiles `<C {...props} key={k} />` (a key after
+// a spread) to `createElement` imported from the package root, not from the JSX runtime: it must be here.
+export { createElement } from 'react';
 export type { Keyframes } from './core/keyframes';
 export { configure, getProvider } from './config';
 export type {

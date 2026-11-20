@@ -81,6 +81,26 @@ export class AtomicSheet {
   private text: string[][] = [];
   private counts: number[] = [];
   private cssSheet: CSSStyleSheet | null = null;
+  /** The `:root{--iso-…}` rule of the theme variables (see `theme/variables.ts`). One rule, replaced on every theme change. */
+  private variables = '';
+  private variablesElement: HTMLStyleElement | null = null;
+
+  /**
+   * Sets the theme variables. They live in their own `<style>`, so a theme switch replaces one text node
+   * and never touches the atomic rules (which hold `var(--iso-…)`, not values).
+   */
+  setVariables(css: string): void {
+    if (css === this.variables) return;
+    this.variables = css;
+    if (typeof document === 'undefined') return;
+    if (!this.variablesElement) {
+      const el = document.createElement('style');
+      el.setAttribute('data-isoform', 'theme');
+      document.head.appendChild(el);
+      this.variablesElement = el;
+    }
+    this.variablesElement.textContent = css;
+  }
 
   private ensureBrowserSheet(): CSSStyleSheet | null {
     if (this.cssSheet) return this.cssSheet;
@@ -163,7 +183,7 @@ export class AtomicSheet {
 
   /** CSS acumulado, na ordem de rank — para SSR (`<style>{getStyleText()}</style>`). */
   getText(): string {
-    return this.text.map((rules) => (rules ?? []).join('')).join('');
+    return this.variables + this.text.map((rules) => (rules ?? []).join('')).join('');
   }
 }
 

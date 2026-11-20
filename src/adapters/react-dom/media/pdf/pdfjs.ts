@@ -15,8 +15,20 @@ let loading: Promise<Pdfjs> | null = null;
 /** The worker module registers itself in `globalThis.pdfjsWorker`, which pdf.js uses when there is no worker URL. */
 const loadMainThreadWorker = () => import('pdfjs-dist/build/pdf.worker.min.mjs');
 
+/**
+ * `pdfjs-dist` is an optional peer dependency (it weighs ~45 MB, so apps without PDFs should not
+ * install it). Using `Pdf` without it fails here with the fix, instead of a bundler's "cannot resolve".
+ */
+const MISSING_PDFJS =
+  '[isoform] <Pdf> on the web needs pdf.js. Install it in your app: `yarn add pdfjs-dist` (or `npm i pdfjs-dist`).';
+
 async function load(): Promise<Pdfjs> {
-  const pdfjs = await import('pdfjs-dist');
+  let pdfjs: Pdfjs;
+  try {
+    pdfjs = await import('pdfjs-dist');
+  } catch (error) {
+    throw new Error(MISSING_PDFJS, { cause: error });
+  }
   const workerSrc = pdfWorkerSrc();
   if (workerSrc) {
     pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
@@ -27,4 +39,8 @@ async function load(): Promise<Pdfjs> {
 }
 
 /** pdf.js, loaded (and its worker set up) the first time it is needed. */
-export const loadPdfjs = (): Promise<Pdfjs> => (loading ??= load());
+export const loadPdfjs = (): Promise<Pdfjs> =>
+  (loading ??= load().catch((error) => {
+    loading = null; // a failed load (e.g. not installed yet) must not stick: the next mount retries
+    throw error;
+  }));

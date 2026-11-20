@@ -30,6 +30,8 @@ configure({
 | `breakpoints` | `Record<string, number>` | `{ sm: 480, md: 768, lg: 1024, xl: 1280 }` | Minimum widths (px) used by `when('breakpoints:…')`. Replaces the whole set. See [Responsive design](/guides/responsive/). |
 | `native.remBase` | `number` | `16` | Pixel size of `1rem` (and the fallback for `em`) on React Native. |
 | `modules` | `IsoModules` | all off | The optional modules to turn on. |
+| `performance.inline` | `boolean` | `true` | With the [JSX runtime](/guides/performance/#rendering-without-the-wrapper), render styled components whose style never reads the theme without their wrapper. Set it once, at startup. |
+| `performance.themeVariables` | `string[]` | off | Web only. Theme keys whose values are CSS strings, exposed as CSS variables so a theme switch does not re-render. See [Theme as CSS variables](#theme-as-css-variables). |
 
 Not calling `configure()` at all behaves like `configure({ provider: 'auto' })`.
 
@@ -49,6 +51,25 @@ So a web bundle never contains `react-native`, and a mobile bundle never contain
 | adapter object | Plug in another platform (see [`PlatformAdapter`](/reference/platform-adapter/)). |
 
 Components are defined *before* `configure()` runs (imports are hoisted), so `engine('Box')` only stores the primitive's **name**; the real component is resolved at render time by the active provider. Call `configure()` once, at boot: switching providers after the first render only produces a development warning.
+
+### Theme as CSS variables
+
+By default a theme switch re-renders every styled component that reads the theme. On the web, list the theme keys that hold CSS-ready strings and the switch becomes one `:root` rewrite:
+
+```ts title="web entry"
+configure({ performance: { themeVariables: ['color'] } });
+```
+
+Styles that read `theme.color.background` then compile to `background-color: var(--iso-color-background)`, and the real values live in a single `:root{--iso-color-background:…}` rule that follows `updateTheme`. A component that only reads those tokens does not subscribe to the theme, does not re-render and does not recompile. With 1,000 components mounted, a light↔dark switch went from 1,000 renders to none in the benchmark (`yarn bench`).
+
+<Aside type="caution" title="What the style may do with those values">
+The listed branches must hold CSS strings that the style only **passes through**: `backgroundColor: theme.color.bg`, or inside a template string (`` `0 0 4px ${theme.color.shadow}` ``). Computing with them (`theme.color.bg + '80'`, parsing a color, comparing a string token such as `theme.mode === 'dark'`) sees the text `var(--iso-…)`, not the value. List only keys that are plain CSS values.
+</Aside>
+
+- Numbers, booleans and every key you did not list stay real values. A style that reads one of them keeps following the theme, exactly as without the option.
+- Define the tokens up front, in `configure({ theme })`: a token added later is not seen by styles that were already compiled.
+- It is part of the server-rendered CSS (`getStyleText()` starts with the `:root` rule).
+- On React Native the option is ignored, with a development warning: tokens stay values there. Set it in the web entry only.
 
 ## `isoform.config.json` and optional modules
 

@@ -69,6 +69,12 @@ export interface PlatformAdapter {
    * SAME reference for the same input, or React remounts the tree.
    */
   resolveComponent?(component: ComponentType<any>, compiled: unknown): ComponentType<any>;
+  /**
+   * Optional, CSS platforms only: receives the `:root{--iso-…}` rule that carries the theme values, on every
+   * theme change. Its presence is what lets `configure({ performance: { themeVariables } })` turn tokens into
+   * `var(--iso-…)`; a platform without it keeps resolving tokens to values.
+   */
+  applyThemeVariables?(css: string): void;
   /** Server-side rendering: the CSS generated so far (only platforms that generate CSS). */
   getStyleText?(): string;
   /** Optional: the image cache behind `prefetchImages` and `clearImageCache` (the `image` module). */

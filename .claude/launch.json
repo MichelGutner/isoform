@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "example-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "example-web",
+        "run",
+        "dev"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "website",
+      "runtimeExecutable": "/Users/jackson.smith/.nvm/versions/node/v24.22.1/bin/node",
+      "runtimeArgs": [
+        "website/node_modules/astro/bin/astro.mjs",
+        "dev",
+        "--root",
+        "website",
+        "--port",
+        "4321"
+      ],
+      "port": 4321
+    }
+  ]
+}

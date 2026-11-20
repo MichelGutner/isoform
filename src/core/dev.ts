@@ -3,7 +3,11 @@ declare const __DEV__: boolean | undefined;
 declare const process: { env?: { NODE_ENV?: string } } | undefined;
 
 /** `true` fora de produção (RN expõe `__DEV__`; bundlers web usam NODE_ENV). */
-export const isDev = (): boolean => {
+export const isDev = (): boolean => (dev ??= readDev());
+
+/** Lido uma vez: o modo não muda em runtime, e `process.env` é caro de consultar (no Node é um getter nativo). */
+let dev: boolean | undefined;
+const readDev = (): boolean => {
   if (typeof __DEV__ !== 'undefined') return !!__DEV__;
   return !(typeof process !== 'undefined' && process.env?.NODE_ENV === 'production');
 };

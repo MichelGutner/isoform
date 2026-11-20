@@ -9,7 +9,7 @@ jest.mock('react-native', () => {
   return {
     Platform: { OS: 'ios' },
     StyleSheet: { create: (styles: any) => styles, absoluteFill: {}, flatten },
-    Dimensions: { get: () => ({ width: 400, height: 800 }) },
+    Dimensions: { get: () => ({ width: 400, height: 800 }), addEventListener: () => ({ remove: () => {} }) },
     useWindowDimensions: () => ({ width: 400, height: 800 }),
     View: function View({ children }: any) {
       return children ?? null;

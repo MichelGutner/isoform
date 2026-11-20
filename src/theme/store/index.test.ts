@@ -185,3 +185,33 @@ describe('Theme Store', () => {
     });
   });
 });
+
+describe('theme identity', () => {
+  it('returns to the same object when an earlier theme comes back (style caches are keyed by it)', () => {
+    updateTheme({ colors: { bg: 'white' } });
+    const light = getTheme();
+    updateTheme({ colors: { bg: 'black' } });
+    const dark = getTheme();
+    expect(dark).not.toBe(light);
+
+    updateTheme({ colors: { bg: 'white' } });
+    expect(getTheme()).toBe(light);
+    updateTheme({ colors: { bg: 'black' } });
+    expect(getTheme()).toBe(dark);
+  });
+
+  it('keeps the same object for an update that changes nothing', () => {
+    updateTheme({ colors: { bg: 'white' } });
+    const before = getTheme();
+    updateTheme({ colors: { bg: 'white' } });
+    expect(getTheme()).toBe(before);
+  });
+
+  it('still produces a new theme for a value never seen', () => {
+    updateTheme({ colors: { bg: 'white' } });
+    const before = getTheme();
+    updateTheme({ colors: { bg: 'hotpink' } });
+    expect(getTheme()).not.toBe(before);
+    expect(getTheme().colors).toMatchObject({ bg: 'hotpink' }); // earlier tests left other keys in the store
+  });
+});

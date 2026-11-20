@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, types, tests, build, package, bundle size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      # lint → typecheck → test → build → check:package → size (the bundle-size ceilings in .size-limit.cjs)
+      - run: yarn verify
+
+  bench:
+    name: Performance gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      # The failing checks are deterministic counters (styles recompiled per render, re-renders per
+      # breakpoint change). The timings are printed and uploaded for trends, never used to fail.
+      - run: yarn bench
+        env:
+          BENCH_OUT: bench-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench-results
+          path: bench-results
+          if-no-files-found: ignore

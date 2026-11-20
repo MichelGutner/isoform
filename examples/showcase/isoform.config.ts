@@ -13,8 +13,15 @@ import { lightTokens } from './tokens';
  *   configure({ provider: 'react-native', theme })  // app mobile
  *   configure({ provider: 'react', theme })         // app web
  */
+/**
+ * Measurement switch: `true` lets the isoform JSX runtime render theme-free styled components as the
+ * component underneath (no wrapper). Only where the app's Babel config uses the runtime (the mobile app).
+ */
+export const INLINE = true;
+
 configure({
   provider: 'auto',
   theme: lightTokens,
   modules: isoform.modules,
+  performance: { inline: INLINE },
 });

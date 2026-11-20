@@ -21,6 +21,28 @@ afterEach(() => {
 
 const Dialog = engine('Modal', { padding: 16 });
 
+describe('Modal (web) · loaded on demand', () => {
+  it('renders nothing while it has never been opened', () => {
+    configure({ modules: { modal: true } });
+    const { container } = render(<Dialog open={false}>hi</Dialog>);
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('loads the dialog the first time it opens, and keeps it mounted after closing', async () => {
+    jest.useRealTimers();
+    configure({ modules: { modal: true } });
+    const { container, rerender, findByText } = render(<Dialog open={false}>hello</Dialog>);
+    expect(container.querySelector('dialog')).toBeNull();
+
+    rerender(<Dialog open>hello</Dialog>);
+    await findByText('hello');
+    expect(container.querySelector('dialog')).not.toBeNull();
+
+    rerender(<Dialog open={false}>hello</Dialog>);
+    expect(container.querySelector('dialog')).not.toBeNull(); // it animates out, it does not vanish
+  });
+});
+
 describe('Modal (web)', () => {
   it('renders nothing with the module off', () => {
     const { container } = render(<Dialog open>hi</Dialog>);
