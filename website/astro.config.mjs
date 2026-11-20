@@ -18,11 +18,8 @@ const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const site =
   process.env.SITE_URL ?? (productionDomain ? `https://${productionDomain}` : 'https://isoform-kappa.vercel.app');
 
-/**
- * One sidebar group whose pages are listed in order (slugs under src/content/docs).
- * `ptBr` is the Portuguese label of the group.
- */
-const group = (label, items, ptBr) => ({ label, items, translations: ptBr ? { 'pt-BR': ptBr } : undefined });
+/** One sidebar group whose pages are listed in order (slugs under src/content/docs). */
+const group = (label, items) => ({ label, items });
 
 export default defineConfig({
   site,
@@ -39,12 +36,11 @@ export default defineConfig({
       editLink: { baseUrl: `${repo}/edit/main/website/` },
       lastUpdated: true,
       customCss: ['./src/styles/custom.css'],
-      // English lives at the root. Portuguese lives in src/content/docs/pt-br/: a page that is not
-      // translated there falls back to the English one, with a notice (Starlight's own behavior).
+      // English lives at the root. To add Portuguese later: create src/content/docs/pt-br/
+      // and add `'pt-br': { label: 'Português do Brasil', lang: 'pt-BR' }` below.
       defaultLocale: 'root',
       locales: {
         root: { label: 'English', lang: 'en' },
-        'pt-br': { label: 'Português do Brasil', lang: 'pt-BR' },
       },
       plugins: [starlightLinksValidator({ errorOnLocalLinks: true })],
       sidebar: [
@@ -54,7 +50,7 @@ export default defineConfig({
           'getting-started/quick-start',
           'getting-started/comparison',
           'getting-started/configuration',
-        ], 'Primeiros passos'),
+        ]),
         group('Guides', [
           'guides/style-vocabulary',
           'guides/theming',
@@ -69,7 +65,7 @@ export default defineConfig({
           'guides/server-side-rendering',
           'guides/performance',
           'guides/how-it-works',
-        ], 'Guias'),
+        ]),
         group('Primitives', [
           'primitives/overview',
           'primitives/box',
@@ -79,7 +75,7 @@ export default defineConfig({
           'primitives/image',
           'primitives/scroll',
           'primitives/native-and-legacy',
-        ], 'Primitivas'),
+        ]),
         group('Native modules', [
           'modules/overview',
           'modules/video',
@@ -92,7 +88,7 @@ export default defineConfig({
           'modules/date-picker',
           'modules/image',
           'modules/modal',
-        ], 'Módulos nativos'),
+        ]),
         group('API reference', [
           'reference/configure',
           'reference/engine',
@@ -104,7 +100,7 @@ export default defineConfig({
           'reference/platform-adapter',
           'reference/jsx-runtime',
           'reference/types',
-        ], 'Referência da API'),
+        ]),
         group('Recipes', [
           'recipes/button-variants',
           'recipes/dark-mode',
@@ -113,12 +109,12 @@ export default defineConfig({
           'recipes/icons',
           'recipes/testing',
           'recipes/troubleshooting',
-        ], 'Receitas'),
+        ]),
         group('Project', [
           'project/migration',
           'project/contributing',
           'project/changelog',
-        ], 'Projeto'),
+        ]),
       ],
     }),
   ],
