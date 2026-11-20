@@ -5,7 +5,7 @@ description: The builder behind engine(). Not part of the public entry; use engi
 
 `stylized(component)` is the internal builder function that `engine()` is built on (`src/core/builder.ts`). It is **not exported** from `react-isoform`'s public entry, so apps cannot import it:
 
-```ts
+```ts skip-check
 import { stylized } from 'react-isoform'; // ✗ not exported
 ```
 

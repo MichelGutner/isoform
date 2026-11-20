@@ -28,3 +28,6 @@ android/.gradle/
 
 # benchmark output (BENCH_OUT)
 bench-results/
+
+# docs example checker output
+.docs-snippets/
