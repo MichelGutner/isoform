@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine, type DatePickerDisplay, type DatePickerMode } from '@michelgutner/isoform';
+import { engine, type DatePickerDisplay, type DatePickerMode } from 'react-isoform';
 import { Body } from '../ui';
 import { Choice, Code, Flag, Flags, PageShell, Section } from '../kit';
 

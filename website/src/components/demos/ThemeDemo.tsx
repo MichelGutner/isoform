@@ -1,5 +1,5 @@
 import './setup';
-import { engine, updateTheme, useTheme } from '@michelgutner/isoform';
+import { engine, updateTheme, useTheme } from 'react-isoform';
 
 const ACCENTS = ['#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#0ea5e9'];
 

@@ -1,4 +1,4 @@
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { Body, Card, Heading, themeFade } from '../ui';
 
 /**

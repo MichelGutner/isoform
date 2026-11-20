@@ -1,4 +1,4 @@
-import { engine, useTheme } from '@michelgutner/isoform';
+import { engine, useTheme } from 'react-isoform';
 import { Body, Button, ButtonLabel, Card, Chip, ChipLabel, Heading, Row, themeFade } from '../ui';
 import { Choice, Code, PageShell, Section } from '../kit';
 import { useSettings } from '../settings';
@@ -55,7 +55,7 @@ export function ThemePage() {
 
       <Section title="In code">
         <Code>{`
-import { configure, updateTheme, useTheme } from '@michelgutner/isoform';
+import { configure, updateTheme, useTheme } from 'react-isoform';
 
 configure({ theme: lightTokens });      // once, at startup
 updateTheme(darkTokens);                // anywhere, any time

@@ -1,6 +1,6 @@
 import './setup';
 import { useRef, useState } from 'react';
-import { engine, type VideoHandle } from '@michelgutner/isoform';
+import { engine, type VideoHandle } from 'react-isoform';
 import { asset, Button, ButtonText, Caption, Row, Stack } from './kit';
 
 const Player = engine('Video', { width: '100%', maxWidth: 560, aspectRatio: 16 / 9, borderRadius: 16 });

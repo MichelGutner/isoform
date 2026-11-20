@@ -3,10 +3,10 @@ title: stylized()
 description: The builder behind engine(). Not part of the public entry; use engine().
 ---
 
-`stylized(component)` is the internal builder function that `engine()` is built on (`src/core/builder.ts`). It is **not exported** from `@michelgutner/isoform`'s public entry, so apps cannot import it:
+`stylized(component)` is the internal builder function that `engine()` is built on (`src/core/builder.ts`). It is **not exported** from `react-isoform`'s public entry, so apps cannot import it:
 
 ```ts
-import { stylized } from '@michelgutner/isoform'; // ✗ not exported
+import { stylized } from 'react-isoform'; // ✗ not exported
 ```
 
 Use [`engine()`](/reference/engine/) instead. It takes the same kinds of base component (a primitive name or any React component), accepts an initial style, returns a ready component with `ref` forwarding, and adds the chainable `.style()`, `.when()`, `.attrs()` and `.extend()` methods.

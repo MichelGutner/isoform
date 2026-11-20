@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine, keyframes } from '@michelgutner/isoform';
+import { engine, keyframes } from 'react-isoform';
 import { Button, ButtonText, Row, Stack } from './kit';
 
 const pulse = keyframes({

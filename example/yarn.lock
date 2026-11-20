@@ -1363,7 +1363,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@michelgutner/isoform@link:..":
+"react-isoform@link:..":
   version "0.0.0"
   uid ""
 

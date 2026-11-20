@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { clearImageCache, engine, prefetchImages, type ImageContentFit, type ImageContentPosition, type ImageHandle } from '@michelgutner/isoform';
+import { clearImageCache, engine, prefetchImages, type ImageContentFit, type ImageContentPosition, type ImageHandle } from 'react-isoform';
 import { Body, Button, ButtonLabel, Row } from '../ui';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 

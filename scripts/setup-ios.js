@@ -6,7 +6,7 @@
  * (`isoform.podspec`) already does the same on every iOS build; this script is
  * for running it by hand or in CI, without building.
  *
- *   node node_modules/@michelgutner/isoform/scripts/setup-ios.js [app-root]
+ *   node node_modules/react-isoform/scripts/setup-ios.js [app-root]
  *
  * It only acts when `isoform.config.json` (at the app root) has
  * `modules.audio: { enabled: true, mediaSession: true }` and is safe to run again (idempotent).

@@ -4,7 +4,7 @@ import type { BottomSheetHandle } from '../../../core/sheet';
 import { warnModuleDisabled } from '../../../core/modules';
 
 /**
- * `BottomSheet` without the native sheet: `@michelgutner/isoform/metro` uses this file instead of
+ * `BottomSheet` without the native sheet: `react-isoform/metro` uses this file instead of
  * `BottomSheet.tsx` when the sheet is off in `isoform.config.json`, so neither the
  * sheet nor its native spec enter the JS bundle.
  */

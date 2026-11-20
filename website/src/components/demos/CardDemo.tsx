@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 
 const Card = engine('Box', ({ theme }) => ({
   padding: theme.spacing.md,

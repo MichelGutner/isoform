@@ -34,8 +34,8 @@ A Babel plugin, also optional, finds the style functions that cannot read the th
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: [['babel-preset-expo', { jsxImportSource: '@michelgutner/isoform' }]],
-    plugins: ['@michelgutner/isoform/babel'],
+    presets: [['babel-preset-expo', { jsxImportSource: 'react-isoform' }]],
+    plugins: ['react-isoform/babel'],
   };
 };
 ```
@@ -50,8 +50,8 @@ module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
     // plugins run before presets: JSX is compiled here, with the isoform runtime
-    ['@babel/plugin-transform-react-jsx', { runtime: 'automatic', importSource: '@michelgutner/isoform' }],
-    '@michelgutner/isoform/babel',
+    ['@babel/plugin-transform-react-jsx', { runtime: 'automatic', importSource: 'react-isoform' }],
+    'react-isoform/babel',
   ],
 };
 ```
@@ -67,8 +67,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [
     react({
-      jsxImportSource: '@michelgutner/isoform',
-      babel: { plugins: ['@michelgutner/isoform/babel'] },
+      jsxImportSource: 'react-isoform',
+      babel: { plugins: ['react-isoform/babel'] },
     }),
   ],
 });
@@ -78,7 +78,7 @@ export default defineConfig({
 <TabItem label="Next.js / SWC">
 
 ```json title="tsconfig.json"
-{ "compilerOptions": { "jsxImportSource": "@michelgutner/isoform" } }
+{ "compilerOptions": { "jsxImportSource": "react-isoform" } }
 ```
 
 SWC does not run Babel plugins: static styles are flattened, and style functions need [`themeFree()`](#marking-by-hand) by hand.
@@ -107,7 +107,7 @@ A component that reads the theme must re-render when the theme changes, and only
 
 ### What the plugin recognizes
 
-The plugin only touches files that import from `@michelgutner/isoform`. It marks a function passed to `engine()`, `.style()`, `.when()` or `.attrs()` (or as `style` inside an attrs object) when:
+The plugin only touches files that import from `react-isoform`. It marks a function passed to `engine()`, `.style()`, `.when()` or `.attrs()` (or as `style` inside an attrs object) when:
 
 - it takes no argument, or
 - it destructures only `props` and `platform`: `({ props })`, `({ props: { size }, platform })`, or
@@ -120,7 +120,7 @@ and its body never mentions `getTheme`, `useTheme` or `themeStore`.
 Where the plugin does not run (SWC, a function defined elsewhere and passed by name), wrap the function in `themeFree()`:
 
 ```ts
-import { engine, themeFree } from '@michelgutner/isoform';
+import { engine, themeFree } from 'react-isoform';
 
 const sizeStyle = themeFree(({ props }: { props: { size: number } }) => ({ width: props.size }));
 const Cell = engine<'Box', { size: number }>('Box', sizeStyle);

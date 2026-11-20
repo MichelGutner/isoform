@@ -35,12 +35,12 @@ media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSessio
 Pod::UI.puts "[isoform] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, datePicker: #{date_picker ? 'on' : 'off'}, image: #{image ? 'on' : 'off'}, modal: #{modal ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
 
 Pod::Spec.new do |s|
-  s.name         = "@michelgutner/isoform"
+  s.name         = "react-isoform"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
   s.license      = package["license"]
-  s.authors      = "@michelgutner/isoform"
+  s.authors      = "Michel Gutner"
   s.platforms    = { :ios => "15.1" }
   s.source       = { :git => package["repository"]["url"], :tag => s.version.to_s }
   s.swift_version = "5.9"

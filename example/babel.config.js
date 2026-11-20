@@ -7,8 +7,8 @@ const path = require('path');
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: [['babel-preset-expo', { jsxImportSource: '@michelgutner/isoform' }]],
-    // in a real app: plugins: ['@michelgutner/isoform/babel']
+    presets: [['babel-preset-expo', { jsxImportSource: 'react-isoform' }]],
+    // in a real app: plugins: ['react-isoform/babel']
     plugins: [path.resolve(__dirname, '../babel.js')],
   };
 };

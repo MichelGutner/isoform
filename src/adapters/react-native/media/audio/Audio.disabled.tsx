@@ -5,7 +5,7 @@ import type { AudioHandle } from '../../../../core/media';
 import { warnModuleDisabled } from '../../../../core/modules';
 
 /**
- * `Audio` without a player: `@michelgutner/isoform/metro` uses this file instead of
+ * `Audio` without a player: `react-isoform/metro` uses this file instead of
  * `Audio.tsx` when audio is off in `isoform.config.json`, so neither the
  * player nor the native spec enter the JS bundle.
  */

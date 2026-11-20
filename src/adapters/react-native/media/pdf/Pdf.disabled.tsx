@@ -5,7 +5,7 @@ import type { PdfHandle } from '../../../../core/pdf';
 import { warnModuleDisabled } from '../../../../core/modules';
 
 /**
- * `Pdf` without a viewer: `@michelgutner/isoform/metro` uses this file instead of
+ * `Pdf` without a viewer: `react-isoform/metro` uses this file instead of
  * `Pdf.tsx` when pdf is off in `isoform.config.json`, so neither the
  * viewer nor the native spec enter the JS bundle.
  */

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { engine, getProvider } from '@michelgutner/isoform';
+import { engine, getProvider } from 'react-isoform';
 import { PAGES } from './pages';
 import { OverlayProvider, SettingsProvider, useSettings } from './settings';
 import { Body, Button, ButtonLabel, Title, themeFade } from './ui';

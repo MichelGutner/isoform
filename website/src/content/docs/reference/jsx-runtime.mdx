@@ -1,25 +1,25 @@
 ---
 title: JSX runtime and Babel plugin
-description: '@michelgutner/isoform/jsx-runtime, the /babel plugin and themeFree(): render theme-free styled components with no wrapper.'
+description: 'react-isoform/jsx-runtime, the /babel plugin and themeFree(): render theme-free styled components with no wrapper.'
 ---
 
 Optional. See [Performance](/guides/performance/#rendering-without-the-wrapper) for the setup per bundler and what changes.
 
-## `@michelgutner/isoform/jsx-runtime`
+## `react-isoform/jsx-runtime`
 
-The automatic JSX runtime (`jsx`, `jsxs`, `Fragment`, and `jsxDEV` in `/jsx-dev-runtime`), selected with `jsxImportSource: '@michelgutner/isoform'`.
+The automatic JSX runtime (`jsx`, `jsxs`, `Fragment`, and `jsxDEV` in `/jsx-dev-runtime`), selected with `jsxImportSource: 'react-isoform'`.
 
 For a styled component whose style never reads the theme, it creates the element that component would render (the component underneath, with its final props) instead of the styled component itself. Every other element goes to `react/jsx-runtime` unchanged. Its `JSX` types are React's.
 
 The package root also exports `createElement` (React's), because JSX compilers import it from the `jsxImportSource` root for `<C {...props} key={k} />`.
 
-## `@michelgutner/isoform/babel`
+## `react-isoform/babel`
 
 ```js
-plugins: ['@michelgutner/isoform/babel'];
+plugins: ['react-isoform/babel'];
 ```
 
-In files that import from `@michelgutner/isoform`, wraps in `themeFree()` the functions passed to `engine()`, `.style()`, `.when()` and `.attrs()` (and `style` functions inside attrs objects) that provably cannot read the theme. No options.
+In files that import from `react-isoform`, wraps in `themeFree()` the functions passed to `engine()`, `.style()`, `.when()` and `.attrs()` (and `style` functions inside attrs objects) that provably cannot read the theme. No options.
 
 ## `themeFree()`
 
@@ -30,7 +30,7 @@ function themeFree<F extends (...args: any[]) => any>(fn: F): F;
 Marks a style function, `when()` condition or attrs function as never reading the theme, and returns the same function. A styled component is rendered without its wrapper when every function in its rules is marked (a static style needs no mark).
 
 ```ts
-import { engine, themeFree } from '@michelgutner/isoform';
+import { engine, themeFree } from 'react-isoform';
 
 const Cell = engine<'Box', { size: number }>('Box', themeFree(({ props }) => ({ width: props.size })));
 ```

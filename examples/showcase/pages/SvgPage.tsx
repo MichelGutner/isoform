@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { Body, Button, ButtonLabel, Row, themeFade } from '../ui';
 import { Code, PageShell, Section } from '../kit';
 

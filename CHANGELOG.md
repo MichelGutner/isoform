@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING:** package renamed from `@michelgutner/isoform` to `react-isoform`. Update the dependency, every `import ... from '@michelgutner/isoform'` (including `/metro`, `/babel`, `/jsx-runtime`), `jsxImportSource` and the Babel plugin path. The Android module is now `:react-isoform`.
+
 ### Added — rendering without the wrapper (optional JSX runtime)
 - `@michelgutner/isoform/jsx-runtime` (and `/jsx-dev-runtime`), selected with `jsxImportSource: '@michelgutner/isoform'`: a styled component whose style never reads the theme is created directly as the component underneath, with its final props. No extra component and no hook per element. Measured on an Android phone, 300 list cells re-rendered in the same time as plain `View`s (they took 37% longer with the wrapper).
 - `@michelgutner/isoform/babel`: marks the style functions that provably cannot read the theme (`({ props })`, `(ctx) => ctx.props…`), so they qualify too. `themeFree()` marks a function by hand.

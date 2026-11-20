@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 
 const Icon = engine<'Svg', { done?: boolean }>('Svg', ({ theme }) => ({
   width: 48,

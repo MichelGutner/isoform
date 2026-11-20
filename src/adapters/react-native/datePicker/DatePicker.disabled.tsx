@@ -2,7 +2,7 @@
 import { warnModuleDisabled } from '../../../core/modules';
 
 /**
- * `DatePicker` without the native picker: `@michelgutner/isoform/metro` uses this file instead of
+ * `DatePicker` without the native picker: `react-isoform/metro` uses this file instead of
  * `DatePicker.tsx` when the date picker is off in `isoform.config.json`, so neither the
  * picker nor its native spec enter the JS bundle.
  */

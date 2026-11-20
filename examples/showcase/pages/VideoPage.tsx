@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { Choice, Code, EventLog, Flag, Flags, PageShell, Section, useEventLog } from '../kit';
 import { LISTS, VIDEOS, picture } from '../media';
 

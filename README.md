@@ -5,7 +5,7 @@
 **One styling and component API for React and React Native.**<br>
 Write a component once; it runs on the web, iOS and Android.
 
-[![npm](https://img.shields.io/npm/v/isoform.svg)](https://www.npmjs.com/package/isoform)
+[![npm](https://img.shields.io/npm/v/react-isoform.svg)](https://www.npmjs.com/package/react-isoform)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-isoform-kappa.vercel.app-6366f1.svg)](https://isoform-kappa.vercel.app/)
 
@@ -19,11 +19,11 @@ Write a component once; it runs on the web, iOS and Android.
 ## In 30 seconds
 
 ```bash
-npm install @michelgutner/isoform
+npm install react-isoform
 ```
 
 ```tsx
-import { configure, engine } from '@michelgutner/isoform';
+import { configure, engine } from 'react-isoform';
 
 configure({ theme: { color: { primary: '#6366f1' }, spacing: { sm: 8 } } }); // once, at startup
 

@@ -33,7 +33,7 @@ export interface ConfigureOptions {
    */
   performance?: {
     /**
-     * With the isoform JSX runtime (`jsxImportSource: '@michelgutner/isoform'`), render a styled component
+     * With the isoform JSX runtime (`jsxImportSource: 'react-isoform'`), render a styled component
      * whose style never reads the theme as the component underneath directly (`<View style={…}>`), with
      * no wrapper component in between (default `true`). Set it once, at startup: switching it later
      * remounts those components. Without the JSX runtime it has no effect.
@@ -67,7 +67,7 @@ export interface ConfigureOptions {
    * configure({ modules: isoform.modules });
    * ```
    * The same file drives the build: Gradle and CocoaPods only compile the
-   * enabled modules, and `@michelgutner/isoform/metro` removes the disabled ones from the
+   * enabled modules, and `react-isoform/metro` removes the disabled ones from the
    * JS bundle. On the web, a disabled module's code is never downloaded.
    */
   modules?: IsoModules;

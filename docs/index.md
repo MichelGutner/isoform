@@ -8,11 +8,11 @@ description: One styling API for React and React Native
 One styling API for **React** and **React Native**. Write a component once, run it on web and mobile.
 
 ```bash
-npm install @michelgutner/isoform
+npm install react-isoform
 ```
 
 ```tsx
-import { configure, engine } from '@michelgutner/isoform';
+import { configure, engine } from 'react-isoform';
 
 configure({ provider: 'auto', theme: { color: { primary: '#6366f1' } } });
 

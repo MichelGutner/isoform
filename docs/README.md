@@ -168,7 +168,7 @@ Component libraries built on isoform can test with either platform's tooling:
 
 ```ts
 // jest + @testing-library/react (jsdom): the default provider is the DOM adapter
-import { configure } from '@michelgutner/isoform';
+import { configure } from 'react-isoform';
 configure({ provider: 'auto' });
 ```
 
@@ -178,7 +178,7 @@ For tests that need a specific provider regardless of bundling, pass an adapter 
 
 | Symptom | Cause / fix |
 |---|---|
-| `nenhum provedor disponível` | The entry wasn't imported before rendering (a custom bundler skipped `providers/*`). Import `@michelgutner/isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` isn't stripping `providers/*`. |
+| `nenhum provedor disponível` | The entry wasn't imported before rendering (a custom bundler skipped `providers/*`). Import `react-isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` isn't stripping `providers/*`. |
 | `provider "react-native" não está disponível neste bundle` | You forced a provider that the current bundle doesn't include. Use `'auto'`. |
 | `a primitiva "Switch" não existe no provedor "react"` | A mobile-only primitive was rendered on the web. Branch with `Platform`/`when('platform:native')` or build the web variant. |
 | A CSS property has no effect on mobile | It has no React Native equivalent; check the dev warning. Scope it with `.when('platform:web', …)`. |

@@ -63,7 +63,7 @@ export interface CommonProps {
 /**
  * Augment this interface to type native props the lib does not list:
  * ```ts
- * declare module '@michelgutner/isoform' {
+ * declare module 'react-isoform' {
  *   interface IsoNativeProps { collapsable?: boolean }
  * }
  * ```

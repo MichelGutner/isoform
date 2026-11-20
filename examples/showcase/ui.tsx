@@ -1,7 +1,7 @@
-import { engine, keyframes } from '@michelgutner/isoform';
+import { engine, keyframes } from 'react-isoform';
 
 /**
- * Biblioteca de componentes ESCRITA UMA VEZ: só importa de '@michelgutner/isoform'
+ * Biblioteca de componentes ESCRITA UMA VEZ: só importa de 'react-isoform'
  * (nada de react-native nem react-dom) e usa as primitivas neutras.
  */
 

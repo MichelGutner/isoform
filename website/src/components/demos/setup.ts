@@ -3,7 +3,7 @@
  * makes once at startup. Each island imports this file first; the module is
  * evaluated once per page, so `configure()` runs once.
  */
-import { configure, updateTheme } from '@michelgutner/isoform';
+import { configure, updateTheme } from 'react-isoform';
 
 /** Theme tokens of the examples (light). */
 export const lightTokens = {

@@ -66,7 +66,7 @@ const Row = engine('Box', ({ theme }) => ({ flexDirection: 'row', gap: theme.spa
 Primitives with methods type their `ref` with a handle: `engine('Video')` gets a `VideoHandle` ref, `engine('Pdf')` a `PdfHandle`, `engine('BottomSheet')` a `BottomSheetHandle`, `engine('Camera')` a `CameraHandle` and `engine('Image')` an `ImageHandle`.
 
 ```tsx
-import { engine, type VideoHandle } from '@michelgutner/isoform';
+import { engine, type VideoHandle } from 'react-isoform';
 
 const Player = engine('Video', { width: '100%' });
 const ref = useRef<VideoHandle>(null);
@@ -78,7 +78,7 @@ ref.current?.seekTo(30);
 ## Your own breakpoint names
 
 ```ts
-declare module '@michelgutner/isoform' {
+declare module 'react-isoform' {
   interface IsoBreakpointNames {
     tablet: unknown;
   }
@@ -92,7 +92,7 @@ configure({ breakpoints: { tablet: 600 } });
 Any extra native prop is passed straight to the React Native component. To type it, augment `IsoNativeProps`:
 
 ```ts
-declare module '@michelgutner/isoform' {
+declare module 'react-isoform' {
   interface IsoNativeProps {
     collapsable?: boolean;
   }

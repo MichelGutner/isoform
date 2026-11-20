@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 
 const Button = engine('Pressable', ({ theme }) => ({
   paddingBlock: 10,

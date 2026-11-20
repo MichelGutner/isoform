@@ -1,5 +1,5 @@
 import './setup';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 
 const Panel = engine('Box', ({ theme }) => ({
   paddingBlock: '1rem', // CSS string: rem on both platforms

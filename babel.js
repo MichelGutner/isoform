@@ -3,8 +3,8 @@
  * runtime can render those components without their wrapper component.
  *
  *   // babel.config.js
- *   presets: [['babel-preset-expo', { jsxImportSource: '@michelgutner/isoform' }]],
- *   plugins: ['@michelgutner/isoform/babel'],
+ *   presets: [['babel-preset-expo', { jsxImportSource: 'react-isoform' }]],
+ *   plugins: ['react-isoform/babel'],
  *
  * Only files that import from the library are touched. In them, a function passed to `engine()`,
  * `.style()`, `.when()` or `.attrs()` (or as `style` inside an attrs object) is wrapped in `themeFree()`
@@ -12,7 +12,7 @@
  * `platform`, or uses its argument only as `ctx.props` / `ctx.platform`, and it never mentions
  * `getTheme`, `useTheme` or `themeStore`. Anything else is left as is, and keeps its wrapper.
  */
-const LIBRARY = '@michelgutner/isoform';
+const LIBRARY = 'react-isoform';
 
 /** Builder methods whose arguments can hold style functions. */
 const METHODS = new Set(['style', 'when', 'attrs']);

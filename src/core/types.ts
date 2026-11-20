@@ -127,7 +127,7 @@ export type PseudoName = UniversalPseudoName | WebOnlyPseudoName;
  *
  * To type your own names, augment this interface (and set the widths in `configure`):
  * ```ts
- * declare module '@michelgutner/isoform' {
+ * declare module 'react-isoform' {
  *   interface IsoBreakpointNames { tablet: unknown }
  * }
  * configure({ breakpoints: { tablet: 600 } });
