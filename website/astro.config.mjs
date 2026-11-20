@@ -36,6 +36,8 @@ export default defineConfig({
       editLink: { baseUrl: `${repo}/edit/main/website/` },
       lastUpdated: true,
       customCss: ['./src/styles/custom.css'],
+      // The home page's hero is a 3D scene (see components/hero).
+      components: { Hero: './src/components/hero/Hero.astro' },
       // English lives at the root. To add Portuguese later: create src/content/docs/pt-br/
       // and add `'pt-br': { label: 'Português do Brasil', lang: 'pt-BR' }` below.
       defaultLocale: 'root',
