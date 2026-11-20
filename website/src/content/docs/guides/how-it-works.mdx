@@ -21,6 +21,10 @@ src/
 
 A test (`src/boundaries.test.ts`) fails the build if the core imports `react-native`/`react-dom`, or if one provider reaches the other platform's adapter.
 
+## `engine()` and the internal builder
+
+`engine()` is built on an internal builder (`src/core/builder.ts`) that is **not exported**: apps cannot import `stylized` from `react-isoform`, and do not need to. `engine(component, style)` accepts a primitive name, another engine component or any React component, returns a ready component with `ref` forwarding, and adds the chainable `.style()`, `.when()`, `.attrs()` and `.extend()` methods. See [`engine()`](/reference/engine/).
+
 ## Render pipeline
 
 1. Read the current theme and the active adapter (`getProvider()`); `platform = adapter.os()`.

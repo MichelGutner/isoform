@@ -97,7 +97,6 @@ export default defineConfig({
           'reference/images',
           'reference/get-style-text',
           'reference/platform-adapter',
-          'reference/stylized',
           'reference/jsx-runtime',
           'reference/types',
         ]),
@@ -111,6 +110,7 @@ export default defineConfig({
           'recipes/troubleshooting',
         ]),
         group('Project', [
+          'project/migration',
           'project/contributing',
           'project/changelog',
         ]),

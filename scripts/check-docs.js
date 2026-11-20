@@ -91,6 +91,19 @@ fs.writeFileSync(
   }),
 );
 
+// Every value export of the public entry must be mentioned in the API reference.
+const entry = fs.readFileSync(path.join(root, 'src/index.ts'), 'utf8');
+const valueExports = [
+  ...[...entry.matchAll(/^export \{([^}]+)\} from/gm)].flatMap((m) => m[1].split(',')),
+  ...[...entry.matchAll(/^export const (\w+)/gm)].map((m) => m[1]),
+]
+  .map((n) => n.trim())
+  .filter(Boolean);
+const referenceText = walk(path.join(docsDir, 'reference'))
+  .map((f) => fs.readFileSync(f, 'utf8'))
+  .join('\n');
+const undocumented = valueExports.filter((n) => !new RegExp(`\\b${n}\\b`).test(referenceText));
+
 let output = '';
 try {
   execFileSync('npx', ['tsc', '-p', path.join(outDir, 'tsconfig.json'), '--pretty', 'false'], { cwd: root, encoding: 'utf8', stdio: 'pipe' });
@@ -106,8 +119,13 @@ const failures = output
 
 fs.rmSync(outDir, { recursive: true, force: true });
 
+if (undocumented.length) {
+  console.error(`Public exports missing from the API reference (website/src/content/docs/reference):\n  ${undocumented.join('\n  ')}`);
+  process.exit(1);
+}
+
 if (failures.length) {
   console.error(`Docs examples that do not type-check:\n${failures.join('\n')}`);
   process.exit(1);
 }
-console.log(`ok    docs: ${count} examples type-check against the public API`);
+console.log(`ok    docs: ${count} examples type-check, ${valueExports.length} public exports are in the reference`);
