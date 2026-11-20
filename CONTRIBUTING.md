@@ -85,14 +85,6 @@ git tag v0.1.0 && git push origin v0.1.0
 gh release create v0.1.0 --title v0.1.0 --generate-notes
 ```
 
-### After the rename to `react-isoform`
-
-The old package, `@michelgutner/isoform`, was published at 0.1.0 and the repository has no tags yet. Publish `react-isoform` with the first-release steps above, then point the old name at the new one:
-
-```bash
-npm deprecate @michelgutner/isoform "Renamed to react-isoform. See https://isoform-kappa.vercel.app/project/migration/"
-```
-
 While the version is 0.x, a breaking change bumps the minor (`releaseRules` in `.releaserc.js`); delete that rule to go to 1.0.0.
 
 `yarn release` refuses to run off `main`/`next`, with uncommitted changes, or out of sync with origin. It fetches semantic-release at the versions pinned in `scripts/release.sh`; the commits and the notes come from `.releaserc.js`. Pushing to `next` publishes prereleases under the `next` dist-tag. If you would rather publish by hand, bump the version and run `npm publish` (`prepack` builds first).
