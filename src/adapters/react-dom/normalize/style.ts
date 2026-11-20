@@ -162,7 +162,7 @@ export function normalizeWebStyle(input: unknown): Record<string, string> {
 
   for (const key in out) {
     if (/[{}]/.test(out[key])) {
-      warnOnce(`unsafe:${key}`, `valor ignorado em "${key}" (contém caracteres não permitidos).`);
+      warnOnce(`unsafe:${key}`, `value ignored in "${key}" (it contains characters that are not allowed).`);
       delete out[key];
     }
   }

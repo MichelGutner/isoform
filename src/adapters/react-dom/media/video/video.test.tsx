@@ -98,7 +98,7 @@ describe('Video (web)', () => {
     expect(onEnded).toHaveBeenCalledTimes(1);
     expect(onTimeUpdate).toHaveBeenCalledWith({ currentTime: 12, duration: 90 });
     expect(onLoad).toHaveBeenCalledWith({ duration: 90, width: 0, height: 0 });
-    expect(onError).toHaveBeenCalledWith('Falha ao carregar a mídia.');
+    expect(onError).toHaveBeenCalledWith('Failed to load the media.');
   });
 
   it('reports duration 0 while it is unknown (NaN in the browser)', async () => {

@@ -34,7 +34,7 @@ function nativeComponent(name: SvgElementName): ComponentType<any> | null {
   }
   const svg = loadLib();
   if (!svg) {
-    warnOnce('svg-missing', 'módulo "svg" ligado, mas o react-native-svg não está instalado: rode `npx expo install react-native-svg` (ou `yarn add react-native-svg`) e `pod install`.');
+    warnOnce('svg-missing', 'ISO010: module "svg" is on, but react-native-svg is not installed: run `npx expo install react-native-svg` (or `yarn add react-native-svg`) and `pod install`.');
     return null;
   }
   return svg[SVG_ELEMENTS[name].native] ?? null;

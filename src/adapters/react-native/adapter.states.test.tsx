@@ -188,7 +188,7 @@ describe('react-native · keyframes + animation', () => {
     const Box = engine('Box', { opacity: 1, animation: 'nope 1s' });
     mount(<Box />);
     expect(propsOf((RN as any).View).style).toEqual({ opacity: 1 });
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"nope" não foi registrada'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"nope" was not registered'));
   });
 });
 
@@ -465,7 +465,7 @@ describe('react-native · pseudo-elements', () => {
         <RN.Text>x</RN.Text>
       </Drop>,
     );
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('::first-letter no mobile só vale para Text com texto simples'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('::first-letter on mobile only applies to Text with plain text'));
   });
 
   it('web-only pseudo-elements are ignored on mobile with ONE warning each', () => {
@@ -478,7 +478,7 @@ describe('react-native · pseudo-elements', () => {
     mount(<Scroller />);
     const warnings = (console.warn as jest.Mock).mock.calls.map((c) => String(c[0]));
     for (const name of ['::scrollbar', '::scrollbar-thumb', '::marker', '::first-line']) {
-      expect(warnings.filter((w) => w.includes(`${name} só existe na web`))).toHaveLength(1);
+      expect(warnings.filter((w) => w.includes(`${name} only exists on the web`))).toHaveLength(1);
     }
     expect(propsOf((RN as any).View).style).toEqual({});
   });
@@ -486,6 +486,6 @@ describe('react-native · pseudo-elements', () => {
   it('::before / ::after on an Input warn instead of crashing', () => {
     const Field = engine('Input').when('::before', { style: { content: 'x' } });
     mount(<Field />);
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('::before/::after no mobile só valem em primitivas que aceitam filhos'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('::before/::after on mobile only apply to primitives that accept children'));
   });
 });

@@ -93,7 +93,7 @@ function parseIterations(value: unknown): number | undefined {
   if (value === 'infinite') return Infinity;
   const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
   if (!Number.isFinite(n) || n < 0) return undefined;
-  if (!Number.isInteger(n)) warnOnce('anim-fraction', 'iterações fracionárias não são suportadas no mobile; arredondando.');
+  if (!Number.isInteger(n)) warnOnce('anim-fraction', 'fractional iteration counts are not supported on mobile; rounding.');
   return Math.max(1, Math.round(n));
 }
 
@@ -116,7 +116,7 @@ export function parseAnimation(style: Record<string, any>): AnimationTiming | un
   if (typeof style.animation === 'string' && style.animation.trim()) {
     const list = splitTopLevel(style.animation, /,/);
     if (list.length > 1) {
-      warnOnce('anim-multi', 'várias animações num mesmo elemento: no mobile só a primeira é executada.');
+      warnOnce('anim-multi', 'several animations on one element: on mobile only the first one runs.');
     }
     let times = 0;
     for (const token of splitTopLevel(list[0], /\s/)) {
@@ -183,7 +183,7 @@ export function parseEasing(value: string, bezier: BezierFactory): EasingFn {
     const start = steps[2] === 'start' || steps[2] === 'jump-start';
     return (t) => Math.min(1, (start ? Math.ceil(t * n) : Math.floor(t * n)) / n);
   }
-  warnOnce(`anim-easing:${value}`, `easing "${value}" não suportado no mobile; usando "ease".`);
+  warnOnce(`anim-easing:${value}`, `easing "${value}" is not supported on mobile; using "ease".`);
   return bezier(0.25, 0.1, 0.25, 1);
 }
 
@@ -200,7 +200,7 @@ export function parseFrames(
   for (const selector of Object.keys(frames)) {
     for (const part of selector.split(',').map((s) => s.trim())) {
       if (!SELECTOR.test(part)) {
-        warnOnce(`kf-selector:${part}`, `quadro de keyframes inválido ignorado: "${part}" (use from, to ou N%).`);
+        warnOnce(`kf-selector:${part}`, `invalid keyframe selector ignored: "${part}" (use from, to or N%).`);
         continue;
       }
       const offset = part === 'from' ? 0 : part === 'to' ? 1 : parseFloat(part) / 100;
@@ -311,7 +311,7 @@ export function planTracks(frames: Frame[], base: Record<string, any>): TrackPla
       if (!points.some((p) => p.offset === 1)) points.push({ offset: 1, value: fallback });
     }
     if (!interpolatable(points.map((p) => p.value))) {
-      warnOnce(`anim-prop:${key}`, `"${key}" não pode ser interpolado no mobile e foi ignorado na animação.`);
+      warnOnce(`anim-prop:${key}`, `"${key}" cannot be interpolated on mobile and was ignored in the animation.`);
       continue;
     }
     const track = buildTrack(points);
@@ -334,7 +334,7 @@ export function planTracks(frames: Frame[], base: Record<string, any>): TrackPla
       if (!points.some((p) => p.offset === 1)) points.push({ offset: 1, value: fallback });
     }
     if (!interpolatable(points.map((p) => p.value))) {
-      warnOnce(`anim-transform:${fn}`, `transform "${fn}" não pode ser interpolado no mobile.`);
+      warnOnce(`anim-transform:${fn}`, `transform "${fn}" cannot be interpolated on mobile.`);
       continue;
     }
     const track = buildTrack(points);

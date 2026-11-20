@@ -194,7 +194,7 @@ export const Video = forwardRef<WithoutPlaylist<VideoHandle>, VideoElementProps>
         patch(readElement(v));
         onLoad?.({ duration: finite(v.duration), width: v.videoWidth, height: v.videoHeight });
       },
-      onError: () => onError?.(video.current?.error?.message || 'Falha ao carregar a mídia.'),
+      onError: () => onError?.(video.current?.error?.message || 'Failed to load the media.'),
       onSeeking: () => {
         seekFrom.current = lastTime.current;
         patch({ current: video.current?.currentTime ?? 0 });

@@ -138,7 +138,7 @@ export function applyWebProps({
 
   if (primitive && !canon) {
     // nome sem equivalente na web (Switch, Modal…) — o builder já trata o erro; aqui só por segurança
-    warnOnce(`web-prim:${primitive}`, `"${primitive}" não existe na web.`);
+    warnOnce(`web-prim:${primitive}`, `"${primitive}" does not exist on the web.`);
   }
 
   if (canon) {
@@ -257,7 +257,7 @@ export function applyWebProps({
           const { source } = out;
           if (typeof source === 'string') out.src = source;
           else if (source && typeof source === 'object' && 'uri' in source) out.src = source.uri;
-          else warnOnce('web-image-source', '`source` numérico (require) não é suportado na web; use `src`.');
+          else warnOnce('web-image-source', 'a numeric `source` (require) is not supported on the web; use `src`.');
         }
         delete out.source;
         out.alt ??= '';

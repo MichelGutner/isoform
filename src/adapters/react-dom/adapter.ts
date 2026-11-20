@@ -28,14 +28,14 @@ function declarations(style: Record<string, any>): string {
 function ensureKeyframes(name: string): void {
   const frames = getKeyframes(name);
   if (!frames) {
-    warnOnce(`kf-unknown:${name}`, `animação "${name}" não foi registrada com keyframes().`);
+    warnOnce(`kf-unknown:${name}`, `animation "${name}" was not registered with keyframes().`);
     return;
   }
   const blocks: string[] = [];
   for (const selector of Object.keys(frames)) {
     const parts = selector.split(',').map((s) => s.trim());
     if (!parts.every((p) => FRAME_SELECTOR.test(p))) {
-      warnOnce(`kf-selector:${selector}`, `quadro de keyframes inválido ignorado: "${selector}" (use from, to ou N%).`);
+      warnOnce(`kf-selector:${selector}`, `invalid keyframe selector ignored: "${selector}" (use from, to or N%).`);
       continue;
     }
     blocks.push(`${parts.join(',')}{${declarations(frames[selector])}}`);

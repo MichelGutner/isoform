@@ -209,7 +209,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
           const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
           if (ruleStyle) (stateStyles[state] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
           if (Object.keys(restAttrs).length) {
-            warnOnce(`state-attrs:${state}`, `when('state:${state}') só aceita { style }; as demais props foram ignoradas.`);
+            warnOnce(`state-attrs:${state}`, `when('state:${state}') only accepts { style }; the other props were ignored.`);
           }
         }
         continue;
@@ -223,7 +223,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
           const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
           if (ruleStyle) (pseudoStyles[name] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
           if (Object.keys(restAttrs).length) {
-            warnOnce(`pseudo-attrs:${name}`, `when('${name}') só aceita { style }; as demais props foram ignoradas.`);
+            warnOnce(`pseudo-attrs:${name}`, `when('${name}') only accepts { style }; the other props were ignored.`);
           }
         }
         continue;
@@ -237,7 +237,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
           const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
           if (ruleStyle) (bpStyles[name] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
           if (Object.keys(restAttrs).length) {
-            warnOnce(`bp-attrs:${name}`, `when('${name}') só aceita { style }; as demais props foram ignoradas.`);
+            warnOnce(`bp-attrs:${name}`, `when('${name}') only accepts { style }; the other props were ignored.`);
           }
         }
         continue;
@@ -442,8 +442,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   private warnThemeFreeRead(): void {
     warnOnce(
       `theme-free-read:${this.id}`,
-      'um estilo marcado como `themeFree` leu o tema. Renderizado sem o componente intermediário, ele não acompanha ' +
-        'a troca de tema. Tire o `themeFree` dessa função (ou leia o tema só pelas regras que não são marcadas).',
+      'a style marked `themeFree` read the theme. Rendered without the wrapper component, it does not follow ' +
+        'theme changes. Remove `themeFree` from that function (or read the theme only in rules that are not marked).',
     );
   }
 
@@ -456,8 +456,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     const name = typeof this.Base === 'string' ? this.Base : (this.Base as any)?.displayName || (this.Base as any)?.name;
     warnOnce(
       `cache-thrash:${this.id}`,
-      `o estilo de "${name ?? 'componente'}" lê props com mais de ${CACHE_LIMIT} combinações de valores e está sendo recompilado a cada render. ` +
-        'Props que mudam sempre (posição, progresso, tempo) devem ir em `style` ou animação, não em regras de estilo.',
+      `the style of "${name ?? 'component'}" reads props with more than ${CACHE_LIMIT} value combinations and is recompiled on every render. ` +
+        'Props that change all the time (position, progress, time) belong in `style` or an animation, not in style rules.',
     );
   }
 
@@ -496,7 +496,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
 
       if (!Component) {
         throw new Error(
-          `[isoform] a primitiva "${primitive}" não existe no provedor "${adapter.name}".`,
+          `[isoform] ISO007: the primitive "${primitive}" does not exist in the provider "${adapter.name}".`,
         );
       }
 

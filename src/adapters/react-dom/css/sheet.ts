@@ -123,7 +123,7 @@ export class AtomicSheet {
     try {
       sheet.insertRule(rule, Math.min(index, sheet.cssRules.length));
     } catch {
-      warnOnce(`bad-rule:${rule}`, `regra CSS inválida ignorada: ${rule}`);
+      warnOnce(`bad-rule:${rule}`, `invalid CSS rule ignored: ${rule}`);
     }
   }
 
@@ -139,7 +139,7 @@ export class AtomicSheet {
   ): string | undefined {
     const { state, bp, pseudo: pseudoElement } = variant;
     if (UNSAFE.test(value)) {
-      warnOnce(`unsafe:${prop}`, `valor ignorado em "${prop}" (contém caracteres não permitidos).`);
+      warnOnce(`unsafe:${prop}`, `value ignored in "${prop}" (it contains characters that are not allowed).`);
       return undefined;
     }
     const pseudo = state ? PSEUDO[state] : pseudoElement ? PSEUDO_ELEMENT[pseudoElement] : '';

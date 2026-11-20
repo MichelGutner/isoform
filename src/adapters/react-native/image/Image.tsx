@@ -110,7 +110,7 @@ const NativeImage = forwardRef<ImageHandle, Props>(
     );
     const picture = nativeSource(src ?? source);
     const position = positionFractions(contentPosition);
-    if (blurhash && !isBlurhash(blurhash)) warnOnce(`image-blurhash:${blurhash}`, `blurhash inválido: "${blurhash}".`);
+    if (blurhash && !isBlurhash(blurhash)) warnOnce(`image-blurhash:${blurhash}`, `invalid blurhash: "${blurhash}".`);
     const radius = StyleSheet.flatten(style)?.borderRadius;
 
     return (

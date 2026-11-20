@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Errors and development warnings are now written in English (they were Portuguese). The ones that need more than the text to fix carry a stable code, `ISO001` to `ISO012`, documented in [Troubleshooting](https://isoform-kappa.vercel.app/recipes/troubleshooting/). Code that matched the old Portuguese text must be updated. The accessibility labels of the video player are unchanged.
 - **BREAKING:** package renamed from `@michelgutner/isoform` to `react-isoform`. Update the dependency, every `import ... from '@michelgutner/isoform'` (including `/metro`, `/babel`, `/jsx-runtime`), `jsxImportSource` and the Babel plugin path. The Android module is now `:react-isoform`.
 
 ### Added — rendering without the wrapper (optional JSX runtime)

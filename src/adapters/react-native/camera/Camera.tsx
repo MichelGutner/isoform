@@ -46,7 +46,7 @@ function feature(name: 'video' | 'codeScanner', wanted: boolean): boolean {
   if (isCameraFeatureEnabled(name)) return true;
   warnOnce(
     `camera-${name}-off`,
-    `Camera: "${name}" está desligado. Ligue com "camera": { "enabled": true, "${name}": true } no isoform.config.json (e refaça o build nativo).`,
+    `ISO011: Camera: "${name}" is off. Turn it on with "camera": { "enabled": true, "${name}": true } in isoform.config.json (and rebuild the native app).`,
   );
   return false;
 }

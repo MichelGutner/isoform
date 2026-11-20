@@ -37,7 +37,7 @@ const SCAN_INTERVAL = 250;
 function feature(name: 'video' | 'codeScanner', wanted: boolean): boolean {
   if (!wanted) return false;
   if (isCameraFeatureEnabled(name)) return true;
-  warnOnce(`camera-${name}-off`, `Camera: "${name}" está desligado. Ligue com "camera": { "enabled": true, "${name}": true }.`);
+  warnOnce(`camera-${name}-off`, `ISO011: Camera: "${name}" is off. Turn it on with "camera": { "enabled": true, "${name}": true }.`);
   return false;
 }
 
@@ -165,7 +165,7 @@ export const Camera = forwardRef<CameraHandle, CameraElementProps>(
       if (!scanning || !stream) return undefined;
       const Detector = (globalThis as any).BarcodeDetector;
       if (!Detector) {
-        warnOnce('camera-barcode-detector', 'Camera: este navegador não tem BarcodeDetector (só Chromium); onCodeScanned não será chamado.');
+        warnOnce('camera-barcode-detector', 'Camera: this browser has no BarcodeDetector (Chromium only); onCodeScanned will not be called.');
         return undefined;
       }
       const detector = new Detector({ formats: typesKey.split(',').map((type) => BARCODE_FORMATS[type as keyof typeof BARCODE_FORMATS]) });

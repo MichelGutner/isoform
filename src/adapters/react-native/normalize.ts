@@ -180,7 +180,7 @@ export function normalizeNative(style: Record<string, any>, env: NormalizeEnv): 
     if (value === undefined || value === null) continue;
 
     if (WEB_ONLY.has(key) || /^[&:@]/.test(key) || key.startsWith('--')) {
-      warnOnce(`native-drop:${key}`, `"${key}" não tem equivalente no mobile e foi ignorada.`);
+      warnOnce(`native-drop:${key}`, `"${key}" has no equivalent on mobile and was ignored.`);
       continue;
     }
 
@@ -194,7 +194,7 @@ export function normalizeNative(style: Record<string, any>, env: NormalizeEnv): 
       const unitless = /^\d*\.?\d+$/.test(value.trim());
       const resolved = unitless ? parseFloat(value) * fontSize : toLength(value, env, fontSize);
       if (typeof resolved === 'number') out[key] = resolved;
-      else warnOnce(`native-value:${key}:${value}`, `lineHeight "${value}" não é suportado no mobile.`);
+      else warnOnce(`native-value:${key}:${value}`, `lineHeight "${value}" is not supported on mobile.`);
       continue;
     }
 
@@ -208,7 +208,7 @@ export function normalizeNative(style: Record<string, any>, env: NormalizeEnv): 
             out[side] = box[i];
           });
         } else {
-          warnOnce(`native-value:${key}:${value}`, `${key} "${value}" não é suportado no mobile.`);
+          warnOnce(`native-value:${key}:${value}`, `${key} "${value}" is not supported on mobile.`);
         }
         continue;
       }
@@ -218,7 +218,7 @@ export function normalizeNative(style: Record<string, any>, env: NormalizeEnv): 
       if (resolved === undefined) {
         warnOnce(
           `native-value:${key}:${value}`,
-          `${key}: "${value}" não tem equivalente no mobile e foi ignorado (use px, rem, em, %, vh ou vw).`,
+          `${key}: "${value}" has no equivalent on mobile and was ignored (use px, rem, em, %, vh or vw).`,
         );
       } else {
         out[key] = resolved;

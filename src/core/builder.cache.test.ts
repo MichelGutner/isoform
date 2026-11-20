@@ -120,7 +120,7 @@ describe('cache keyed by the props a style reads', () => {
     const warn = console.warn as jest.Mock;
     const Component = sized();
     for (let i = 0; i < 305; i++) render(Component, { size: i });
-    const hits = warn.mock.calls.filter(([message]) => String(message).includes('recompilado'));
+    const hits = warn.mock.calls.filter(([message]) => String(message).includes('recompiled on every render'));
     expect(hits).toHaveLength(1);
   });
 });

@@ -16,7 +16,7 @@ export function parseContent(value: unknown): string | null | undefined {
   if (v === '') return '';
   if (v === 'none' || v === 'normal') return null;
   if (/^(attr|counter|counters|url|image-set|var)\(/.test(v)) {
-    warnOnce(`pseudo-content:${v}`, `content: ${v} não tem equivalente no mobile; o pseudo-elemento foi ignorado.`);
+    warnOnce(`pseudo-content:${v}`, `content: ${v} has no equivalent on mobile; the pseudo-element was ignored.`);
     return null;
   }
   const quoted = /^(["'])([\s\S]*)\1$/.exec(v);
