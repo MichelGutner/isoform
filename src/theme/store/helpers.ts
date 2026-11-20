@@ -93,3 +93,27 @@ export const deepMerge = <T>(base: T, partial: Partial<T>): T => {
   // Return original object if no mutations occurred
   return mutated ? (result as T) : base;
 };
+
+/**
+ * Structural equality for theme values: primitives by value, plain objects and arrays by content,
+ * functions and everything else by reference.
+ *
+ * Used to recognise a theme the app has already shown (switching back to "dark"), so the style
+ * caches keyed by theme identity are reused instead of recompiling every component.
+ */
+export const deepEqual = (a: unknown, b: unknown): boolean => {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = Object.keys(left);
+  if (keys.length !== Object.keys(right).length) return false;
+
+  for (const key of keys) {
+    if (!Object.prototype.hasOwnProperty.call(right, key)) return false;
+    if (!deepEqual(left[key], right[key])) return false;
+  }
+  return true;
+};

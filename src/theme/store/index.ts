@@ -1,4 +1,5 @@
-import { deepMerge } from './helpers';
+import { noteThemeRead } from '../variables';
+import { deepEqual, deepMerge } from './helpers';
 
 /**
  * Default theme object used as the base for all themes.
@@ -26,6 +27,25 @@ let _currentTheme: EngineTheme = defaultTheme;
  * to trigger re-renders in components using useTheme().
  */
 const listeners = new Set<() => void>();
+
+/**
+ * The last few distinct themes, so a theme the app returns to keeps its **identity**.
+ *
+ * Every style cache is keyed by the theme object. `updateTheme` always builds a new object when
+ * something changed, so without this a light↔dark toggle would recompile every dynamic style on
+ * every switch, even for themes already seen. Reusing the earlier (structurally equal) object makes
+ * the way back a cache hit.
+ */
+const RECENT_THEMES = 8;
+const recentThemes: EngineTheme[] = [];
+
+const canonicalTheme = (theme: EngineTheme): EngineTheme => {
+  const seen = recentThemes.find((candidate) => deepEqual(candidate, theme));
+  if (seen) return seen;
+  recentThemes.push(theme);
+  if (recentThemes.length > RECENT_THEMES) recentThemes.shift();
+  return theme;
+};
 
 /**
  * Theme store object that implements the external store interface.
@@ -175,9 +195,9 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
   // Resolve the partial update from input
   const nextPartial = typeof input === 'function' ? input(prev) : input;
 
-  // Deep merge the partial update into the current theme
-  _currentTheme = deepMerge(prev, nextPartial);
-  
+  // Deep merge the partial update into the current theme, reusing the object of an equal theme seen before
+  _currentTheme = canonicalTheme(deepMerge(prev, nextPartial));
+
   // Notify all subscribers of the change
   listeners.forEach(listener => listener());
 
@@ -244,4 +264,8 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  * - Safe to call frequently
  * - Memory efficient (no listener management)
  */
-export const getTheme = (): EngineTheme => _currentTheme;
+export const getTheme = (): EngineTheme => {
+  // inside a style rule, reading the theme this way makes the style depend on it, like `ctx.theme` does
+  noteThemeRead();
+  return _currentTheme;
+};

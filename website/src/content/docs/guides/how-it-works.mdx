@@ -23,10 +23,13 @@ A test (`src/boundaries.test.ts`) fails the build if the core imports `react-nat
 
 ## Render pipeline
 
-1. Read the theme (`useTheme`) and the active adapter (`getProvider()`); `platform = adapter.os()`.
-2. Run the rules (`style`, `when`, `attrs`) into one merged style object and merged props. The result is cached per theme and per props hash; components whose rules do not depend on props skip hashing entirely.
+1. Read the current theme and the active adapter (`getProvider()`); `platform = adapter.os()`.
+2. Run the rules (`style`, `when`, `attrs`) into one merged style object and merged props. While they run, the props and the theme they see report what was read. The result is cached by the props the rules actually read (a `testID` or an `onPress` that changes does not count), and per theme only once a rule read the theme. Components whose rules do not depend on props skip hashing entirely.
 3. `adapter.compileStyle(style, states, breakpoints, pseudos)` (cached with the step above): React Native normalizes CSS values; the DOM adapter emits atomic classes.
 4. `adapter.applyProps(...)` (every render, cheap): translates universal props and merges the user's `style`/`className`.
+5. Subscribe to the theme store, with a snapshot that only changes on a theme switch if the style read the theme.
+
+With the [JSX runtime](/guides/performance/#rendering-without-the-wrapper), steps 1 to 4 run while the parent creates the element, for styled components whose style never reads the theme: the element is the component underneath, and step 5 is not needed.
 
 ## Atomic CSS on the web
 

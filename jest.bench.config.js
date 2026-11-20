@@ -3,5 +3,5 @@ const base = require('./jest.config.js');
 
 module.exports = {
   ...base,
-  testMatch: ['**/*.bench.ts'],
+  testMatch: ['**/*.bench.ts', '**/*.bench.tsx'],
 };

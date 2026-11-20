@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { AnimationsPage } from './AnimationsPage';
 import { AudioPage } from './AudioPage';
+import { BreakpointPerfPage } from './BreakpointPerfPage';
 import { CameraPage } from './CameraPage';
 import { DatePickerPage } from './DatePickerPage';
 import { ImagePage } from './ImagePage';
@@ -11,6 +12,7 @@ import { PlatformPage } from './PlatformPage';
 import { ResponsivePage } from './ResponsivePage';
 import { SheetPage } from './SheetPage';
 import { StatesPage } from './StatesPage';
+import { StyleCachePerfPage } from './StyleCachePerfPage';
 import { SvgPage } from './SvgPage';
 import { ThemePage } from './ThemePage';
 import { VideoPage } from './VideoPage';
@@ -31,6 +33,8 @@ export const PAGES: PageEntry[] = [
   { id: 'components', title: 'Components', Component: ComponentsPage },
   { id: 'states', title: 'States', Component: StatesPage },
   { id: 'responsive', title: 'Responsive', Component: ResponsivePage },
+  { id: 'breakpoint-perf', title: 'Breakpoint perf', Component: BreakpointPerfPage },
+  { id: 'style-cache-perf', title: 'Style cache perf', Component: StyleCachePerfPage },
   { id: 'animations', title: 'Animations', Component: AnimationsPage },
   { id: 'platform', title: 'Platform', Component: PlatformPage },
   { id: 'video', title: 'Video', Component: VideoPage },

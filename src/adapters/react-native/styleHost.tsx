@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
+import { useBreakpointWidth, type WidthRange } from './windowWidth';
 
 /** O que o host precisa rastrear para recompor o estilo. */
 export interface StyleHostFlags {
@@ -13,6 +13,9 @@ export interface StyleHostFlags {
 }
 
 const hosts = new Map<string, WeakMap<React.ComponentType<any>, React.ComponentType<any>>>();
+
+/** Faixas de largura que o estilo usa, passadas pelo adapter junto com `__isoStyleFor`. */
+const NO_RANGES: readonly WidthRange[] = [];
 
 /**
  * Envolve um componente RN num host que rastreia largura da janela, `pressed`
@@ -32,10 +35,10 @@ export function styleHost(Component: React.ComponentType<any>, flags: StyleHostF
 
   const { width: useWidth, pressed: usePressed, focus: useFocus } = flags;
 
-  const Created = forwardRef<any, any>(({ __isoStyleFor: styleFor, onPressIn, onPressOut, onFocus, onBlur, ...rest }, ref) => {
+  const Created = forwardRef<any, any>(({ __isoStyleFor: styleFor, __isoRanges: ranges, onPressIn, onPressOut, onFocus, onBlur, ...rest }, ref) => {
     // cada flag é constante por host, então a ordem dos hooks nunca muda
     // eslint-disable-next-line react-hooks/rules-of-hooks -- useWidth is fixed for this host
-    const win = useWidth ? useWindowDimensions() : undefined;
+    const width = useWidth ? useBreakpointWidth(ranges ?? NO_RANGES) : undefined;
     const [pressed, setPressed] = useState(false);
     const [focused, setFocused] = useState(false);
 
@@ -66,7 +69,7 @@ export function styleHost(Component: React.ComponentType<any>, flags: StyleHostF
       if (onFocus) props.onFocus = onFocus;
       if (onBlur) props.onBlur = onBlur;
     }
-    props.style = styleFor(win?.width, pressed, focused);
+    props.style = styleFor(width, pressed, focused);
     return React.createElement(Component, props);
   });
   Created.displayName = `Dynamic(${(Component as any).displayName || (Component as any).name || 'Component'})`;

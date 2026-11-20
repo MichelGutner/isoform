@@ -8,7 +8,7 @@ import LiveExample from '../../../components/LiveExample.astro';
 import ThemeDemo from '../../../components/demos/ThemeDemo.tsx';
 import themeSource from '../../../components/demos/ThemeDemo.tsx?raw';
 
-Isoform's theme is a **global store**. There is no provider to wrap your tree: set the theme once, change it from anywhere, and every component that reads it re-renders.
+Isoform's theme is a **global store**. There is no provider to wrap your tree: set the theme once, change it from anywhere, and every component whose style reads it re-renders. A styled component whose style never reads the theme is left alone.
 
 ```ts
 import { configure, updateTheme, useTheme, getTheme } from '@michelgutner/isoform';

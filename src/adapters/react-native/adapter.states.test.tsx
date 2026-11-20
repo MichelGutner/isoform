@@ -26,7 +26,14 @@ jest.mock('react-native', () => {
   return {
     Platform: { OS: 'ios' },
     StyleSheet: { create: (styles: any) => styles, absoluteFill: {}, flatten: (style: any) => style },
-    Dimensions: { get: () => ({ ...mockWindow }) },
+    Dimensions: {
+      get: () => ({ ...mockWindow }),
+      // a mudança de largura chega por aqui, como no app real; o teste dispara via `mockWindowListeners`
+      addEventListener: (_: 'change', handler: () => void) => {
+        mockWindowListeners.add(handler);
+        return { remove: () => mockWindowListeners.delete(handler) };
+      },
+    },
     useWindowDimensions: () => {
       // re-renderiza o componente quando o teste muda a largura (como a rotação da tela)
       const R = require('react');
@@ -67,10 +74,13 @@ import { keyframes } from '../../core/keyframes';
 import { reactNativeAdapter } from './adapter';
 
 let renderer: TestRenderer.ReactTestRenderer;
+/** Toda árvore montada, para desmontar no fim de cada teste (cancela as assinaturas, como no app real). */
+const mounted: TestRenderer.ReactTestRenderer[] = [];
 const mount = (el: React.ReactElement) => {
   act(() => {
     renderer = TestRenderer.create(el);
   });
+  mounted.push(renderer);
   return renderer;
 };
 const propsOf = (type: any) => renderer.root.findByType(type).props;
@@ -84,6 +94,7 @@ beforeEach(() => {
   registerBundledProvider(reactNativeAdapter);
 });
 afterEach(() => {
+  act(() => mounted.splice(0).forEach((tree) => tree.unmount()));
   jest.useRealTimers();
   jest.restoreAllMocks();
 });
@@ -237,7 +248,6 @@ describe('react-native · breakpoints', () => {
 
   beforeEach(() => {
     mockWindow.width = 400;
-    mockWindowListeners.clear(); // restos de árvores montadas em testes anteriores
   });
 
   it("applies when('breakpoints:md') only from 768 up, and re-composes when the window changes", () => {
@@ -337,6 +347,48 @@ describe('react-native · breakpoints', () => {
     const Responsive = engine('Box').when('breakpoints:md', { style: { padding: 8 } });
     mount(<Responsive />);
     expect(mockWindowListeners.size).toBe(1);
+  });
+
+  it('shares ONE window listener between all responsive components, and drops it on unmount', () => {
+    const Responsive = engine('Box').when('breakpoints:md', { style: { padding: 8 } });
+    const tree = mount(
+      <>
+        <Responsive />
+        <Responsive />
+        <Responsive />
+      </>,
+    );
+    expect(mockWindowListeners.size).toBe(1);
+    act(() => tree.unmount());
+    mounted.length = 0;
+    expect(mockWindowListeners.size).toBe(0);
+  });
+
+  it('re-renders only when the active breakpoint changes, not on every width change', () => {
+    const renders = jest.fn();
+    const Probe = (props: any) => {
+      renders();
+      return <RN.View {...props} />;
+    };
+    const Panel = engine(Probe as any, { padding: 8 }).when('breakpoints:md', { style: { padding: 16 } });
+    mockWindow.width = 400;
+    mount(<Panel />);
+    renders.mockClear();
+
+    setWidth(450); // still < md
+    setWidth(500);
+    expect(renders).not.toHaveBeenCalled();
+
+    setWidth(800); // crosses md
+    expect(renders).toHaveBeenCalledTimes(1);
+    expect(propsOf(Probe).style).toEqual([{ padding: 8 }, { padding: 16 }]);
+
+    setWidth(900); // still >= md
+    expect(renders).toHaveBeenCalledTimes(1);
+
+    setWidth(500); // back below md
+    expect(renders).toHaveBeenCalledTimes(2);
+    expect(propsOf(Probe).style).toEqual({ padding: 8 });
   });
 });
 

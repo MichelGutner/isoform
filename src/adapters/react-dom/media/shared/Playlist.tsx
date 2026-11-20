@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import React, { useEffect, useImperativeHandle, useRef } from 'react';
 import { ITEM_PROPS, usePlaylist, useRestartOnSameSource, type PlaylistItem } from '../../../../core/playlist';
 import { sheet } from '../../css/sheet';
 import { ChevronIcon, CloseIcon, MusicNoteIcon, OutlineIcon, PlayIcon } from './icons';
+import { handleOf } from './playlistHandle';
 
 /**
  * Lists on the web: `Video`, `Audio` and `Pdf` with `items` get a "playlist" button
@@ -12,24 +13,7 @@ import { ChevronIcon, CloseIcon, MusicNoteIcon, OutlineIcon, PlayIcon } from './
  * entry it shows, and the component's style still goes to the player.
  */
 
-type Kind = 'Video' | 'Audio' | 'Pdf';
-
-const LIST_PROPS = ['items', 'initialIndex', 'carousel', 'autoAdvance', 'onItemChange'] as const;
-
-/** Props without the list ones (what the plain player receives). */
-const withoutList = (props: Record<string, any>) => {
-  const rest = { ...props };
-  LIST_PROPS.forEach((key) => delete rest[key]);
-  return rest;
-};
-
-const NO_LIST = { next: () => undefined, previous: () => undefined, goTo: () => undefined };
-
-/** A `ref` that has the list methods and forwards everything else to the player. */
-const handleOf = (inner: React.RefObject<any>, list: Record<string, (...args: any[]) => void>) =>
-  new Proxy(list, {
-    get: (target, key: string) => target[key] ?? ((...args: any[]) => inner.current?.[key]?.(...args)),
-  });
+export type Kind = 'Video' | 'Audio' | 'Pdf';
 
 const RULES = [
   // layer inside the player: only the button and the panel take clicks
@@ -352,7 +336,7 @@ function PlaylistOverlay({ kind, items, index, playing, onSelect, open, setOpen,
 }
 
 /** The player with its list: current entry, carousel and auto-advance. */
-function ListPlayer({ kind, Player, props, handle }: { kind: Kind; Player: React.ComponentType<any>; props: Record<string, any>; handle: React.Ref<any> }) {
+export function ListPlayer({ kind, Player, props, handle }: { kind: Kind; Player: React.ComponentType<any>; props: Record<string, any>; handle: React.Ref<any> }) {
   ensureStyles();
   const { items, initialIndex, carousel = true, autoAdvance = true, onItemChange, ...rest } = props;
   const list = usePlaylist(items as PlaylistItem[], initialIndex, onItemChange);
@@ -420,14 +404,3 @@ function ListPlayer({ kind, Player, props, handle }: { kind: Kind; Player: React
  * Adds `items` support to a web player. Without a list it renders the player as
  * before (the `ref` still has `next`/`previous`/`goTo`, as no-ops).
  */
-export function withPlaylist(kind: Kind, Player: React.ComponentType<any>) {
-  const Listed = forwardRef<any, any>((props, ref) => {
-    const inner = useRef<any>(null);
-    const hasList = Array.isArray(props.items) && props.items.length > 0;
-    useImperativeHandle(hasList ? null : ref, () => handleOf(inner, NO_LIST), []);
-    if (hasList) return <ListPlayer kind={kind} Player={Player} props={props} handle={ref} />;
-    return <Player ref={inner} {...withoutList(props)} />;
-  });
-  Listed.displayName = kind;
-  return Listed;
-}

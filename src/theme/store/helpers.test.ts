@@ -1,4 +1,4 @@
-import { deepMerge } from './helpers';
+import { deepEqual, deepMerge } from './helpers';
 
 describe('deepMerge', () => {
   describe('simple object merge', () => {
@@ -311,5 +311,29 @@ describe('deepMerge', () => {
       const result = deepMerge(base, partial);
       expect(result.a).toBe(nested);
     });
+  });
+});
+
+describe('deepEqual', () => {
+  it('compares primitives by value', () => {
+    expect(deepEqual(1, 1)).toBe(true);
+    expect(deepEqual('a', 'a')).toBe(true);
+    expect(deepEqual(1, '1')).toBe(false);
+    expect(deepEqual(NaN, NaN)).toBe(true);
+    expect(deepEqual(null, undefined)).toBe(false);
+  });
+
+  it('compares plain objects and arrays by content', () => {
+    expect(deepEqual({ a: { b: [1, 2] } }, { a: { b: [1, 2] } })).toBe(true);
+    expect(deepEqual({ a: { b: [1, 2] } }, { a: { b: [1, 3] } })).toBe(false);
+    expect(deepEqual({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(deepEqual({ a: undefined }, { b: undefined })).toBe(false);
+    expect(deepEqual([1], { 0: 1 })).toBe(false);
+  });
+
+  it('compares functions by reference', () => {
+    const fn = () => 1;
+    expect(deepEqual({ fn }, { fn })).toBe(true);
+    expect(deepEqual({ fn }, { fn: () => 1 })).toBe(false);
   });
 });

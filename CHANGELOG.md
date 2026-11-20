@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — rendering without the wrapper (optional JSX runtime)
+- `@michelgutner/isoform/jsx-runtime` (and `/jsx-dev-runtime`), selected with `jsxImportSource: '@michelgutner/isoform'`: a styled component whose style never reads the theme is created directly as the component underneath, with its final props. No extra component and no hook per element. Measured on an Android phone, 300 list cells re-rendered in the same time as plain `View`s (they took 37% longer with the wrapper).
+- `@michelgutner/isoform/babel`: marks the style functions that provably cannot read the theme (`({ props })`, `(ctx) => ctx.props…`), so they qualify too. `themeFree()` marks a function by hand.
+- `configure({ performance: { inline: false } })` keeps every wrapper.
+- The package root exports `createElement`, which JSX compilers import from the `jsxImportSource` root.
+
+### Performance
+- Dynamic styles are cached by the props the rules actually read: a `testID`, an `onPress` closure or `children` that change no longer recompile the style. Values are hashed by type (`1` and `"1"` differ), and objects and functions by identity (an object prop that changes is followed).
+- A theme switch only re-renders and recompiles the components whose style read the theme, on every platform; `getTheme()` inside a rule counts as a read. Returning to a theme already seen (light ↔ dark) reuses its cached styles.
+- Web: `configure({ performance: { themeVariables: ['color'] } })` exposes those theme tokens as CSS variables, so a switch rewrites one `:root` rule and re-renders nothing that only reads them.
+- React Native breakpoints share one `Dimensions` listener and re-render a component only when the active range changes, not on every pixel of width.
+- Web: the playlist player and the modal are loaded in their own chunk the first time they render, like the sheet, camera and players already were (initial bundle about 20% smaller).
+- A development warning names a component whose style keeps seeing more than 300 combinations of the props it reads (values that belong in `style`).
+
+### Changed
+- `pdfjs-dist` is now an optional peer dependency (it was a 45 MB dependency of every install). Install it only for the `pdf` module on the web; a clear error says so when it is missing.
+
 ### Added — `Image` pipeline (optional `image` module)
 - With the module on, `engine('Image')` becomes the lib's own picture, with the same pipeline design on iOS (URLSession, ImageIO, CoreImage) and Android (React Native's OkHttp, `ImageDecoder`) and no extra dependency. It keeps a memory cache and a 300 MB disk cache. A download is shared by the views that show the same picture and cancelled when no view waits for it. Pictures are decoded at the size on screen with the EXIF orientation applied, and animated GIF/WebP/APNG play with their own frame delays. Web: `<img>` with the same props.
 - `contentFit` / `contentPosition` (the CSS names), `blurhash` and `placeholder`, crossfade `transition`, `tintColor`, `blurRadius`, `cachePolicy`, `priority`, `autoplay`, `src` with `headers` and `cacheKey`, and the events `onLoadStart`, `onProgress`, `onLoad` (`cacheType`) and `onError`.

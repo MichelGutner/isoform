@@ -51,6 +51,7 @@ The same `Button` renders a keyboard-accessible `<div role="button">` with atomi
 | **Global theme, no providers**<br>`configure({ theme })` once, `updateTheme()` anywhere, `useTheme()` to read it. | **Variants with `when()`**<br>Props, `state:hover`/`pressed`/`focus`, `breakpoints:md`, `platform:web`, `::before`… all typed. |
 | **Animations on both runtimes**<br>`keyframes()` and CSS `transition` become real CSS on the web and `Animated` on React Native. | **Optional native modules**<br>Video, audio, PDF, bottom sheet, SVG, camera, date picker, image pipeline and modal. Zero cost when off. |
 | **SSR-ready atomic CSS**<br>Deduplicated, rank-ordered classes and real `@media` rules; `getStyleText()` on the server. | **TypeScript first**<br>Typed theme, custom props, conditions, breakpoints and `ref` handles. |
+| **No wrapper when it is not needed**<br>With the optional JSX runtime, a styled component whose style never reads the theme renders as the `View`/`div` underneath: no extra component, no hook. | **Caches what the style reads**<br>Styles are cached by the props they actually read; a theme switch only re-renders the components whose style reads the theme. |
 
 ## Platform support
 
@@ -82,12 +83,14 @@ Off by default. Turn on only what you use in `isoform.config.json`; disabled mod
 { "modules": { "video": true, "sheet": true, "camera": { "enabled": true, "codeScanner": true } } }
 ```
 
+`Pdf` on the web needs pdf.js, an optional peer dependency (about 45 MB, so apps without PDFs do not install it): `yarn add pdfjs-dist`. On the web, the players, `BottomSheet`, `Modal`, `Camera` and the playlist UI are separate chunks, downloaded the first time they render.
+
 ## Documentation
 
 Everything else lives on the site, with live examples rendered by the library itself:
 
 - [Getting started](https://isoform-kappa.vercel.app/getting-started/introduction/): installation for Expo, bare React Native, Vite and Next.
-- [Guides](https://isoform-kappa.vercel.app/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript.
+- [Guides](https://isoform-kappa.vercel.app/guides/style-vocabulary/): style vocabulary, theme, conditions, responsive design, states, animations, platform differences, TypeScript, [performance](https://isoform-kappa.vercel.app/guides/performance/).
 - [Primitives](https://isoform-kappa.vercel.app/primitives/overview/) and [native modules](https://isoform-kappa.vercel.app/modules/overview/).
 - [API reference](https://isoform-kappa.vercel.app/reference/configure/) and [recipes](https://isoform-kappa.vercel.app/recipes/button-variants/).
 
