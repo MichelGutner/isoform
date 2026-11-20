@@ -3,6 +3,10 @@ title: Theme API
 description: updateTheme(), useTheme() and getTheme(), the global provider-less theme store.
 ---
 
+import LiveExample from '../../../components/LiveExample.astro';
+import ThemeDemo from '../../../components/demos/ThemeDemo.tsx';
+import themeSource from '../../../components/demos/ThemeDemo.tsx?raw';
+
 ```ts
 function updateTheme<T extends Partial<EngineTheme>>(input: T | ((prev: EngineTheme) => T)): void;
 function useTheme(): EngineTheme;
@@ -10,6 +14,10 @@ function getTheme(): EngineTheme;
 ```
 
 The theme is a global store compatible with React's `useSyncExternalStore`. No provider is needed.
+
+<LiveExample code={themeSource}>
+  <ThemeDemo client:only="react" />
+</LiveExample>
 
 ## `updateTheme(themeOrFn)`
 

@@ -3,6 +3,10 @@ title: engine()
 description: Creates styled components from a primitive name, another engine component, or any React component.
 ---
 
+import LiveExample from '../../../components/LiveExample.astro';
+import CardDemo from '../../../components/demos/CardDemo.tsx';
+import cardSource from '../../../components/demos/CardDemo.tsx?raw';
+
 ```ts skip-check
 // 1. a primitive name
 engine<K extends keyof IsoPrimitives, P extends object = {}>(component: K, style?: StyleOrFn): EngineComponent;
@@ -26,6 +30,10 @@ const Button = engine('Pressable')
   .when('props:disabled', { style: { opacity: 0.5 } })
   .when('platform:web', { style: { cursor: 'pointer' } });
 ```
+
+<LiveExample code={cardSource}>
+  <CardDemo client:only="react" />
+</LiveExample>
 
 ## Parameters
 

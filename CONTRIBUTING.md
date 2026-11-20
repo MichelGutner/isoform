@@ -51,7 +51,8 @@ cd example-web && yarn install && yarn dev    # React DOM + Vite
 ## Pull requests
 
 - Squash-merged: the **PR title** becomes the commit and must follow [Conventional Commits](https://www.conventionalcommits.org): `feat(image): pinch zoom`, `fix(modal): content cut on iOS`, `docs: …`.
-- There is no hosted CI: the checks run on your machine. `yarn verify` must pass (the push hook runs it), plus `yarn check:swift` if you touched `ios/` and `yarn check:android` if you touched `android/`.
+- GitHub Actions runs `yarn verify`, the performance gates and a build of the docs site on every PR; the same `yarn verify` runs in the push hook. It does not run `yarn check:swift` (if you touched `ios/`) or `yarn check:android` (if you touched `android/`): run those on your machine.
+- `yarn verify` includes `yarn check:docs`, which type-checks the examples in the docs against the public API and fails when a public export is missing from the API reference. Mark a block that is intentionally not valid code with `ts skip-check` on its opening fence.
 - Add or update tests for behavior changes, and the README/docs for API changes.
 - Exported types need English JSDoc on every member.
 
@@ -82,6 +83,14 @@ yarn verify
 npm publish                                   # prepack builds; confirm with your 2FA code
 git tag v0.1.0 && git push origin v0.1.0
 gh release create v0.1.0 --title v0.1.0 --generate-notes
+```
+
+### After the rename to `react-isoform`
+
+The old package, `@michelgutner/isoform`, was published at 0.1.0 and the repository has no tags yet. Publish `react-isoform` with the first-release steps above, then point the old name at the new one:
+
+```bash
+npm deprecate @michelgutner/isoform "Renamed to react-isoform. See https://isoform-kappa.vercel.app/project/migration/"
 ```
 
 While the version is 0.x, a breaking change bumps the minor (`releaseRules` in `.releaserc.js`); delete that rule to go to 1.0.0.

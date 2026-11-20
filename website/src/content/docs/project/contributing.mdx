@@ -49,7 +49,8 @@ The site is deployed by [Vercel](https://vercel.com) from the repository (root d
 ## Pull requests
 
 - PRs are squash-merged; the **PR title** follows [Conventional Commits](https://www.conventionalcommits.org) (`feat(image): pinch zoom`, `fix(modal): …`, `docs: …`).
-- There is no hosted CI: `yarn verify` (lint, types, tests, build and a package check) must pass, and the push hook runs it. Add `yarn check:swift` when you touch `ios/` and `yarn check:android` when you touch `android/`.
+- GitHub Actions runs `yarn verify` (lint, types, tests, build, a package check and the docs examples check), the performance gates and a build of this site on every PR; the push hook runs `yarn verify` too. Run `yarn check:swift` when you touch `ios/` and `yarn check:android` when you touch `android/`: CI does not.
+- A docs example that is intentionally not valid code takes `ts skip-check` on its opening fence, so `yarn check:docs` leaves it alone.
 - Add or update tests for behavior changes, and these docs for API changes.
 - Exported types need English JSDoc on every member.
 
