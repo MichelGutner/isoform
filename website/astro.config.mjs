@@ -48,6 +48,7 @@ export default defineConfig({
           'getting-started/introduction',
           'getting-started/installation',
           'getting-started/quick-start',
+          'getting-started/comparison',
           'getting-started/configuration',
         ]),
         group('Guides', [
