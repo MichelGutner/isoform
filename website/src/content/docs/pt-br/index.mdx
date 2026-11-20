@@ -1,0 +1,56 @@
+---
+title: Isoform
+description: Uma API de estilo e componentes para React e React Native. Escreva o componente uma vez e rode na web, no iOS e no Android.
+template: splash
+hero:
+  tagline: Uma API de estilo e componentes para React e React Native. Escreva o componente uma vez; ele roda na web, no iOS e no Android.
+  actions:
+    - text: Começar
+      link: /pt-br/getting-started/introduction/
+      icon: right-arrow
+    - text: Ver no GitHub
+      link: https://github.com/MichelGutner/isoform
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LiveExample from '../../../components/LiveExample.astro';
+import ButtonDemo from '../../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../../components/demos/ButtonDemo.tsx?raw';
+
+O botão abaixo é renderizado pelo adapter React DOM do Isoform, aqui mesmo nesta página. O mesmo arquivo renderiza um `Pressable` do React Native no iOS e no Android.
+
+<LiveExample code={buttonSource}>
+  <ButtonDemo client:only="react" />
+</LiveExample>
+
+<CardGrid>
+  <Card title="Uma biblioteca de componentes" icon="laptop">
+    `engine('Box')`, `engine('Pressable')`… viram um `div` na web e uma `View` no mobile. Sem checagem de plataforma nos seus componentes.
+  </Card>
+  <Card title="Vocabulário CSS padrão" icon="pencil">
+    `paddingInline`, `boxShadow`, `'1rem'`, `transform: 'rotate(-2deg)'`. Números são px, strings são CSS, em todas as plataformas.
+  </Card>
+  <Card title="Tema global, sem providers" icon="star">
+    `configure({ theme })` uma vez na inicialização, `updateTheme()` em qualquer lugar. Todos os componentes re-renderizam e nada envolve a sua árvore.
+  </Card>
+  <Card title="Variantes sem boilerplate" icon="list-format">
+    `when('props:variant=ghost')`, `when('state:pressed')`, `when('breakpoints:md')`, `when('platform:web')`, `when('::before')`.
+  </Card>
+  <Card title="Animações nos dois runtimes" icon="rocket">
+    `keyframes()` e `transition` do CSS viram CSS de verdade na web e `Animated` no React Native.
+  </Card>
+  <Card title="Módulos nativos opcionais" icon="puzzle">
+    Vídeo, áudio, PDF, bottom sheet, SVG, câmera, seletor de data, pipeline de imagem e modal, desenhados com UIKit/SwiftUI e Jetpack Compose. Desligados por padrão, sem custo quando desligados.
+  </Card>
+</CardGrid>
+
+## Para onde ir agora
+
+<CardGrid>
+  <LinkCard title="Instalação" href="/pt-br/getting-started/installation/" description="Expo, React Native puro, Vite e Next." />
+  <LinkCard title="Quick start" href="/pt-br/getting-started/quick-start/" description="Configure uma vez e monte um card e um botão." />
+  <LinkCard title="Vocabulário de estilos" href="/guides/style-vocabulary/" description="Qual CSS funciona onde e como os valores são convertidos." />
+  <LinkCard title="Módulos nativos" href="/modules/overview/" description="Ligue só os módulos que o seu app usa." />
+</CardGrid>

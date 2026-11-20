@@ -3,6 +3,10 @@ title: keyframes()
 description: Declares an animation once and returns its name, for the CSS animation properties on both platforms.
 ---
 
+import LiveExample from '../../../components/LiveExample.astro';
+import AnimationDemo from '../../../components/demos/AnimationDemo.tsx';
+import animationSource from '../../../components/demos/AnimationDemo.tsx?raw';
+
 ```ts
 function keyframes(frames: Keyframes): string;
 ```
@@ -15,6 +19,10 @@ It does not depend on the active provider: it only stores the definition, and ea
 const pulse = keyframes({ '0%': { opacity: 1 }, '50%': { opacity: 0.3 }, '100%': { opacity: 1 } });
 const Dot = engine('Box', { animation: `${pulse} 1s ease-in-out infinite alternate` });
 ```
+
+<LiveExample code={animationSource}>
+  <AnimationDemo client:only="react" />
+</LiveExample>
 
 ## `Keyframes`
 

@@ -1,0 +1,66 @@
+---
+title: Quick start
+description: Configure o Isoform uma vez, monte componentes a partir de primitivas neutras e use-os na web e no mobile.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+import LiveExample from '../../../../components/LiveExample.astro';
+import CardDemo from '../../../../components/demos/CardDemo.tsx';
+import cardSource from '../../../../components/demos/CardDemo.tsx?raw';
+import ButtonDemo from '../../../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../../../components/demos/ButtonDemo.tsx?raw';
+
+<Steps>
+
+1. **Um arquivo de configuração, compartilhado por todos os apps.** Ele escolhe o provider da plataforma, define o tema e, se quiser, liga módulos.
+
+   ```ts title="isoform.config.ts"
+   import { configure } from 'react-isoform';
+
+   configure({
+     provider: 'auto', // 'auto' | 'react-native' | 'react' | a custom adapter
+     theme: {
+       color: { background: '#fff', surface: '#fff', text: '#111', muted: '#6b7280', primary: '#6366f1' },
+       spacing: { sm: 8, md: 16, lg: 24 },
+     },
+   });
+   ```
+
+   Importe-o uma vez, antes de renderizar: `import './isoform.config'` na sua entrada (`main.tsx` no Vite, `app/_layout.tsx` no Expo Router, `index.js` no React Native puro).
+
+2. **Monte componentes a partir de primitivas neutras.** `Box`, `Text`, `Pressable`, `Input`, `Image` e `Scroll` existem em todas as plataformas.
+
+   <LiveExample code={cardSource}>
+     <CardDemo client:only="react" />
+   </LiveExample>
+
+3. **Adicione variantes e estados com `when()`.** As condições leem props, estados de interação, breakpoints, a plataforma ou pseudo-elementos.
+
+   <LiveExample code={buttonSource}>
+     <ButtonDemo client:only="react" />
+   </LiveExample>
+
+4. **Use onde quiser.** As props universais funcionam nas duas plataformas: `onPress`, `aria-*`, `role`, `testID`.
+
+   ```tsx
+   <Card>
+     <Title>Hello, web and mobile</Title>
+     <Button onPress={save} aria-label="Save" testID="save">
+       <Label>Save</Label>
+     </Button>
+   </Card>
+   ```
+
+</Steps>
+
+O mesmo `Button` renderiza um `<div role="button">` com classes CSS atômicas na web (acessível por teclado: Enter e Espaço chamam `onPress`) e um `Pressable` do React Native no iOS e no Android.
+
+<Aside type="tip">
+Tipe o seu tema uma vez para que `theme.color.primary` seja autocompletado em todo lugar: veja [TypeScript](/guides/typescript/).
+</Aside>
+
+## O que vem depois
+
+- [Configuração](/getting-started/configuration/): breakpoints, `rem` no nativo e os módulos opcionais.
+- [Vocabulário de estilos](/guides/style-vocabulary/): qual CSS funciona em qual plataforma.
+- [Condições e variantes](/guides/conditions/): tudo o que `when()` aceita.

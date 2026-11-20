@@ -3,6 +3,10 @@ title: EngineComponent
 description: The component returned by engine(), with the chainable style, when, attrs and extend methods.
 ---
 
+import LiveExample from '../../../components/LiveExample.astro';
+import ButtonDemo from '../../../components/demos/ButtonDemo.tsx';
+import buttonSource from '../../../components/demos/ButtonDemo.tsx?raw';
+
 ```ts
 type EngineComponent<C extends ComponentType<any>, P extends object = {}> =
   ForwardRefExoticComponent<ComponentPropsWithRef<C> & P> & {
@@ -14,6 +18,10 @@ type EngineComponent<C extends ComponentType<any>, P extends object = {}> =
 ```
 
 An `EngineComponent` renders `C` with the accumulated rules. Its methods add rules and return a component to keep chaining.
+
+<LiveExample code={buttonSource}>
+  <ButtonDemo client:only="react" />
+</LiveExample>
 
 ## `.style(style)`
 

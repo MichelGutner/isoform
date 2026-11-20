@@ -1,0 +1,57 @@
+---
+title: O que é o Isoform?
+description: Uma API de estilo e componentes para React (web) e React Native (iOS e Android).
+---
+
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+O Isoform é uma biblioteca de estilo e componentes que roda o **mesmo código de componente** na web (React DOM) e no mobile (React Native, iOS e Android). Você descreve os componentes com `engine()`, nomes e valores CSS padrão e um tema global; o adapter da plataforma ativa os transforma em elementos DOM com CSS atômico na web, e em componentes React Native com estilos nativos no mobile.
+
+```tsx
+import { engine } from 'react-isoform';
+
+export const Card = engine('Box', ({ theme }) => ({
+  padding: theme.spacing.md,
+  borderRadius: 16,
+  backgroundColor: theme.color.surface,
+  boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+}));
+```
+
+Na web, `Card` é um `<div>` com classes atômicas deduplicadas. No iOS e no Android é uma `View` com sombra nativa.
+
+## Por que o Isoform
+
+- **Uma biblioteca de componentes** para o app web e o app mobile, em vez de reconstruir cada componente duas vezes.
+- **Um vocabulário de estilo**: nomes e valores CSS padrão (`paddingInline`, `boxShadow`, `'1rem'`, `calc()`…) que as duas plataformas entendem. Números são px; strings são CSS.
+- **CSS completo na web** (grid, `backdrop-filter`, `var()`, `vh`…), com degradação elegante no mobile: o que não tem equivalente nativo é descartado com um único aviso em desenvolvimento.
+- **A plataforma é escolhida uma vez, na inicialização**, por `configure()`; o bundler decide qual adapter entra no bundle. Sem providers.
+- **Um tema global**, estilo condicional com `when()`, `extend()`, composição, suporte completo a TypeScript e um cache de estilos.
+- **Módulos nativos opcionais** para os componentes que todo app acaba reconstruindo: vídeo, áudio, PDF, bottom sheet, SVG, câmera, seletor de data, um pipeline de imagem e um modal. Eles são desenhados com UIKit/SwiftUI no iOS, Jetpack Compose no Android e o DOM na web, e não custam nada quando estão desligados.
+
+## Como as peças se encaixam
+
+| Camada | O que é |
+|---|---|
+| `engine()` | Cria um componente a partir do nome de uma primitiva (`'Box'`, `'Text'`, `'Pressable'`…), de outro componente do engine ou de qualquer componente React. |
+| Regras | `.style()`, `.when()`, `.attrs()` e `.extend()` descrevem estilos e props, de forma estática ou a partir de `{ theme, props, platform }`. |
+| Tema | Um store global definido por `configure({ theme })` / `updateTheme()`, lido pelas funções de estilo e por `useTheme()`. |
+| Adapters | React DOM (CSS atômico, primitivas DOM) e React Native (conversão de CSS para estilo RN, primitivas RN). O bundler escolhe um. |
+| Módulos | Componentes opcionais com código nativo próprio, ligados em `isoform.config.json`. |
+
+<Aside type="tip" title="A prova">
+O [`examples/showcase`](https://github.com/MichelGutner/isoform/tree/main/examples/showcase) do repositório é um único conjunto de páginas renderizado por um app Expo (`example/`) e por um app Vite + React DOM (`example-web/`). Todo exemplo ao vivo deste site roda o mesmo código-fonte da biblioteca.
+</Aside>
+
+## Plataformas suportadas
+
+| Plataforma | Adapter | Requisitos |
+|---|---|---|
+| Web | React DOM | `react >= 18`, `react-dom >= 18`; qualquer bundler (Vite, webpack, Next, Metro web) |
+| iOS | React Native | `react-native >= 0.76` (nova arquitetura para `boxShadow` nativo e para os módulos nativos) |
+| Android | React Native | `react-native >= 0.76` |
+
+<CardGrid>
+  <LinkCard title="Instalar o Isoform" href="/pt-br/getting-started/installation/" />
+  <LinkCard title="Quick start" href="/pt-br/getting-started/quick-start/" />
+</CardGrid>
