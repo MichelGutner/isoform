@@ -49,7 +49,7 @@ Restart Metro with a clean cache after changing it: `npx expo start -c`.
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    // plugins run before presets: JSX is compiled here, with the isoform runtime
+    // plugins run before presets: JSX is compiled here, with the Isoform runtime
     ['@babel/plugin-transform-react-jsx', { runtime: 'automatic', importSource: 'react-isoform' }],
     'react-isoform/babel',
   ],

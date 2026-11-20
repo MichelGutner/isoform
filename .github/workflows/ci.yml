@@ -47,3 +47,20 @@ jobs:
           name: bench-results
           path: bench-results
           if-no-files-found: ignore
+
+  website:
+    name: Docs site build and link check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - run: npm ci
+      # `astro build` runs starlight-links-validator: a broken internal link or invalid MDX fails the build.
+      - run: npm run build

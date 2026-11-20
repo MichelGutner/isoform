@@ -1,19 +1,61 @@
 ---
 title: Server-side rendering
-description: Collect the atomic CSS generated on the server with getStyleText().
+description: Collect the atomic CSS generated on the server with getStyleText() and inject it into the HTML.
 ---
 
-The web adapter emits atomic CSS. In the browser it is inserted into a `<style data-isoform="client">` element. On the server, collect it with [`getStyleText()`](/reference/get-style-text/) after rendering your tree:
+import { Aside } from '@astrojs/starlight/components';
 
-```tsx
+The web adapter emits atomic CSS. In the browser it is inserted into a `<style data-isoform="client">` element. On the server there is no document, so the CSS is kept in memory and you read it with [`getStyleText()`](/reference/get-style-text/) **after** rendering your tree.
+
+## The pattern
+
+Render first, then read the CSS, then put both in the HTML:
+
+```tsx title="entry-server.tsx"
+import { renderToString } from 'react-dom/server';
 import { getStyleText } from 'react-isoform';
+import './configure'; // calls configure() once, before the first render
+import { App } from './App';
 
-// after rendering your tree:
-<style data-isoform="ssr" dangerouslySetInnerHTML={{ __html: getStyleText() }} />;
+export function render(url: string) {
+  const html = renderToString(<App url={url} />);
+  const css = getStyleText(); // must come after the render: it returns what was generated so far
+
+  return `<!doctype html>
+<html>
+  <head>
+    <style data-isoform="ssr">${css}</style>
+  </head>
+  <body>
+    <div id="root">${html}</div>
+  </body>
+</html>`;
+}
 ```
 
-`getStyleText()` returns the CSS collected so far (including `@keyframes` and `@media` rules for what was rendered). On platforms that do not generate CSS (mobile) it returns `''`.
+If you render a document component instead of a string, inject it with `dangerouslySetInnerHTML`:
 
-- Breakpoints are real `@media` rules, so the server-rendered layout is already right before hydration.
-- `keyframes()` names are content-hashed, so they are the same on the server and the client.
+```tsx
+<style data-isoform="ssr" dangerouslySetInnerHTML={{ __html: getStyleText() }} />
+```
+
+On platforms that do not generate CSS (mobile) `getStyleText()` returns `''`.
+
+## What the output contains
+
+- Atomic classes, state rules (`:hover`, `:focus`…), pseudo-elements, `@keyframes` and breakpoint `@media` rules for what has rendered.
+- Breakpoints are real `@media` rules, so the server-rendered layout is already right before hydration, with no flash.
+- Class names and `keyframes()` names are content-hashed, so the server and the client produce the same ones.
 - Values that contain `{`, `}` or `</style` are refused by the web adapter, which protects the generated CSS.
+
+## Things to know on a long-lived server
+
+The stylesheet is **one per process**. It is never cleared, so:
+
+- **The output grows.** The second request's `getStyleText()` already contains the rules of the first. This is correct (the same declaration is always the same class), but each response carries the CSS of every page rendered so far, not only its own. Keep the page weight in mind on servers that render many different pages.
+- **Read it after the render finishes.** The text is "what was generated so far". If you stream (`renderToPipeableStream`), read it once all the content you want has rendered, or rules for content that rendered later will be missing from the `<style>`.
+- **The theme is global too.** `updateTheme()` changes one store shared by every request in the process. Configure the theme once at startup. Do not call `updateTheme()` per request to personalize the page: concurrent requests would see each other's theme.
+
+<Aside type="note">
+This page covers the plain `react-dom/server` flow. Framework integrations (Next.js, Remix and similar) follow the same rule (render, then read), but where to place the `<style>` depends on the framework's own SSR hooks.
+</Aside>

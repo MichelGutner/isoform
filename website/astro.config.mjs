@@ -48,6 +48,7 @@ export default defineConfig({
           'getting-started/introduction',
           'getting-started/installation',
           'getting-started/quick-start',
+          'getting-started/comparison',
           'getting-started/configuration',
         ]),
         group('Guides', [
@@ -97,7 +98,6 @@ export default defineConfig({
           'reference/images',
           'reference/get-style-text',
           'reference/platform-adapter',
-          'reference/stylized',
           'reference/jsx-runtime',
           'reference/types',
         ]),
@@ -111,6 +111,7 @@ export default defineConfig({
           'recipes/troubleshooting',
         ]),
         group('Project', [
+          'project/migration',
           'project/contributing',
           'project/changelog',
         ]),

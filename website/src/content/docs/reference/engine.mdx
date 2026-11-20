@@ -3,7 +3,7 @@ title: engine()
 description: Creates styled components from a primitive name, another engine component, or any React component.
 ---
 
-```ts
+```ts skip-check
 // 1. a primitive name
 engine<K extends keyof IsoPrimitives, P extends object = {}>(component: K, style?: StyleOrFn): EngineComponent;
 // 2. another engine component (composition)

@@ -1,0 +1,38 @@
+---
+title: Isoform and other options
+description: When Isoform fits, and how it differs from Unistyles, NativeWind, Tamagui and web CSS-in-JS.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Isoform is one styling and component API that runs on React DOM and on React Native. This page helps you decide whether that is what you need. It describes each project as of November 2026 from their own documentation, so check their sites for the current state before you decide.
+
+## What Isoform is
+
+- **One component, two platforms.** You write `engine('Box', style)` once. On the web it becomes atomic CSS on real DOM elements; on mobile it becomes React Native styles.
+- **A CSS-like vocabulary** (`paddingInline`, `boxShadow`, `'1rem'`, `calc()` on the web) that is converted for mobile, with one development warning for what mobile cannot express.
+- **No providers.** Theme and configuration live in a global store: `configure()` once, `useTheme()` anywhere.
+- **Optional native modules** (video, audio, PDF, sheet, image and more), off by default and left out of the bundle when unused.
+- **Requirements:** React Native 0.76 or newer for the mobile side.
+
+## Compared with the alternatives
+
+| | Main idea | Platforms | You write |
+|---|---|---|---|
+| **Isoform** | One style and component API, converted per platform | React DOM and React Native | Style objects and functions, with `.when()` conditions |
+| [Unistyles](https://unistyl.es/) | A drop-in replacement for React Native's `StyleSheet`, with a C++ core that updates styles without re-rendering | React Native | `StyleSheet.create` with themes and breakpoints |
+| [NativeWind](https://www.nativewind.dev/) | Tailwind CSS class names applied to React Native | React Native, and web through `className` | Tailwind classes |
+| [Tamagui](https://tamagui.dev/docs) | A styling library, a UI kit and an optimizing compiler | React and React Native | Tamagui components and tokens |
+| Web CSS-in-JS (styled-components, Emotion) | Styles attached to components | Web first | Template strings or objects |
+
+## Choosing
+
+- **You ship the same screens on web and mobile and want one component to describe both:** Isoform, Tamagui, or NativeWind if you want to write Tailwind classes.
+- **Your app is React Native only and you want to keep `StyleSheet`:** Unistyles keeps the API you already know.
+- **Your team already writes Tailwind:** NativeWind brings that vocabulary to React Native.
+- **You want a ready-made UI kit and a compiler:** Tamagui includes both.
+- **You want a small, provider-free API with a CSS-like vocabulary, and optional native modules:** Isoform.
+
+<Aside type="note">
+These are different trade-offs, not a ranking. Measure on your own app before deciding on performance: this page makes no performance claims about any library. To see how Isoform behaves on your screens, start with the [quick start](/getting-started/quick-start/) and the [live examples](/guides/style-vocabulary/).
+</Aside>
