@@ -20,7 +20,7 @@ import { themeStore } from './store';
  *
  * @example Basic Usage
  * ```tsx
- * import { useTheme } from '@michelgutner/isoform';
+ * import { useTheme } from 'react-isoform';
  * 
  * const MyComponent = () => {
  *   const theme = useTheme();

@@ -7,7 +7,7 @@ Isoform's runtime error messages are currently written in Portuguese; the table 
 
 | Symptom | Cause and fix |
 |---|---|
-| `nenhum provedor disponível` ("no provider available") | The entry was not imported before rendering (a custom bundler skipped `providers/*`). Import `@michelgutner/isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` is not stripping `providers/*`. |
+| `nenhum provedor disponível` ("no provider available") | The entry was not imported before rendering (a custom bundler skipped `providers/*`). Import `react-isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` is not stripping `providers/*`. |
 | `provider "react-native" não está disponível neste bundle` ("is not available in this bundle") | You forced a provider that the current bundle does not include. Use `'auto'`. |
 | `a primitiva "Switch" não existe no provedor "react"` ("the primitive does not exist in the provider") | A mobile-only primitive was rendered on the web. Give it a web variant (`Component.tsx` / `Component.native.tsx`). See [Native-only primitives](/primitives/native-and-legacy/). |
 | `módulo "video" desligado` ("module disabled") warning | A component of a disabled module rendered. Turn the module on in `isoform.config.json` and pass it to `configure({ modules })`. See [Configuration](/getting-started/configuration/). |

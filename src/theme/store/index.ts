@@ -120,7 +120,7 @@ export const themeStore = {
  *
  * @example Basic Usage
  * ```tsx
- * import { updateTheme } from '@michelgutner/isoform';
+ * import { updateTheme } from 'react-isoform';
  * 
  * // Update theme colors
  * updateTheme({
@@ -223,7 +223,7 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  *
  * @example
  * ```tsx
- * import { getTheme } from '@michelgutner/isoform';
+ * import { getTheme } from 'react-isoform';
  * 
  * // Get current theme for logging
  * const currentTheme = getTheme();
@@ -244,7 +244,7 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  * @example Server-Side Rendering
  * ```tsx
  * // In SSR context, you might want to set a theme and get it immediately
- * import { updateTheme, getTheme } from '@michelgutner/isoform';
+ * import { updateTheme, getTheme } from 'react-isoform';
  * 
  * // Set initial theme based on user preferences
  * updateTheme({ colors: { primary: userPrefersDark ? '#fff' : '#000' } });

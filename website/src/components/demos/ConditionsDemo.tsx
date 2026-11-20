@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { Button, ButtonText, Row, Stack } from './kit';
 
 type Tone = 'ok' | 'bad';

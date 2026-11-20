@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { asset, Caption, Stack } from './kit';
 
 const Document = engine('Pdf', { width: '100%', height: 520, borderRadius: 12 });

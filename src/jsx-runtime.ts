@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * The isoform JSX runtime: `jsxImportSource: '@michelgutner/isoform'` (Babel preset, Vite, `tsconfig`).
+ * The isoform JSX runtime: `jsxImportSource: 'react-isoform'` (Babel preset, Vite, `tsconfig`).
  *
  * Every element goes to React's own runtime, except a styled component whose style never reads the
  * theme: for those it creates the element the component would have rendered (`<View style={…}>`)

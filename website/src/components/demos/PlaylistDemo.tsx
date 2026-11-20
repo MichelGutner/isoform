@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine, type AudioItem } from '@michelgutner/isoform';
+import { engine, type AudioItem } from 'react-isoform';
 import { asset, Caption, Stack } from './kit';
 
 const Player = engine('Audio', { width: '100%', maxWidth: 560 });

@@ -1,6 +1,6 @@
 import './setup';
 import { useState } from 'react';
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 import { Caption, Stack } from './kit';
 
 const Picker = engine('DatePicker', ({ theme }) => ({

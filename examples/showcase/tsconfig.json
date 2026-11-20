@@ -12,7 +12,7 @@
     "lib": ["dom", "esnext"],
     "baseUrl": ".",
     "paths": {
-      "@michelgutner/isoform": ["../../src/index.ts"],
+      "react-isoform": ["../../src/index.ts"],
       // esta pasta não tem node_modules: o React vem do app web de exemplo
       "react": ["../../example-web/node_modules/@types/react"],
       "react/*": ["../../example-web/node_modules/@types/react/*"],

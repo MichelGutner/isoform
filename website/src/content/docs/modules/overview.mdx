@@ -28,7 +28,7 @@ Media lists (`items`) for `Video`, `Audio` and `Pdf` are covered in [Playlists](
 ```
 
 ```ts title="isoform.config.ts"
-import { configure } from '@michelgutner/isoform';
+import { configure } from 'react-isoform';
 import isoform from './isoform.config.json';
 
 configure({ modules: isoform.modules });
@@ -36,7 +36,7 @@ configure({ modules: isoform.modules });
 
 Then, on mobile:
 
-1. Wrap the Metro config with `withIsoform` (`@michelgutner/isoform/metro`), so disabled modules are swapped for an empty stub.
+1. Wrap the Metro config with `withIsoform` (`react-isoform/metro`), so disabled modules are swapped for an empty stub.
 2. Run `cd ios && pod install`, and rebuild the native app.
 
 <Aside type="caution">

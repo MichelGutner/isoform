@@ -1,5 +1,5 @@
 {
-  "name": "@michelgutner/isoform",
+  "name": "react-isoform",
   "version": "0.1.0",
   "description": "One styling API for React and React Native: write a component once, run it on web (React DOM) and mobile, with global theming and no providers",
   "homepage": "https://github.com/MichelGutner/isoform#readme",

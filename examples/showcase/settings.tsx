@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { updateTheme } from '@michelgutner/isoform';
+import { updateTheme } from 'react-isoform';
 import { useThemeBubble } from './ThemeBubble';
 import { buildTokens, type AccentName, type Density, type Mode } from './tokens';
 

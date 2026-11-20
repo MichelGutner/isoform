@@ -11,7 +11,7 @@
       "@/*": [
         "./*"
       ],
-      "@michelgutner/isoform": [
+      "react-isoform": [
         "../src/index.ts"
       ]
     }

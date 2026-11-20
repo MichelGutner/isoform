@@ -119,7 +119,7 @@ export default defineConfig({
   ],
   vite: {
     resolve: {
-      alias: { '@michelgutner/isoform': lib },
+      alias: { 'react-isoform': lib },
       // One copy of React (and of pdf.js, a dependency of the lib) even though the
       // library's files live outside this folder: they resolve from website/node_modules.
       dedupe: ['react', 'react-dom', 'pdfjs-dist'],

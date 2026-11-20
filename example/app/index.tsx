@@ -1,6 +1,6 @@
 import { StatusBar, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@michelgutner/isoform';
+import { useTheme } from 'react-isoform';
 import { Showcase } from '../../examples/showcase';
 
 /** The same showcase that runs on the web (example-web): no platform-specific code besides the safe area. */

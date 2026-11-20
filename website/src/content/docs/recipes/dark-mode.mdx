@@ -16,7 +16,7 @@ export const darkTokens = {
 ```
 
 ```ts title="isoform.config.ts"
-import { configure } from '@michelgutner/isoform';
+import { configure } from 'react-isoform';
 import { lightTokens } from './tokens';
 
 configure({ theme: lightTokens });
@@ -25,7 +25,7 @@ configure({ theme: lightTokens });
 Switch from anywhere; no provider needed:
 
 ```tsx
-import { updateTheme } from '@michelgutner/isoform';
+import { updateTheme } from 'react-isoform';
 import { darkTokens, lightTokens } from './tokens';
 
 export const setMode = (mode: 'light' | 'dark') => updateTheme(mode === 'dark' ? darkTokens : lightTokens);

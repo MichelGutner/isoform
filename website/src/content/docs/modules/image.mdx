@@ -72,7 +72,7 @@ On the web it is `<img>` with the same props.
 ## Prefetch and cache
 
 ```ts
-import { prefetchImages, clearImageCache } from '@michelgutner/isoform';
+import { prefetchImages, clearImageCache } from 'react-isoform';
 
 await prefetchImages([next1, next2]); // to the disk by default
 await prefetchImages(next1, { cachePolicy: 'memory-disk' }); // also decodes, shows with no wait

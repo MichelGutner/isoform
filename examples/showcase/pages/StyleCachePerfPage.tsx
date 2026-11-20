@@ -1,5 +1,5 @@
 import { Profiler, memo, useEffect, useState, type ComponentType, type ProfilerOnRenderCallback } from 'react';
-import { engine, getProvider } from '@michelgutner/isoform';
+import { engine, getProvider } from 'react-isoform';
 import { Code, Flag, PageShell, Section } from '../kit';
 import { INLINE } from '../isoform.config';
 import { Body, Card } from '../ui';

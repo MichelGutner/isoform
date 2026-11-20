@@ -9,8 +9,8 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // aponta para o código-fonte da lib (no app real: `npm i @michelgutner/isoform`)
-      '@michelgutner/isoform': lib,
+      // aponta para o código-fonte da lib (no app real: `npm i react-isoform`)
+      'react-isoform': lib,
     },
     // uma única cópia de React, mesmo com arquivos fora desta pasta; o pdf.js
     // (dependência da lib) também vem daqui, já que a lib é lida do código-fonte

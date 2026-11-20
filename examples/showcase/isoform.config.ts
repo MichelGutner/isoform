@@ -1,4 +1,4 @@
-import { configure } from '@michelgutner/isoform';
+import { configure } from 'react-isoform';
 // Módulos opcionais (todos desligados por padrão). O MESMO arquivo é lido pelo
 // build nativo (Gradle/CocoaPods) e pelo Metro: o que está desligado nem entra no app.
 // Num app de verdade ele fica na raiz do app; aqui, na raiz do app mobile de exemplo.

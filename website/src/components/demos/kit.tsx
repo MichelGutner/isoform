@@ -1,5 +1,5 @@
 /** Small building blocks shared by the examples (themselves built with Isoform). */
-import { engine } from '@michelgutner/isoform';
+import { engine } from 'react-isoform';
 
 export const Row = engine('Box', { flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'center' });
 
