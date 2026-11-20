@@ -15,15 +15,6 @@ hero:
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
-import LiveExample from '../../components/LiveExample.astro';
-import ButtonDemo from '../../components/demos/ButtonDemo.tsx';
-import buttonSource from '../../components/demos/ButtonDemo.tsx?raw';
-
-The button below is rendered by Isoform's React DOM adapter, right in this page. The same file renders a React Native `Pressable` on iOS and Android.
-
-<LiveExample code={buttonSource}>
-  <ButtonDemo client:only="react" />
-</LiveExample>
 
 <CardGrid>
   <Card title="One component library" icon="laptop">
