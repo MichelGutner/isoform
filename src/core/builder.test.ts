@@ -153,13 +153,13 @@ describe('StylizedBuilder', () => {
 
     it('throws a clear error when the provider does not have the primitive', () => {
       const Component = new StylizedBuilder<any, object>('Nope').build();
-      expect(() => renderAndCapture(Component)).toThrow(/primitiva "Nope" não existe no provedor "fake"/);
+      expect(() => renderAndCapture(Component)).toThrow(/the primitive "Nope" does not exist in the provider "fake"/);
     });
 
     it('throws a clear error when no provider was registered', () => {
       resetProvider();
       const Component = new StylizedBuilder<any, object>('Box').build();
-      expect(() => renderAndCapture(Component)).toThrow(/nenhum provedor disponível/);
+      expect(() => renderAndCapture(Component)).toThrow(/no provider is available/);
     });
   });
 
@@ -223,7 +223,7 @@ describe('StylizedBuilder', () => {
       const compileStyle = jest.fn((style: any) => style);
       registerBundledProvider({ ...createFakeAdapter(Base, platform), compileStyle });
       renderAndCapture(new StylizedBuilder(Base).when('::after', { style: { opacity: 1 }, title: 'x' } as any).build());
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('::after') só aceita { style }"));
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('::after') only accepts { style }"));
       expect(optimizedHash).not.toHaveBeenCalled();
     });
   });
@@ -299,7 +299,7 @@ describe('StylizedBuilder', () => {
       const compileStyle = spy();
       renderAndCapture(new StylizedBuilder(Base).when('breakpoints:sm', { style: { opacity: 1 }, title: 'x' } as any).build());
       expect(compileStyle.mock.calls.at(-1)![2][0].style).toEqual({ opacity: 1 });
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('breakpoints:sm') só aceita { style }"));
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('breakpoints:sm') only accepts { style }"));
     });
   });
 

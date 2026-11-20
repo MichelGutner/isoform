@@ -34,7 +34,7 @@ describe('configure()', () => {
 
   it('fails with a clear error when the requested provider is not in the bundle', () => {
     expect(() => configure({ provider: 'react-native' })).toThrow(
-      /provider "react-native" não está disponível neste bundle \(disponível: "react"\)/,
+      /provider "react-native" is not available in this bundle \(available: "react"\)/,
     );
   });
 
@@ -45,7 +45,7 @@ describe('configure()', () => {
 
   it("fails for 'auto' when nothing is bundled", () => {
     resetProvider();
-    expect(() => configure({ provider: 'auto' })).toThrow(/sem provedor no bundle/);
+    expect(() => configure({ provider: 'auto' })).toThrow(/no provider is in the bundle/);
   });
 
   it('forwards `theme` to updateTheme', () => {
@@ -63,7 +63,7 @@ describe('configure()', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     getProvider(); // marca como "usado"
     configure({ provider: custom });
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('depois do primeiro render'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('after the first render'));
     warn.mockRestore();
   });
 
@@ -82,20 +82,20 @@ describe('configure()', () => {
 
     it('rejects names that already mean something in when()', () => {
       for (const name of ['ios', 'web', 'native', 'hover', 'pressed', 'focus-visible']) {
-        expect(() => configure({ breakpoints: { [name]: 100 } })).toThrow(/não pode ser nome de breakpoint/);
+        expect(() => configure({ breakpoints: { [name]: 100 } })).toThrow(/cannot be a breakpoint name/);
       }
     });
 
     it('rejects names that would clash with the range syntax', () => {
       for (const name of ['<md', 'a..b', 'has space', '1abc']) {
-        expect(() => configure({ breakpoints: { [name]: 100 } })).toThrow(/nome de breakpoint inválido/);
+        expect(() => configure({ breakpoints: { [name]: 100 } })).toThrow(/invalid breakpoint name/);
       }
     });
 
     it('rejects invalid widths', () => {
-      expect(() => configure({ breakpoints: { md: -1 } })).toThrow(/largura mínima em px/);
-      expect(() => configure({ breakpoints: { md: NaN } })).toThrow(/largura mínima em px/);
-      expect(() => configure({ breakpoints: { md: '768' as any } })).toThrow(/largura mínima em px/);
+      expect(() => configure({ breakpoints: { md: -1 } })).toThrow(/minimum width in px/);
+      expect(() => configure({ breakpoints: { md: NaN } })).toThrow(/minimum width in px/);
+      expect(() => configure({ breakpoints: { md: '768' as any } })).toThrow(/minimum width in px/);
     });
   });
 });

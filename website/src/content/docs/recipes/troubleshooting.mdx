@@ -3,16 +3,18 @@ title: Troubleshooting
 description: Common errors and warnings, and how to fix them.
 ---
 
-Isoform's runtime error messages are currently written in Portuguese; the table quotes them as they appear.
+Isoform's errors and warnings are written in English. The ones that need more than the message to fix carry a code (`ISO001`, `ISO002`…): search this page for the code. Warnings appear in development only.
 
 ## Setup and configuration
 
 | Symptom | Cause and fix |
 |---|---|
-| `nenhum provedor disponível` ("no provider available") | The entry was not imported before rendering (a custom bundler skipped `providers/*`). Import `react-isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` is not stripping `providers/*`. |
-| `provider "react-native" não está disponível neste bundle` ("is not available in this bundle") | You forced a provider that the current bundle does not include. Use `'auto'`. |
-| `configure()` throws about a breakpoint name | Names must match `[A-Za-z_][\w-]*`, cannot be `ios`, `android`, `web`, `native`, `hover`, `focus`, `focus-visible` or `pressed`, and need a width ≥ 0. |
-| An unknown `when()` condition warns | Typo, or the old unprefixed syntax (`'web'`, `'md'`, `'hover'`). Use the prefixes: `'platform:web'`, `'breakpoints:md'`, `'state:hover'`. |
+| `ISO001` no provider is available | The entry was not imported before rendering (a custom bundler skipped `providers/*`). Import `react-isoform` first, or pass `provider: <adapter>`. Make sure `sideEffects` is not stripping `providers/*`. |
+| `ISO002` provider "auto" but no provider is in the bundle | No adapter was bundled (a custom bundler skipped `providers/*`). Pass one with `configure({ provider: <adapter> })`. |
+| `ISO003` provider "react-native" is not available in this bundle | You forced a provider that the current bundle does not include. Use `'auto'`. |
+| `ISO012` configure() changed the provider after the first render (warning) | Call `configure()` once, when the app starts, before the first render. |
+| `ISO004`, `ISO005`, `ISO006`: `configure()` throws about a breakpoint name | Names must match `[A-Za-z_][\w-]*`, cannot be `ios`, `android`, `web`, `native`, `hover`, `focus`, `focus-visible` or `pressed`, and need a width ≥ 0. |
+| `ISO008` unknown condition in `when()` (warning) | Typo, or the old unprefixed syntax (`'web'`, `'md'`, `'hover'`). Use the prefixes: `'platform:web'`, `'breakpoints:md'`, `'state:hover'`. |
 
 ## Styles and conditions
 
@@ -39,9 +41,10 @@ Isoform's runtime error messages are currently written in Portuguese; the table 
 
 | Symptom | Cause and fix |
 |---|---|
-| `a primitiva "Switch" não existe no provedor "react"` ("the primitive does not exist in the provider") | A mobile-only primitive was rendered on the web. Give it a web variant (`Component.tsx` / `Component.native.tsx`). See [Native-only primitives](/primitives/native-and-legacy/). |
-| `módulo "video" desligado` ("module disabled") warning | A component of a disabled module rendered. Turn the module on in `isoform.config.json` and pass it to `configure({ modules })`. See [Configuration](/getting-started/configuration/). |
-| Metro stops: module `svg` is on but `react-native-svg` is missing | Install it: `npx expo install react-native-svg` (then `pod install`), or turn the module off. |
+| `ISO007` the primitive "Switch" does not exist in the provider "react" | A mobile-only primitive was rendered on the web. Give it a web variant (`Component.tsx` / `Component.native.tsx`). See [Native-only primitives](/primitives/native-and-legacy/). |
+| `ISO009` module "video" is off (warning) | A component of a disabled module rendered. Turn the module on in `isoform.config.json` and pass it to `configure({ modules })`. See [Configuration](/getting-started/configuration/). |
+| `ISO011` Camera feature is off (warning) | Turn the feature on in `isoform.config.json` (`"camera": { "enabled": true, "codeScanner": true }`) and rebuild the native app. See [Camera](/modules/camera/). |
+| `ISO010` module `svg` is on but `react-native-svg` is missing (Metro stops, or a warning at runtime) | Install it: `npx expo install react-native-svg` (then `pod install`), or turn the module off. |
 
 ## Web
 

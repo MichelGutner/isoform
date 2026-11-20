@@ -8,6 +8,6 @@ import { warnOnce } from './dev';
 export function warnModuleDisabled(name: ModuleName): void {
   warnOnce(
     `module-off:${name}`,
-    `módulo "${name}" desligado. Ligue com configure({ modules: { ${name}: true } }).`,
+    `ISO009: module "${name}" is off. Turn it on with configure({ modules: { ${name}: true } }).`,
   );
 }

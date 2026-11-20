@@ -32,6 +32,6 @@ describe('parseContent', () => {
   it('attr()/counter()/url() have no mobile equivalent: skipped with a warning', () => {
     expect(parseContent('attr(title)')).toBeNull();
     expect(parseContent('url(a.png)')).toBeNull();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('não tem equivalente no mobile'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('has no equivalent on mobile'));
   });
 });

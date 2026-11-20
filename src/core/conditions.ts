@@ -106,8 +106,8 @@ function matchesProp(expression: string, props: Record<string, unknown>): boolea
 function warnUnknownCondition(condition: string): void {
   warnOnce(
     `condition-unknown:${condition}`,
-    `condição desconhecida em when('${condition}'). Use 'platform:', 'state:', 'breakpoints:', 'props:' ou um pseudo-elemento ('::before'). ` +
-      `Breakpoints ativos: ${Object.keys(getBreakpoints()).join(', ')}.`,
+    `ISO008: unknown condition in when('${condition}'). Use 'platform:', 'state:', 'breakpoints:', 'props:' or a pseudo-element ('::before'). ` +
+      `Active breakpoints: ${Object.keys(getBreakpoints()).join(', ')}.`,
   );
 }
 

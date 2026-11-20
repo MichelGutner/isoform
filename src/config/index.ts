@@ -279,8 +279,8 @@ export function peekProvider(): PlatformAdapter {
   const provider = active ?? bundled;
   if (!provider) {
     throw new Error(
-      '[isoform] nenhum provedor disponível. Importe `isoform` (o bundler escolhe o provedor) ' +
-        'ou chame configure({ provider: <adapter> }).',
+      '[isoform] ISO001: no provider is available. Import `react-isoform` (the bundler picks the provider) ' +
+        'or call configure({ provider: <adapter> }).',
     );
   }
   return provider;
@@ -328,15 +328,15 @@ export function configure(options: ConfigureOptions = {}): void {
     next = provider;
   } else if (provider === 'auto') {
     if (!bundled) {
-      throw new Error('[isoform] provider "auto" sem provedor no bundle. Passe um adapter.');
+      throw new Error('[isoform] ISO002: provider "auto" but no provider is in the bundle. Pass an adapter.');
     }
     next = bundled;
   } else {
     if (!bundled || bundled.name !== provider) {
       const available = bundled ? `"${bundled.name}"` : 'nenhum';
       throw new Error(
-        `[isoform] provider "${provider}" não está disponível neste bundle (disponível: ${available}). ` +
-          `Use "auto" ou o provider que a plataforma atual carrega.`,
+        `[isoform] ISO003: provider "${provider}" is not available in this bundle (available: ${available}). ` +
+          `Use "auto" or the provider the current platform loads.`,
       );
     }
     next = bundled;
@@ -345,7 +345,7 @@ export function configure(options: ConfigureOptions = {}): void {
   if (used && next !== (active ?? bundled)) {
     warnOnce(
       'configure-after-render',
-      'configure() trocou o provedor depois do primeiro render. Chame configure() uma vez, no boot do app.',
+      'ISO012: configure() changed the provider after the first render. Call configure() once, when the app starts.',
     );
   }
   active = next;
@@ -353,13 +353,13 @@ export function configure(options: ConfigureOptions = {}): void {
   if (bps) {
     for (const [name, min] of Object.entries(bps)) {
       if (!/^[A-Za-z_][\w-]*$/.test(name)) {
-        throw new Error(`[isoform] nome de breakpoint inválido: "${name}" (use letras, números, _ ou -).`);
+        throw new Error(`[isoform] ISO004: invalid breakpoint name: "${name}" (use letters, numbers, _ or -).`);
       }
       if (RESERVED.has(name)) {
-        throw new Error(`[isoform] "${name}" não pode ser nome de breakpoint (já é uma condição de when()).`);
+        throw new Error(`[isoform] ISO005: "${name}" cannot be a breakpoint name (it is already a when() condition).`);
       }
       if (typeof min !== 'number' || !Number.isFinite(min) || min < 0) {
-        throw new Error(`[isoform] breakpoint "${name}" precisa de uma largura mínima em px (número >= 0).`);
+        throw new Error(`[isoform] ISO006: breakpoint "${name}" needs a minimum width in px (a number >= 0).`);
       }
     }
     breakpoints = { ...bps };
@@ -375,7 +375,7 @@ export function configure(options: ConfigureOptions = {}): void {
     if (themeVariableKeys && !next.applyThemeVariables) {
       warnOnce(
         'theme-variables-unsupported',
-        `performance.themeVariables só vale em plataformas com CSS (a web). No provedor "${next.name}" os tokens continuam sendo valores.`,
+        `performance.themeVariables only applies on platforms with CSS (the web). In the "${next.name}" provider the tokens stay plain values.`,
       );
     }
   }

@@ -191,7 +191,7 @@ describe('react-native · transition', () => {
     });
     mount(<Box />);
     update(<Box on />);
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"width" não pode ser animado'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"width" cannot be animated'));
     expect(style().width).toBe(100);
   });
 
@@ -221,7 +221,7 @@ describe('react-native · transition', () => {
     const k = keyframes({ to: { opacity: 0 } });
     const Box = engine('Box', { opacity: 1, animation: `${k} 1s`, transition: 'opacity 1s' } as any);
     mount(<Box />);
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('só a animation é executada'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('only the animation runs'));
   });
 
   it('stops animations and listeners on unmount', () => {

@@ -49,7 +49,7 @@ const OWN = [
 
 /** The URL `<img>` takes (a `require` number does not exist on the web). */
 function webSrc(src: ImageSourceInput | undefined): string | undefined {
-  if (typeof src === 'number') warnOnce('web-image-require', '`require()` numérico não é suportado na web; use uma URL em `src`.');
+  if (typeof src === 'number') warnOnce('web-image-require', 'a numeric `require()` is not supported on the web; use a URL in `src`.');
   return sourceUri(src);
 }
 

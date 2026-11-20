@@ -50,7 +50,7 @@ describe('evaluateCondition', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     expect(evaluateCondition('disabled' as any, ctx({ disabled: true }))).toBe(false);
     expect(evaluateCondition('platform:tv' as any, ctx({}, 'tv'))).toBe(false);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("condição desconhecida em when('disabled')"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("unknown condition in when('disabled')"));
     warn.mockRestore();
   });
 });
@@ -88,7 +88,7 @@ describe('pseudo-element conditions', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     expect(isPseudoCondition('::nope')).toBe(false);
     expect(evaluateCondition('::nope' as any, ctx({ '::nope': true }))).toBe(false);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("condição desconhecida em when('::nope')"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("unknown condition in when('::nope')"));
     warn.mockRestore();
   });
 });

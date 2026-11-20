@@ -76,7 +76,7 @@ describe('parseAnimation', () => {
 
   it('uses only the first animation of a list (with a warning)', () => {
     expect(parseAnimation({ animation: 'a 1s, b 2s' })!.name).toBe('a');
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('só a primeira'));
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('only the first one runs'));
   });
 
   it('returns undefined without a name or with `none`', () => {

@@ -148,7 +148,7 @@ describe('react-dom adapter · states and animations', () => {
     const B = engine('Box').when('state:hover', { style: { opacity: 0.9 }, title: 'x' } as any);
     const { container } = render(<B />);
     expect((container.firstElementChild as HTMLElement).hasAttribute('title')).toBe(false);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('state:hover') só aceita { style }"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("when('state:hover') only accepts { style }"));
     warn.mockRestore();
   });
 
@@ -555,7 +555,7 @@ describe('react-dom adapter · props', () => {
   it('throws a clear error for mobile-only primitives', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     const Toggle = engine('Switch');
-    expect(() => render(<Toggle />)).toThrow(/primitiva "Switch" não existe no provedor "react"/);
+    expect(() => render(<Toggle />)).toThrow(/the primitive "Switch" does not exist in the provider "react"/);
     jest.restoreAllMocks();
   });
 });

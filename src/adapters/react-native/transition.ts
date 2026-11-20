@@ -164,5 +164,5 @@ export function usesNativeDriver(properties: string[], hasAll: boolean): boolean
 }
 
 export function warnUnsupportedTransition(property: string): void {
-  warnOnce(`transition-prop:${property}`, `"${property}" não pode ser animado com transition no mobile; a mudança é instantânea.`);
+  warnOnce(`transition-prop:${property}`, `"${property}" cannot be animated with transition on mobile; the change is instant.`);
 }

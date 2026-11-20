@@ -108,7 +108,7 @@ function compilePseudos(pseudos: PseudoStyles, e: ReturnType<typeof env>): Nativ
         break;
       default:
         if (WEB_ONLY_PSEUDOS.has(name)) {
-          warnOnce(`pseudo-web:${name}`, `${name} só existe na web e foi ignorado no mobile.`);
+          warnOnce(`pseudo-web:${name}`, `${name} only exists on the web and was ignored on mobile.`);
         }
     }
   }
@@ -141,7 +141,7 @@ function buildAnimation(animationProps: Record<string, any>, base: Record<string
   if (!timing) return undefined;
   const frames = framesFor(timing.name);
   if (!frames) {
-    warnOnce(`anim-unknown:${timing.name}`, `animação "${timing.name}" não foi registrada com keyframes().`);
+    warnOnce(`anim-unknown:${timing.name}`, `animation "${timing.name}" was not registered with keyframes().`);
     return undefined;
   }
   return {
@@ -195,7 +195,7 @@ function applyPseudos(out: Record<string, any>, p: NativePseudos, primitive?: st
     if (p.placeholderColor) out.placeholderTextColor ??= p.placeholderColor;
     if (p.selectionColor) out.selectionColor ??= p.selectionColor;
   } else if (p.placeholderColor || p.selectionColor) {
-    warnOnce(`pseudo-input:${primitive}`, '::placeholder e ::selection só valem para Input no mobile.');
+    warnOnce(`pseudo-input:${primitive}`, '::placeholder and ::selection only apply to Input on mobile.');
   }
 
   if (p.firstLetter) {
@@ -206,13 +206,13 @@ function applyPseudos(out: Record<string, any>, p: NativePseudos, primitive?: st
         kids.slice(1),
       ];
     } else {
-      warnOnce(`pseudo-first-letter:${primitive}`, '::first-letter no mobile só vale para Text com texto simples (string).');
+      warnOnce(`pseudo-first-letter:${primitive}`, '::first-letter on mobile only applies to Text with plain text (a string).');
     }
   }
 
   if (p.before || p.after) {
     if (!primitive || NO_CHILDREN.has(primitive)) {
-      warnOnce(`pseudo-children:${primitive}`, '::before/::after no mobile só valem em primitivas que aceitam filhos.');
+      warnOnce(`pseudo-children:${primitive}`, '::before/::after on mobile only apply to primitives that accept children.');
       return;
     }
     const make = (key: string, g: NonNullable<NativePseudos['before']>) =>
@@ -301,7 +301,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     if (animationProps) compiled.animation = buildAnimation(animationProps, compiled.base);
     if (transitionProps) compiled.transition = buildTransition(transitionProps);
     if (compiled.animation && compiled.transition) {
-      warnOnce('anim-and-transition', 'animation e transition no mesmo elemento: no mobile só a animation é executada.');
+      warnOnce('anim-and-transition', 'animation and transition on the same element: on mobile only the animation runs.');
     }
     compiled.hostFlags = hostFlags(compiled);
     return compiled;
@@ -317,7 +317,7 @@ export const reactNativeAdapter: PlatformAdapter = {
       if (out.type === 'password') out.secureTextEntry = true;
       delete out.type;
     } else if (c.focus) {
-      warnOnce(`focus:${primitive}`, `when('state:focus') no mobile só vale para Input.`);
+      warnOnce(`focus:${primitive}`, `when('state:focus') on mobile only applies to Input.`);
     }
     const focusStyle = isInput ? c.focus : undefined;
 
@@ -333,8 +333,8 @@ export const reactNativeAdapter: PlatformAdapter = {
       warnOnce(
         `pressed:${primitive}`,
         c.animation
-          ? "when('state:pressed') e animation no mesmo Pressable: no mobile o pressed é ignorado."
-          : "when('state:pressed') no mobile só vale para Pressable.",
+          ? "when('state:pressed') and animation on the same Pressable: on mobile pressed is ignored."
+          : "when('state:pressed') on mobile only applies to Pressable.",
       );
     }
 
