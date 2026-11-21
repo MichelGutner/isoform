@@ -9,6 +9,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
+    "rootDir": "./src",
     "outDir": "./dist",
     "jsx": "react-jsx",
     "incremental": true,
