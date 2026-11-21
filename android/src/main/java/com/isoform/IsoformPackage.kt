@@ -21,6 +21,7 @@ private val MODULE_VIEW_MANAGERS = listOf(
   "com.isoform.IsoDatePickerViewManager", // isoform.datePicker
   "com.isoform.IsoImageViewManager", // isoform.image
   "com.isoform.IsoModalViewManager", // isoform.modal
+  "com.isoform.IsoGestureViewManager", // isoform.gestures
 )
 
 /** TurboModules of the optional modules: JS name → class (found by name, like the view managers). */

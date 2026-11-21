@@ -24,7 +24,7 @@ configure({ theme: tokens, modules: isoform.modules });
 | `theme` | `Partial<EngineTheme>` | | The theme. Shortcut for `updateTheme(theme)`. |
 | `breakpoints` | `Record<string, number>` | `{ sm: 480, md: 768, lg: 1024, xl: 1280 }` | Minimum widths (px), mobile-first. Replaces the whole set. Augment `IsoBreakpointNames` to type new names. |
 | `native` | `{ remBase?: number }` | `{ remBase: 16 }` | Pixel size of `1rem` (and the fallback for `em`) on native. |
-| `modules` | `IsoModules` | all off | Optional modules: `video`, `audio`, `pdf`, `sheet`, `svg`, `camera`, `datePicker`, `image`, `modal`. Each is `boolean` or an options object with `enabled`. |
+| `modules` | `IsoModules` | all off | Optional modules: `video`, `audio`, `pdf`, `sheet`, `svg`, `camera`, `datePicker`, `image`, `modal`, `gestures`. Each is `boolean` or an options object with `enabled`. |
 | `performance` | `{ inline?: boolean; themeVariables?: string[] }` | `{ inline: true }` | `inline`: with the [JSX runtime](/reference/jsx-runtime/), render theme-free styled components without their wrapper. `themeVariables` (web only): theme keys exposed as CSS variables, see [Theme as CSS variables](/getting-started/configuration/#theme-as-css-variables). |
 
 `ProviderName` is `'react-native' | 'react'`.
@@ -42,6 +42,7 @@ configure({ theme: tokens, modules: isoform.modules });
 | `datePicker` | `boolean \| ModuleOptions` | `enabled` |
 | `image` | `boolean \| ModuleOptions` | `enabled` |
 | `modal` | `boolean \| ModuleOptions` | `enabled` |
+| `gestures` | `boolean \| ModuleOptions` | `enabled` |
 
 A module is on only with `true` or `{ enabled: true }`. Modules you leave out of `modules` are off.
 

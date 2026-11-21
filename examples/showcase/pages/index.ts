@@ -4,6 +4,7 @@ import { AudioPage } from './AudioPage';
 import { BreakpointPerfPage } from './BreakpointPerfPage';
 import { CameraPage } from './CameraPage';
 import { DatePickerPage } from './DatePickerPage';
+import { GesturesPage } from './GesturesPage';
 import { ImagePage } from './ImagePage';
 import { ModalPage } from './ModalPage';
 import { ComponentsPage } from './ComponentsPage';
@@ -46,4 +47,5 @@ export const PAGES: PageEntry[] = [
   { id: 'datepicker', title: 'DatePicker', Component: DatePickerPage },
   { id: 'image', title: 'Image', Component: ImagePage },
   { id: 'modal', title: 'Modal', Component: ModalPage },
+  { id: 'gestures', title: 'Gestures', Component: GesturesPage },
 ];

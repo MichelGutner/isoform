@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 import type { ComponentPropsWithRef, ComponentType, ForwardRefExoticComponent } from 'react';
+import type { GestureConfig, GestureProps } from './gesture';
 import type { IsoStyle } from './style/types';
 
 /* ───────────────────────── conditions ───────────────────────── */
@@ -293,6 +294,19 @@ export interface BaseEngineComponent<C extends ComponentType<any>, P extends obj
    */
   style(s: StyleFn<C, P>): EngineComponent<C, P>;
   style(s: StyleObject<C>): EngineComponent<C, P>;
+
+  /**
+   * Declares the gestures the element recognizes and adds their callback props
+   * (`onPan`, `onSwipe`, `onPinch`, `onRotate`, `onDoubleTap`, `onLongPress`).
+   * On mobile they run on native recognizers and the element follows the fingers
+   * on the UI thread; on the web they use Pointer Events. Needs the `gestures`
+   * module. On mobile it applies to `Box` (and `View`).
+   *
+   * @example engine('Box', card).gesture({ pan: { axis: 'x' }, swipe: { directions: ['left', 'right'] } })
+   * @param config The gestures to turn on, each `true` or an options object.
+   * @returns A new component with the gestures added.
+   */
+  gesture(config: GestureConfig): EngineComponent<C, P & GestureProps>;
 
   /** Clones the current rules into a new component, to build a variation without touching the original. */
   extend(): EngineComponent<C, P>;

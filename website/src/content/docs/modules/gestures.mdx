@@ -1,0 +1,190 @@
+---
+title: Gestures
+description: Pan, swipe, pinch, rotate, double tap and long press on a Box with .gesture(), with snap points, inertia, rubber band, styles that follow the fingers, haptics and screen-reader actions. Native recognizers on iOS and Android, Pointer Events on the web.
+---
+
+import LiveExample from '../../../components/LiveExample.astro';
+import GesturesDemo from '../../../components/demos/GesturesDemo.tsx';
+import gesturesSource from '../../../components/demos/GesturesDemo.tsx?raw';
+
+With the module on, `.gesture()` makes a `Box` respond to fingers: **pan** (drag), **swipe**, **pinch**, **rotate**, **double tap** and **long press**. The element follows the fingers by itself; you only write callbacks for what the app does with the result.
+
+On iOS and Android the recognizers are native, and the movement goes from the recognizer straight to the view's transform through React Native's native driver. **The JS thread is not in the loop for every frame**, so a drag stays smooth while JS is busy. On the web the same API runs on Pointer Events and writes the CSS `translate`, `scale` and `rotate` properties directly to the element.
+
+## Enable it
+
+```json title="isoform.config.json"
+{ "modules": { "gestures": true } }
+```
+
+Unlike the other modules, `gestures` adds no dependency and no Compose: it is a small recognizer on a regular view, so the cost is a few kilobytes of native code.
+
+<LiveExample code={gesturesSource}>
+  <GesturesDemo client:only="react" />
+</LiveExample>
+
+## Usage
+
+`.gesture()` takes the gestures to turn on: `true` for the defaults, an object for options. Each gesture has a callback prop.
+
+```tsx
+import { engine } from 'react-isoform';
+
+const Card = engine('Box', { width: 120, height: 120, borderRadius: 24 }).gesture({
+  pan: { axis: 'x', release: 'stay', bounds: { left: 100, right: 100 } },
+  swipe: { directions: ['left', 'right'] },
+  pinch: { minScale: 0.5, maxScale: 3 },
+  rotate: true,
+  doubleTap: true,
+  longPress: { minDuration: 400 },
+});
+
+<Card
+  onSwipe={({ direction }) => console.log(direction)}
+  onDoubleTap={({ x, y }) => console.log(x, y)}
+/>;
+```
+
+:::caution
+Like `.style()`, `.gesture()` adds a rule to the component it is called on. To vary the options, branch with `.extend()` and **build the component outside the render** (or in `useMemo`): a new component type on every render would remount the tree.
+:::
+
+## Gestures
+
+| Gesture | Callback | Options |
+|---|---|---|
+| `pan` | `onPan`, `onSnap` | `axis` (`'both'`), `follow` (`true`), `release` (`'reset'`, or `'snap'` with `snap`), `bounds`, `snap`, `rubberBand` (`false`) |
+| `swipe` | `onSwipe` | `directions` (all four), `minVelocity` (`500` px/s), `minDistance` (`30` px), `exit` (`false`) |
+| `pinch` | `onPinch` | `follow` (`true`), `release` (`'reset'`), `minScale` (`0.5`), `maxScale` (`4`) |
+| `rotate` | `onRotate` | `follow` (`true`), `release` (`'reset'`) |
+| `doubleTap` | `onDoubleTap` | none (`true`) |
+| `longPress` | `onLongPress` | `minDuration` (`500` ms) |
+
+Next to the gestures, the config takes options for all of them:
+
+| Option | Default | What it does |
+|---|---|---|
+| `interpolate` | none | Styles that follow the gesture (opacity, colors). See [Styles that follow the gesture](#styles-that-follow-the-gesture). |
+| `haptics` | `false` | A light tap of the device on a snap, a swipe, a long press and when a drag reaches its bounds. |
+| `simultaneous` | `true` | `false` keeps the pan apart from pinch and rotation: the first one to start wins until the fingers lift. |
+| `actionLabels` | English | Labels of the screen-reader actions. See [Accessibility](#accessibility). |
+
+### Following the fingers
+
+`pan`, `pinch` and `rotate` move the element (`follow`, on by default). Set `follow: false` to only get the events and move things yourself. `swipe`, `doubleTap` and `longPress` never move it.
+
+- **`axis`**: `'x'` or `'y'` limits a pan to one direction and **leaves the other to a parent scroll view**: a horizontal pan inside a vertical `Scroll` does not fight it.
+- **`bounds`**: how far the element may go from where it rests, in each direction (`{ left, right, top, bottom }`). Unset sides are unlimited.
+- **`release`**: what happens when the fingers lift. `'reset'` springs back to where it was; `'stay'` keeps it where it was left (inside the bounds), and the next gesture continues from there. A pan also takes `'decay'` and `'snap'` ([below](#release-decay-and-snap)); pinch and rotate take only `'reset'` and `'stay'`.
+- **`rubberBand`**: past the `bounds`, the element still follows the finger but resists more the farther it goes, and glides back inside on release, as iOS scroll views do. Without it, the bounds stop the element dead.
+
+A drag that starts while the element is still gliding (a release, a snap) picks it up where it is drawn: nothing jumps.
+
+### Release: decay and snap
+
+- **`'decay'`** keeps the element gliding with the finger's speed after it lifts, slowing down until it stops (inside the bounds).
+- **`'snap'`** glides to the nearest of the `snap` points. The finger's speed counts: a flick toward the next point reaches it even from far. Setting `snap` makes `'snap'` the default release. `onSnap` reports the chosen point when the finger lifts.
+
+```tsx
+// a sheet that rests open (-300) or closed (0)
+const Sheet = engine('Box', { height: 400 }).gesture({
+  pan: { axis: 'y', snap: { y: [-300, 0] }, bounds: { top: 300, bottom: 0 }, rubberBand: true },
+  haptics: true,
+});
+
+<Sheet onSnap={({ y }) => setOpen(y === -300)} />;
+```
+
+Snap points are offsets from where the element starts, per axis (`x`, `y`); an axis without points rests at `0`.
+
+### Events
+
+Continuous gestures (`onPan`, `onPinch`, `onRotate`) report a `phase`: `'start'`, `'move'`, `'end'` or `'cancel'` (the system or a scroll took the touch). Distances are in px on the web, points on iOS and dp on Android; speeds are per second.
+
+| Event | Fields |
+|---|---|
+| `PanEvent` | `phase`, `translationX`, `translationY`, `velocityX`, `velocityY`, `x`, `y` |
+| `SwipeEvent` | `direction` (`'left' \| 'right' \| 'up' \| 'down'`), `translationX/Y`, `velocityX/Y` |
+| `PinchEvent` | `phase`, `scale` (`1` = unchanged), `velocity`, `focalX`, `focalY` |
+| `RotateEvent` | `phase`, `rotation` (radians, positive = clockwise), `velocity` |
+| `TapEvent` | `x`, `y` (inside the element) |
+| `SnapEvent` | `x`, `y` (the resting place chosen, offset from where the element started) |
+
+### Swipe to dismiss
+
+With `swipe.exit` and a `pan` that follows the finger, a swipe does not spring back: the element keeps going off screen in the swipe's direction (on the UI thread on mobile), and `onSwipe` fires once it is out. Remove the item there.
+
+```tsx
+const Row = engine('Box', { padding: 16 }).gesture({
+  pan: { axis: 'x' }, // follows the finger sideways; vertical drags still scroll the list
+  swipe: { directions: ['left', 'right'], exit: true },
+});
+
+<Row onSwipe={() => remove(item.id)} />;
+```
+
+Leave `pan.bounds` unset on these rows: the bounds also limit the exit.
+
+A swipe is detected when a pan ends: the dominant direction of the speed decides which way, and both the speed and the distance along it must reach the minimums. It is reported even without `pan`, and it also fires when `pan` is on.
+
+## Styles that follow the gesture
+
+`interpolate` ties styles to where the gesture has the element: its offset (`x`, `y`), its `scale` or its `rotation` (radians). Each entry lists increasing `input` values of its source and, per property, one value per input point; in between the value is interpolated (colors too), and past the ends it holds.
+
+```tsx
+const Row = engine('Box', { padding: 16 }).gesture({
+  pan: { axis: 'x' },
+  swipe: { directions: ['left'], exit: true },
+  interpolate: [
+    { from: 'x', input: [-200, 0], style: { opacity: [0.3, 1], backgroundColor: ['#fee2e2', '#ffffff'] } },
+  ],
+});
+```
+
+The properties are `opacity`, `backgroundColor` and `borderColor`. On mobile they run on the native driver, together with the transform, so they follow the finger without JS; on the web they are written with the transform and glide with it on release. They win over the element's own values of the same properties.
+
+They only drive the element itself. To change other elements, read the gesture in `onPan`, `onPinch` or `onSnap` and set state (this goes through JS).
+
+## Haptics
+
+With `haptics: true` the device taps lightly when a `snap` rests on a new point and when a drag reaches its `bounds`, and a bit more firmly on a `swipe` and a `longPress`. On iOS it is `UIImpactFeedbackGenerator`; on Android, the view's haptic feedback (it follows the system setting); on the web, `navigator.vibrate` where the browser has it (Android Chrome), and nothing elsewhere.
+
+## Accessibility
+
+A screen reader cannot drag. On mobile, `.gesture()` gives the element actions the screen reader offers instead (VoiceOver's actions rotor, TalkBack's actions menu):
+
+| Gesture | Action | Runs |
+|---|---|---|
+| `swipe` | one per direction (`'Swipe left'`…) | `onSwipe`, and the exit with `swipe.exit` |
+| `pan` with `snap` | `'Next position'`, `'Previous position'` | glides to the next or previous point and calls `onSnap` |
+| `longPress` | the standard long press | `onLongPress` |
+| `doubleTap` | activate (the screen reader's double tap) | `onDoubleTap` |
+
+Rename them with `actionLabels`, for example in the app's language: `actionLabels: { swipeLeft: 'Arquivar' }`. The element becomes `accessible` so the actions can be reached (set `accessible={false}` to opt out), and actions passed in `accessibilityActions` stay; `onAccessibilityAction` still gets every action that is not one of these. Give the element an `accessibilityLabel` too.
+
+## Nested gestures
+
+When an element with `.gesture()` sits inside another, **the innermost one wins**: the outer one only starts on a movement the inner one does not take (with `axis`, the other direction). A scroll view inside the element works the same way: once it scrolls, the element lets go.
+
+## Per platform
+
+| | Web | iOS | Android |
+|---|---|---|---|
+| Recognizers | Pointer Events (mouse, touch and pen) | UIKit (`UIPanGestureRecognizer`, `UIPinchGestureRecognizer`…) | the lib's own recognizer on the view's touches |
+| The element moves with | CSS `translate`, `scale`, `rotate` written to the element | the view's transform, native driver | the view's transform, native driver |
+| One axis | `touch-action: pan-y` (or `pan-x`) | the pan only starts along its axis | the pan only starts along its axis |
+| Pressables inside | keep working | cancelled when a drag starts | cancelled when a drag starts |
+| Trackpad | pinch with `ctrl` + wheel; Safari's gesture events (pinch and rotate) | | |
+| Screen-reader actions | none | VoiceOver | TalkBack |
+
+## Rules and limits
+
+- **Only on `Box`** (and `View`). On other primitives it warns in development and does nothing; wrap the element in a `Box`.
+- **`animation` and `transition` on the same element are ignored on mobile** (with a warning): the fingers own the transform there. Put them on a child. The element's own `transform` style still applies after the gesture's.
+- **While the fingers move the element, only `transform` and the `interpolate` styles are driven natively.** Other changes during a drag (layout, other elements) go through JS, as they always do.
+- **After changing the native side** (updating the lib), rebuild the app: on iOS, `pod install` regenerates the native spec.
+- A pan, a pinch and a rotation can run together (move while pinching). A double tap and a long press never start while the finger is dragging.
+
+## When the module is off
+
+`.gesture()` does nothing: the element renders as a plain `Box` without the gesture callbacks, and one development warning is logged. With `react-isoform/metro`, the gesture code and its native spec are left out of the JS bundle too.

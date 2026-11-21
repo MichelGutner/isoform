@@ -20,6 +20,8 @@ import { DatePicker } from './datePicker/DatePicker';
 import { Image } from './image/Image';
 import { nativeImageCache } from './image/imageCache';
 import { Modal } from './modal/Modal';
+import { GestureView } from './gesture/GestureView';
+import type { ResolvedGestures } from '../../core/gesture';
 
 /** Nome isoform → nome do componente no `react-native`. */
 const PRIMITIVES: Record<string, string> = {
@@ -66,6 +68,8 @@ const PRESSABLE = new Set(['Pressable']);
 /** Primitivas sem `children`: não recebem `::before`/`::after`. */
 const NO_CHILDREN = new Set(['Input', 'TextInput', 'Image', 'Video', 'Audio', 'Pdf']);
 const INPUT = new Set(['Input', 'TextInput']);
+/** Primitives `.gesture()` applies to on mobile (both render a `View`, swapped for the gesture view). */
+const GESTURE_PRIMITIVES = new Set(['Box', 'View']);
 
 /** Saída de `compileStyle` no mobile. */
 export interface NativeCompiled {
@@ -79,6 +83,24 @@ export interface NativeCompiled {
   pseudos?: NativePseudos;
   /** `hostFlags(this)`, computed once at compile time (it was recomputed twice per render). */
   hostFlags?: StyleHostFlags;
+  /** What `.gesture()` declared (defaults applied). */
+  gestures?: ResolvedGestures;
+}
+
+/**
+ * With gestures the fingers own the transform through the native driver; `animation`
+ * and `transition` (driven from JS on the same view) would fight over it, so they
+ * are dropped on that element. They still work on its children.
+ */
+function withGestures(compiled: NativeCompiled, gestures: ResolvedGestures): void {
+  compiled.gestures = gestures;
+  if (!compiled.animation && !compiled.transition) return;
+  warnOnce(
+    'gesture-and-animation',
+    'animation/transition on an element with .gesture(): on mobile they are ignored there; put them on a child.',
+  );
+  compiled.animation = undefined;
+  compiled.transition = undefined;
 }
 
 /** Pseudo-elementos → o que o mobile consegue fazer com cada um. */
@@ -243,6 +265,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     states?: StateStyles,
     breakpoints?: BreakpointStyle[],
     pseudos?: PseudoStyles,
+    gestures?: ResolvedGestures,
   ): NativeCompiled {
     // `animation*` e `transition*` saem do estilo e viram execução com `Animated`
     let animationProps: Record<string, any> | undefined;
@@ -303,6 +326,7 @@ export const reactNativeAdapter: PlatformAdapter = {
     if (compiled.animation && compiled.transition) {
       warnOnce('anim-and-transition', 'animation and transition on the same element: on mobile only the animation runs.');
     }
+    if (gestures) withGestures(compiled, gestures);
     compiled.hostFlags = hostFlags(compiled);
     return compiled;
   },
@@ -323,6 +347,10 @@ export const reactNativeAdapter: PlatformAdapter = {
 
     if (c.pseudos) applyPseudos(out, c.pseudos, primitive);
 
+    if (c.gestures) {
+      if (primitive && GESTURE_PRIMITIVES.has(primitive)) out.__isoGestures = c.gestures;
+      else warnOnce(`gesture:${primitive}`, '.gesture() on mobile only applies to Box (wrap the element in a Box).');
+    }
     if (c.animation) out.__isoAnimation = c.animation;
     if (c.transition && !c.animation) out.__isoTransition = c.transition;
 
@@ -374,6 +402,10 @@ export const reactNativeAdapter: PlatformAdapter = {
 
   resolveComponent(component, compiled) {
     const c = compiled as NativeCompiled;
+    // Box/View with gestures → the gesture view (same check as `applyProps`: both primitives are `RN.View`)
+    if (c.gestures && component === RN.View) {
+      return c.hostFlags ? styleHost(GestureView, c.hostFlags) : GestureView;
+    }
     let result = c.animation ? animatedHost(component) : component;
     if (c.transition && !c.animation) result = transitionHost(result);
     const flags = c.hostFlags;

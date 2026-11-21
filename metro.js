@@ -25,6 +25,7 @@ const MODULE_FILES = {
   datePicker: /[\\/]adapters[\\/]react-native[\\/]datePicker[\\/]DatePicker\.(tsx|js)$/,
   image: /[\\/]adapters[\\/]react-native[\\/]image[\\/]Image\.(tsx|js)$/,
   modal: /[\\/]adapters[\\/]react-native[\\/]modal[\\/]Modal\.(tsx|js)$/,
+  gestures: /[\\/]adapters[\\/]react-native[\\/]gesture[\\/]GestureView\.(tsx|js)$/,
 };
 
 /** `modules` do arquivo (ex.: `{ video: true, audio: { enabled: false } }`), ou `null` se o app não tem o arquivo. */

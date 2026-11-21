@@ -12,6 +12,7 @@ type EngineComponent<C extends ComponentType<any>, P extends object = {}> =
   ForwardRefExoticComponent<ComponentPropsWithRef<C> & P> & {
     when(condition, attrs): EngineComponent<C, P>;
     attrs(attrs): EngineComponent<C, P>;
+    gesture(config): EngineComponent<C, P & GestureProps>;
     style(style): EngineComponent<C, P>;
     extend(): EngineComponent<C, P>;
   };
@@ -46,6 +47,16 @@ See [Conditions and variants](/guides/conditions/).
 
 Applies props unconditionally (a default `role`, `type`, `testID`…). `attrs` may include a `style`.
 
+## `.gesture(config)`
+
+Declares the gestures a `Box` recognizes (`pan`, `swipe`, `pinch`, `rotate`, `doubleTap`, `longPress`) and adds their callback props (`onPan`, `onSwipe`, `onPinch`, `onRotate`, `onDoubleTap`, `onLongPress`, `onSnap`). The same config also takes `interpolate` (styles that follow the gesture), `haptics`, `simultaneous` and `actionLabels`. Several calls merge, gesture by gesture. Needs the [`gestures` module](/modules/gestures/).
+
+```tsx
+const Card = engine('Box', { width: 120, height: 120 }).gesture({ pan: { axis: 'x' }, swipe: true });
+
+<Card onSwipe={({ direction }) => console.log(direction)} />;
+```
+
 ## `.extend()`
 
 Clones the current rules into a **new** component, to build a variation without touching the original.
@@ -56,7 +67,7 @@ const DangerTag = Tag.extend().style({ backgroundColor: 'crimson' });
 ```
 
 :::caution
-`.style()`, `.when()` and `.attrs()` add the rule to the component they are called on. Branch with `.extend()` (or `engine(Tag, style)`) when the original must stay as it is.
+`.style()`, `.when()`, `.attrs()` and `.gesture()` add the rule to the component they are called on. Branch with `.extend()` (or `engine(Tag, style)`) when the original must stay as it is.
 :::
 
 ## Props

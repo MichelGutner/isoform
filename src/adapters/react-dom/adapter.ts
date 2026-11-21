@@ -13,6 +13,19 @@ import { BottomSheet } from './sheet/LazySheet';
 import { SvgPrimitives } from './svg/elements';
 import { Camera } from './camera/LazyCamera';
 import { DatePicker } from './datePicker/DatePicker';
+import { gestureHost } from './gesture/GestureBox';
+import { GESTURE_PROPS, type ResolvedGestures } from '../../core/gesture';
+
+/** Output of `compileStyle` on the web. */
+interface WebCompiled {
+  /** Atomic classes of the style. */
+  className: string;
+  /** What `.gesture()` declared, when it did. */
+  gestures?: ResolvedGestures;
+}
+
+/** Primitives `.gesture()` applies to (same set as on mobile, so both platforms behave alike). */
+const GESTURE_PRIMITIVES = new Set(['Box', 'View']);
 
 /** Seletores válidos de quadro: `from`, `to`, `50%`, `12.5%` (e listas separadas por vírgula). */
 const FRAME_SELECTOR = /^(from|to|\d+(\.\d+)?%)$/;
@@ -88,7 +101,7 @@ export const reactDomAdapter: PlatformAdapter = {
   },
 
   /** Estilo mesclado (+ variantes de estado e de breakpoint) → classes atômicas. */
-  compileStyle(style, states, breakpoints, pseudos) {
+  compileStyle(style, states, breakpoints, pseudos, gestures) {
     const classes: string[] = [];
     addClasses(classes, style);
     if (states) {
@@ -111,10 +124,30 @@ export const reactDomAdapter: PlatformAdapter = {
         addClasses(classes, bpStyle, { bp: { min, max, order } });
       }
     }
-    return { className: classes.join(' ') };
+    return gestures ? { className: classes.join(' '), gestures } : { className: classes.join(' ') };
   },
 
-  applyProps: applyWebProps,
+  applyProps(input) {
+    const gestures = (input.compiled as WebCompiled).gestures;
+    if (!gestures) return applyWebProps(input);
+    const applies = !!input.primitive && GESTURE_PRIMITIVES.has(input.primitive);
+    if (!applies) warnOnce(`gesture-web:${input.primitive}`, '.gesture() only applies to Box (wrap the element in a Box).');
+    // `applyWebProps` drops RN-only props such as `onLongPress`: keep the gesture callbacks aside until it is done
+    const kept: Record<string, unknown> = {};
+    if (applies) {
+      for (const name of GESTURE_PROPS) {
+        kept[name] = input.props[name];
+        delete input.props[name];
+      }
+    }
+    const out = applyWebProps(input);
+    if (applies) Object.assign(out, kept, { __isoGestures: gestures });
+    return out;
+  },
+
+  resolveComponent(component, compiled) {
+    return (compiled as WebCompiled).gestures && component === Box ? gestureHost(component) : component;
+  },
 
   applyThemeVariables: (css) => sheet.setVariables(css),
 

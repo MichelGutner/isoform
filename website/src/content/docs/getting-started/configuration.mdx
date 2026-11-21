@@ -73,7 +73,7 @@ The listed branches must hold CSS strings that the style only **passes through**
 
 ## `isoform.config.json` and optional modules
 
-The media players, the PDF viewer, the bottom sheet, SVG, the camera, the date picker, the image pipeline and the modal are **optional and off by default**, so apps that do not use them pay nothing: no native code, no dependencies, no bundle size. Turn them on in one file at the app root, next to `package.json`, and pass the same file to `configure`:
+The media players, the PDF viewer, the bottom sheet, SVG, the camera, the date picker, the image pipeline, the modal and gestures are **optional and off by default**, so apps that do not use them pay nothing: no native code, no dependencies, no bundle size. Turn them on in one file at the app root, next to `package.json`, and pass the same file to `configure`:
 
 ```json title="isoform.config.json"
 {
@@ -86,6 +86,7 @@ The media players, the PDF viewer, the bottom sheet, SVG, the camera, the date p
     "datePicker": { "enabled": true },
     "image": { "enabled": true },
     "modal": { "enabled": true },
+    "gestures": { "enabled": true },
     "camera": { "enabled": true, "video": true, "codeScanner": true }
   }
 }
@@ -142,5 +143,6 @@ Rendering a component of a disabled module never crashes. It logs one developmen
 | `sheet`, `svg`, `datePicker` | nothing | nothing |
 | `image` | a plain `<img>` | React Native's `Image` |
 | `modal` | nothing | React Native's `Modal` |
+| `gestures` | a plain `Box`, no gesture callbacks | a plain `View`, no gesture callbacks |
 
 See the [modules overview](/modules/overview/) for what each module draws on each platform.

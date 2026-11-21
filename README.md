@@ -49,7 +49,7 @@ The same `Button` renders a keyboard-accessible `<div role="button">` with atomi
 |---|---|
 | **One component library**<br>`engine('Box')`, `'Text'`, `'Pressable'`, `'Input'`, `'Image'`, `'Scroll'` resolve to DOM elements on the web and React Native components on mobile. | **Standard CSS vocabulary**<br>`paddingInline`, `boxShadow`, `'1rem'`, `transform: 'rotate(-2deg)'`. Numbers are px, strings are CSS; full CSS on the web, converted on mobile. |
 | **Global theme, no providers**<br>`configure({ theme })` once, `updateTheme()` anywhere, `useTheme()` to read it. | **Variants with `when()`**<br>Props, `state:hover`/`pressed`/`focus`, `breakpoints:md`, `platform:web`, `::before`… all typed. |
-| **Animations on both runtimes**<br>`keyframes()` and CSS `transition` become real CSS on the web and `Animated` on React Native. | **Optional native modules**<br>Video, audio, PDF, bottom sheet, SVG, camera, date picker, image pipeline and modal. Zero cost when off. |
+| **Animations on both runtimes**<br>`keyframes()` and CSS `transition` become real CSS on the web and `Animated` on React Native. | **Optional native modules**<br>Video, audio, PDF, bottom sheet, SVG, camera, date picker, image pipeline, modal and gestures. Zero cost when off. |
 | **SSR-ready atomic CSS**<br>Deduplicated, rank-ordered classes and real `@media` rules; `getStyleText()` on the server. | **TypeScript first**<br>Typed theme, custom props, conditions, breakpoints and `ref` handles. |
 | **No wrapper when it is not needed**<br>With the optional JSX runtime, a styled component whose style never reads the theme renders as the `View`/`div` underneath: no extra component, no hook. | **Caches what the style reads**<br>Styles are cached by the props they actually read; a theme switch only re-renders the components whose style reads the theme. |
 
@@ -78,6 +78,7 @@ Off by default. Turn on only what you use in `isoform.config.json`; disabled mod
 | [`datePicker`](https://isoform-kappa.vercel.app/modules/date-picker/) | `DatePicker` | `<input type="date">` | SwiftUI | Compose |
 | [`image`](https://isoform-kappa.vercel.app/modules/image/) | `Image` | `<img>` + blurhash, zoom | URLSession, ImageIO | OkHttp, `ImageDecoder` |
 | [`modal`](https://isoform-kappa.vercel.app/modules/modal/) | `Modal` | `<dialog>` | UIKit | Compose |
+| [`gestures`](https://isoform-kappa.vercel.app/modules/gestures/) | `.gesture()` on `Box` | Pointer Events | UIKit recognizers | own recognizer |
 
 ```json
 { "modules": { "video": true, "sheet": true, "camera": { "enabled": true, "codeScanner": true } } }

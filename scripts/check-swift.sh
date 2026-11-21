@@ -10,6 +10,7 @@ TARGET=arm64-apple-ios15.1-simulator
 MODULES=(
   "image"
   "modal"
+  "gesture"
   "sheet"
   "datePicker"
   "camera"

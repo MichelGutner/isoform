@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType } from 'react';
+import type { ResolvedGestures } from './gesture';
 import type { ImageCacheApi } from './image';
 import type { PseudoName, StateName } from './types';
 
@@ -51,12 +52,15 @@ export interface PlatformAdapter {
    * Turns the merged style (a flat object) into the platform's final form
    * (React Native style objects, atomic CSS classes…). Runs once per
    * (theme, props) combination; the core caches the result.
+   * `gestures` carries what `.gesture()` declared (defaults applied); a platform
+   * without gesture support can ignore it.
    */
   compileStyle(
     style: Record<string, any>,
     states?: StateStyles,
     breakpoints?: BreakpointStyle[],
     pseudos?: PseudoStyles,
+    gestures?: ResolvedGestures,
   ): unknown;
   /**
    * Builds the final props of the underlying component. Runs on every render,

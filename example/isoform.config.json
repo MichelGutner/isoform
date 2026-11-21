@@ -22,6 +22,9 @@
     "modal": {
       "enabled": true
     },
+    "gestures": {
+      "enabled": true
+    },
     "svg": {
       "enabled": true
     },

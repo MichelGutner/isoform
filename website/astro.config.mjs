@@ -90,6 +90,7 @@ export default defineConfig({
           'modules/date-picker',
           'modules/image',
           'modules/modal',
+          'modules/gestures',
         ]),
         group('API reference', [
           'reference/configure',
