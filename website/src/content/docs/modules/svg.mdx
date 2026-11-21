@@ -41,6 +41,23 @@ Presentation properties in the style: `color`, `fill`, `fillOpacity`, `fillRule`
 
 The root `Svg`'s style sizes and places its box (`width`, `height`, `margin`…); its presentation keys (`color`, `fill`, `stroke`…) are inherited by the shapes inside, so `stroke: 'currentColor'` follows the root's `color`.
 
+## Animating a shape
+
+`transition` works on the shapes too, with the same syntax as on a `Box`, so a progress ring fills smoothly on every platform:
+
+```tsx
+const Progress = engine<'Circle', { value: number }>('Circle', ({ theme, props }) => ({
+  fill: 'none',
+  stroke: theme.color.primary,
+  strokeWidth: 10,
+  strokeDasharray: CIRCUMFERENCE,
+  strokeDashoffset: CIRCUMFERENCE * (1 - props.value),
+  transition: 'stroke-dashoffset 300ms ease',
+}));
+```
+
+On the web the browser's CSS transition runs it. On iOS and Android the offset (and the colors) are animated from JS, frame by frame, because `react-native-svg` properties are not styles the native driver can take: fine for one ring, but keep it to a few shapes at a time.
+
 ## Per platform
 
 | | Web | iOS / Android |

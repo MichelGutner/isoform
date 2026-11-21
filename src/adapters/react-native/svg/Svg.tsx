@@ -5,6 +5,7 @@ import { isModuleEnabled } from '../../../config';
 import { warnOnce } from '../../../core/dev';
 import { warnModuleDisabled } from '../../../core/modules';
 import { SVG_ELEMENTS, splitSvgStyle, type SvgElementName } from '../../../core/svg';
+import { RERENDER } from '../transitionHost';
 
 declare const require: (id: string) => any;
 
@@ -54,6 +55,8 @@ function element(name: SvgElementName): ComponentType<any> {
     return <Native ref={ref} {...props} {...split.props} style={root ? split.style : undefined} />;
   });
   Element.displayName = name;
+  // `react-native-svg` shapes read props, not `style`: a `transition` redraws them frame by frame
+  (Element as any)[RERENDER] = true;
   return Element;
 }
 

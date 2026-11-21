@@ -18,9 +18,35 @@ jest.mock('react-native', () => {
     Image: () => null,
     ScrollView: () => null,
     Modal: () => null,
-    Animated: { View: () => null },
+    Easing: { bezier: (...args: number[]) => Object.assign((t: number) => t, { args }) },
+    // each `timing(...).start()` is recorded: the test decides what ran
+    Animated: {
+      View: () => null,
+      Value: class {
+        listeners: Array<(e: { value: number }) => void> = [];
+        constructor(public value: number) {}
+        setValue(v: number) {
+          this.listeners.forEach((l) => l({ value: v }));
+        }
+        addListener(cb: any) {
+          this.listeners.push(cb);
+          return 'id';
+        }
+        removeAllListeners() {
+          this.listeners = [];
+        }
+        stopAnimation() {}
+        interpolate(config: any) {
+          return { interpolated: config };
+        }
+      },
+      timing: (value: any, config: any) => ({ start: () => mockRuns.push({ value, config }) }),
+      createAnimatedComponent: (C: any) => C,
+    },
   };
 });
+
+const mockRuns: Array<{ value: any; config: any }> = [];
 
 jest.mock(
   'react-native-svg',
@@ -30,6 +56,9 @@ jest.mock(
       return children ?? null;
     },
     Path: function Path() {
+      return null;
+    },
+    Circle: function Circle() {
       return null;
     },
     LinearGradient: function LinearGradient() {
@@ -62,6 +91,7 @@ describe('svg primitives (native)', () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
     // react-test-renderer prints a deprecation notice
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockRuns.length = 0;
     resetProvider();
     registerBundledProvider(reactNativeAdapter);
   });
@@ -95,5 +125,29 @@ describe('svg primitives (native)', () => {
     const tree = render(<Icon viewBox="0 0 24 24" />);
     expect(tree.toJSON()).toBeNull();
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"svg"'));
+  });
+
+  it('animates a stroke-dashoffset transition on a shape (a progress ring), driven from JS', () => {
+    configure({ modules: { svg: true } });
+    const Ring = engine<'Circle', { value: number }>('Circle', ({ props }) => ({
+      fill: 'none',
+      strokeDasharray: 100,
+      strokeDashoffset: 100 * (1 - props.value),
+      transition: 'stroke-dashoffset 300ms ease',
+    }));
+    const tree = render(<Ring value={0.2} />);
+    const offset = () => tree.root.findByType(NativeSvg.Circle).props.strokeDashoffset;
+    expect(offset()).toBe(80);
+    expect(mockRuns).toHaveLength(0);
+
+    // a shape reads props, not `style`: the host redraws it with the value of each frame
+    act(() => tree.update(<Ring value={0.75} />));
+    expect(offset()).toBe(80);
+    expect(mockRuns).toHaveLength(1);
+    expect(mockRuns[0].config).toMatchObject({ toValue: 1, duration: 300, useNativeDriver: false });
+    act(() => mockRuns[0].value.setValue(0.5));
+    expect(offset()).toBe(52.5);
+    act(() => mockRuns[0].value.setValue(1));
+    expect(offset()).toBe(25);
   });
 });
