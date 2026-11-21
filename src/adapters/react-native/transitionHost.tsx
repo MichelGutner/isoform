@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { forwardRef, useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useReducer, useRef } from 'react';
 import { Animated } from 'react-native';
 import { flattenStyle } from '../../core/flatten';
 import { IDENTITY, interpolatable, parseTransform } from './animation';
@@ -32,13 +32,25 @@ interface Track {
   pending: boolean;
   /** Progressos de transições substituídas, parados depois do commit. */
   retired: Animated.Value[];
+  /** A cada quadro da animação, quando o host redesenha em vez de usar nós `Animated` (ver `RERENDER`). */
+  onFrame?: () => void;
 }
+
+/**
+ * Componentes que não aceitam o valor animado via `setNativeProps({ style })` (os elementos do
+ * `react-native-svg` só leem props, não `style`): o host redesenha o componente a cada quadro com o valor
+ * interpolado. Roda no JS (sem native driver). O componente se marca com esta propriedade estática.
+ */
+export const RERENDER = '__isoRerenderFrames';
+const rerenders = (Component: React.ComponentType<any>): boolean => !!(Component as any)[RERENDER];
 
 /** Dá ao track um progresso novo começando em `start`; só ele atualiza `last`. */
 function freshProgress(track: Track, start: number): void {
   const progress = new Animated.Value(start);
   progress.addListener(({ value }) => {
-    if (track.progress === progress) track.last = value;
+    if (track.progress !== progress) return;
+    track.last = value;
+    track.onFrame?.();
   });
   track.progress = progress;
   track.last = start;
@@ -70,6 +82,14 @@ function currentValue(track: Track, t: number): any {
     return out;
   }
   return lerpValue(track.from, track.to, t) ?? track.to;
+}
+
+/** Valor de uma propriedade no progresso atual, para quem redesenha a cada quadro (ou o destino quando não dá para interpolar). */
+function frameValue(track: Track): any {
+  if (track.kind === 'transform') {
+    return Object.entries(currentValue(track, track.last) as TransformMap).map(([fn, value]) => ({ [fn]: value }));
+  }
+  return interpolatable([track.from, track.to]) ? currentValue(track, track.last) : track.to;
 }
 
 /** Nó animado de uma propriedade (ou o valor puro quando não dá para interpolar). */
@@ -107,6 +127,8 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
   const Created = forwardRef<any, any>(({ __isoTransition: tr, style, ...rest }, ref) => {
     const spec = tr as ResolvedTransition;
     const store = useRef(new Map<string, Track>()).current;
+    const byRender = rerenders(Component);
+    const [, redraw] = useReducer((count: number) => count + 1, 0);
 
     const flat = flattenStyle(style);
     const animated: Record<string, any> = { ...flat };
@@ -150,6 +172,10 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
         track.pending = true;
       }
 
+      if (byRender) {
+        animated[key] = frameValue(track);
+        continue;
+      }
       track.node ??= buildNode(track);
       animated[key] = track.node;
     }
@@ -159,6 +185,7 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
     // comita a segunda (StrictMode, render concorrente).
     useEffect(() => {
       store.forEach((track) => {
+        track.onFrame = byRender ? redraw : undefined;
         track.retired.forEach(retire);
         track.retired = [];
         if (!track.pending) return;
@@ -168,7 +195,7 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
           duration: track.timing.duration,
           delay: track.timing.delay,
           easing: track.timing.easing,
-          useNativeDriver: spec.nativeDriver,
+          useNativeDriver: spec.nativeDriver && !byRender,
           isInteraction: false,
         }).start();
       });
@@ -184,8 +211,8 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
       [store],
     );
 
-    // o componente do RN precisa ser animado para aceitar nós `Animated` no estilo
-    return React.createElement(AnimatedFor(Component), { ...rest, ref, style: animated });
+    // o componente do RN precisa ser animado para aceitar nós `Animated` no estilo (os de `RERENDER` recebem o valor já calculado)
+    return React.createElement(byRender ? Component : AnimatedFor(Component), { ...rest, ref, style: animated });
   });
 
   Created.displayName = `Transition(${(Component as any).displayName || (Component as any).name || 'Component'})`;

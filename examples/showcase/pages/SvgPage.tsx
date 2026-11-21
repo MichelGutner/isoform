@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { engine } from 'react-isoform';
 import { Body, Button, ButtonLabel, Row, themeFade } from '../ui';
-import { Code, PageShell, Section } from '../kit';
+import { Code, Flags, PageShell, Section } from '../kit';
+
+/** SVG colors glide on a theme switch or a state change (CSS on the web, redrawn per frame on iOS and Android). */
+const SVG_FADE = 'fill 550ms ease, stroke 550ms ease, stop-color 550ms ease';
 
 // ── icons: `color` on the root, `currentColor` in the shapes ──
 
@@ -9,14 +12,18 @@ const Icon = engine<'Svg', { active?: boolean }>('Svg', ({ theme, props }) => ({
   width: 32,
   height: 32,
   color: props.active ? theme.color.error : theme.color.text,
+  transition: 'color 300ms ease',
 }));
 
+/** The fill is always `currentColor`: its opacity animates in, where `none` → color could not. */
 const Outline = engine<'Path', { filled?: boolean }>('Path', ({ props }) => ({
-  fill: props.filled ? 'currentColor' : 'none',
+  fill: 'currentColor',
+  fillOpacity: props.filled ? 1 : 0,
   stroke: 'currentColor',
   strokeWidth: 2,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
+  transition: 'fill-opacity 300ms ease',
 }));
 
 const OutlinePolygon = engine('Polygon', {
@@ -47,11 +54,11 @@ const Defs = engine('Defs');
 const SvgLinearGradient = engine('SvgLinearGradient');
 const Rect = engine('Rect');
 
-const StopFrom = engine('Stop', ({ theme }) => ({ stopColor: theme.color.primary }));
-const StopTo = engine('Stop', ({ theme }) => ({ stopColor: theme.color.secondary }));
+const StopFrom = engine('Stop', ({ theme }) => ({ stopColor: theme.color.primary, transition: SVG_FADE }));
+const StopTo = engine('Stop', ({ theme }) => ({ stopColor: theme.color.secondary, transition: SVG_FADE }));
 
-const Dot = engine('Circle', ({ theme }) => ({ fill: theme.color.warning }));
-const Triangle = engine('Polygon', ({ theme }) => ({ fill: theme.color.success, opacity: 0.9 }));
+const Dot = engine('Circle', ({ theme }) => ({ fill: theme.color.warning, transition: SVG_FADE }));
+const Triangle = engine('Polygon', ({ theme }) => ({ fill: theme.color.success, opacity: 0.9, transition: SVG_FADE }));
 
 const Caption = engine('SvgText', {
   fill: '#ffffff',
@@ -71,6 +78,7 @@ const Track = engine('Circle', ({ theme }) => ({
   fill: 'none',
   stroke: theme.color.border,
   strokeWidth: 10,
+  transition: SVG_FADE,
 }));
 
 const Progress = engine<'Circle', { value: number }>('Circle', ({ theme, props }) => ({
@@ -80,7 +88,8 @@ const Progress = engine<'Circle', { value: number }>('Circle', ({ theme, props }
   strokeLinecap: 'round',
   strokeDasharray: CIRCUMFERENCE,
   strokeDashoffset: CIRCUMFERENCE * (1 - props.value),
-})).when('platform:web', { style: { transition: 'stroke-dashoffset 300ms ease' } });
+  transition: `stroke-dashoffset 300ms ease, ${SVG_FADE}`,
+}));
 
 const Percent = engine('SvgText', ({ theme }) => ({
   fill: theme.color.text,
@@ -89,10 +98,74 @@ const Percent = engine('SvgText', ({ theme }) => ({
   textAnchor: 'middle',
 }));
 
-/** SVG: icons, shapes with a gradient and a progress ring, all styled from the theme. */
+// ── a stroke that draws itself: dash length = path length, the offset hides it ──
+
+const DRAW_LENGTH = 90;
+
+const DrawCanvas = engine('Svg', { width: 96, height: 96 });
+
+const Draw = engine<'Path', { drawn?: boolean }>('Path', ({ theme, props }) => ({
+  fill: 'none',
+  stroke: theme.color.primary,
+  strokeWidth: 2.5,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  strokeDasharray: DRAW_LENGTH,
+  strokeDashoffset: props.drawn ? 0 : DRAW_LENGTH,
+  transition: `stroke-dashoffset 900ms ease-in-out, ${SVG_FADE}`,
+}));
+
+const DrawStar = engine<'Polygon', { drawn?: boolean }>('Polygon', ({ theme, props }) => ({
+  fill: 'none',
+  stroke: theme.color.warning,
+  strokeWidth: 2.5,
+  strokeLinejoin: 'round',
+  strokeDasharray: 80,
+  strokeDashoffset: props.drawn ? 0 : 80,
+  transition: `stroke-dashoffset 900ms ease-in-out 150ms, ${SVG_FADE}`,
+}));
+
+// ── bars: a thick line whose dash is the value (vertical, growing from the bottom) ──
+
+const BAR_HEIGHT = 100;
+const BAR_COLORS = ['primary', 'secondary', 'success', 'warning', 'error'] as const;
+
+const Chart = engine('Svg', { width: '100%', height: 140 });
+
+const Bar = engine<'Line', { value: number; tone: (typeof BAR_COLORS)[number] }>('Line', ({ theme, props }) => ({
+  stroke: theme.color[props.tone],
+  strokeWidth: 26,
+  strokeLinecap: 'round',
+  strokeDasharray: BAR_HEIGHT,
+  strokeDashoffset: BAR_HEIGHT * (1 - props.value),
+  transition: `stroke-dashoffset 600ms cubic-bezier(0.34, 1.2, 0.64, 1), ${SVG_FADE}`,
+}));
+
+const Baseline = engine('Line', ({ theme }) => ({ stroke: theme.color.border, strokeWidth: 2, transition: SVG_FADE }));
+
+const randomBars = () => BAR_COLORS.map(() => Math.round((0.15 + Math.random() * 0.85) * 100) / 100);
+
+// ── shapes that change color, outline and opacity together ──
+
+const PALETTE = ['primary', 'secondary', 'success', 'warning', 'error'] as const;
+
+const Palette = engine('Svg', { width: '100%', height: 120 });
+
+const Swatch = engine<'Circle', { tone: (typeof PALETTE)[number]; on?: boolean }>('Circle', ({ theme, props }) => ({
+  fill: theme.color[props.tone],
+  fillOpacity: props.on ? 1 : 0.25,
+  stroke: props.on ? theme.color.text : theme.color[props.tone],
+  strokeWidth: props.on ? 5 : 1,
+  transition: 'fill-opacity 400ms ease, stroke-width 400ms ease, stroke 400ms ease, fill 550ms ease',
+}));
+
+/** SVG: icons, shapes with a gradient, a progress ring and animated strokes, all styled from the theme. */
 export function SvgPage() {
   const [liked, setLiked] = useState(false);
   const [progress, setProgress] = useState(0.4);
+  const [drawn, setDrawn] = useState(true);
+  const [bars, setBars] = useState([0.4, 0.8, 0.6, 0.95, 0.3]);
+  const [tone, setTone] = useState(0);
   const step = (delta: number) => setProgress((value) => Math.min(1, Math.max(0, Math.round((value + delta) * 10) / 10)));
 
   return (
@@ -137,7 +210,7 @@ export function SvgPage() {
         </Canvas>
       </Section>
 
-      <Section title="Progress ring" hint="strokeDasharray / strokeDashoffset from a prop. On the web the offset also has a CSS transition.">
+      <Section title="Progress ring" hint="strokeDasharray / strokeDashoffset from a prop, with a transition on the offset: the ring fills smoothly on every platform.">
         <Row wrap>
           <Ring viewBox="0 0 120 120">
             <Track cx="60" cy="60" r={RADIUS} />
@@ -156,6 +229,51 @@ export function SvgPage() {
         <Body muted>Progress: {Math.round(progress * 100)}%</Body>
       </Section>
 
+      <Section title="Draw on" hint="A dashed stroke as long as the path, and the offset hides it: toggling it draws the line by itself.">
+        <Row wrap>
+          <DrawCanvas viewBox="0 0 96 96">
+            <Draw drawn={drawn} d="M16 52l22 22L80 22" />
+            <DrawStar drawn={drawn} points="48,4 56,24 78,26 62,40 67,62 48,51 29,62 34,40 18,26 40,24" transform="translate(0 28) scale(0.5)" />
+          </DrawCanvas>
+          <Button size="sm" onPress={() => setDrawn((on) => !on)} testID="svg-draw">
+            <ButtonLabel>{drawn ? 'Erase' : 'Draw'}</ButtonLabel>
+          </Button>
+        </Row>
+      </Section>
+
+      <Section title="Bars" hint="Each bar is a thick line whose dash is the value; new values glide with a little overshoot.">
+        <Chart viewBox="0 0 300 140" preserveAspectRatio="xMidYMid meet">
+          <Baseline x1="10" y1="128" x2="290" y2="128" />
+          {BAR_COLORS.map((color, i) => (
+            <Bar key={color} x1={40 + i * 55} y1="120" x2={40 + i * 55} y2="20" value={bars[i]} tone={color} />
+          ))}
+        </Chart>
+        <Row wrap>
+          <Button size="sm" onPress={() => setBars(randomBars())} testID="svg-bars">
+            <ButtonLabel>Randomize</ButtonLabel>
+          </Button>
+          <Button size="sm" variant="secondary" onPress={() => setBars([1, 1, 1, 1, 1])}>
+            <ButtonLabel>Full</ButtonLabel>
+          </Button>
+          <Button size="sm" variant="secondary" onPress={() => setBars([0.05, 0.05, 0.05, 0.05, 0.05])}>
+            <ButtonLabel>Empty</ButtonLabel>
+          </Button>
+        </Row>
+      </Section>
+
+      <Section title="Color, outline and opacity" hint="fill, fill-opacity, stroke and stroke-width animate together. Tap a swatch, then switch the theme: the colors glide.">
+        <Palette viewBox="0 0 300 120" preserveAspectRatio="xMidYMid meet">
+          {PALETTE.map((color, i) => (
+            <Swatch key={color} cx={34 + i * 58} cy="60" r="24" tone={color} on={i === tone} onPress={() => setTone(i)} />
+          ))}
+        </Palette>
+        <Flags>
+          <Button size="sm" variant="secondary" onPress={() => setTone((i) => (i + 1) % PALETTE.length)} testID="svg-next">
+            <ButtonLabel>Next</ButtonLabel>
+          </Button>
+        </Flags>
+      </Section>
+
       <Section title="In code">
         <Code>{`
 // isoform.config.json → { "modules": { "svg": true } }
@@ -167,6 +285,13 @@ const Stroke = engine('Path', { fill: 'none', stroke: 'currentColor', strokeWidt
 <Icon viewBox="0 0 24 24">
   <Stroke d="M5 12.5l4.5 4.5L19 7.5" />
 </Icon>
+
+// animate any shape with a transition (CSS on the web, redrawn per frame on iOS/Android):
+const Progress = engine('Circle', ({ props }) => ({
+  strokeDasharray: 264,
+  strokeDashoffset: 264 * (1 - props.value),
+  transition: 'stroke-dashoffset 300ms ease',
+}));
 
 // clashing names carry the Svg prefix:
 // SvgText, SvgImage, SvgLinearGradient, SvgRadialGradient,
