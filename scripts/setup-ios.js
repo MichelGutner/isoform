@@ -3,7 +3,7 @@
  * Setup for `modules.mediaSession` on iOS: adds `UIBackgroundModes` → `audio` to
  * the app's Info.plist, so audio keeps playing with the screen locked or the app
  * in the background. A pod cannot declare this key, so the pod's build phase
- * (`isoform.podspec`) already does the same on every iOS build; this script is
+ * (`react-isoform.podspec`) already does the same on every iOS build; this script is
  * for running it by hand or in CI, without building.
  *
  *   node node_modules/react-isoform/scripts/setup-ios.js [app-root]

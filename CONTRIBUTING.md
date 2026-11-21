@@ -46,7 +46,7 @@ cd example-web && yarn install && yarn dev    # React DOM + Vite
 | `src/adapters/react-native` | Native adapter: style translation, primitives, codegen specs (`**/native/*NativeComponent.ts`) |
 | `ios/<module>` | Swift + Fabric shells (`.mm`); `ios/stubs` keep the class names when a module is off |
 | `android/src/<module>` | Kotlin (Compose where there is UI); one source set per module |
-| `isoform.podspec`, `android/build.gradle`, `metro.js` | Read `isoform.config.json` and leave disabled modules out |
+| `react-isoform.podspec`, `android/build.gradle`, `metro.js` | Read `isoform.config.json` and leave disabled modules out |
 
 ## Pull requests
 

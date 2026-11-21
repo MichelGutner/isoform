@@ -130,7 +130,7 @@
     "android/build.gradle",
     "android/consumer-rules.pro",
     "android/src/**",
-    "isoform.podspec",
+    "react-isoform.podspec",
     "react-native.config.js",
     "metro.js",
     "babel.js",

@@ -12,7 +12,7 @@ const files = pack.files.map((f) => f.path);
 const required = [
   'dist/index.js',
   'dist/index.d.ts',
-  'isoform.podspec',
+  'react-isoform.podspec',
   'metro.js',
   'babel.js',
   'dist/jsx-runtime.js',

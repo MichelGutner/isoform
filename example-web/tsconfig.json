@@ -11,7 +11,6 @@
     "resolveJsonModule": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client"],
-    "baseUrl": ".",
     "paths": {
       "react-isoform": ["../src/index.ts"],
       // the showcase and the lib live outside this folder: o React vem daqui
