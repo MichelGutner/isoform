@@ -12,6 +12,7 @@ import { getBreakpoints } from '../config';
 import { evaluateCondition, isPseudoCondition, isStaticCondition, parseBreakpoint, stateOf } from './conditions';
 import { warnOnce } from './dev';
 import { flattenStyle } from './flatten';
+import { mergeGestures, resolveGestures, type GestureConfig } from './gesture';
 import { INLINE, isThemeFree, type InlineElement, type InlineFn } from './inline';
 import { keyframes } from './keyframes';
 import type {
@@ -86,11 +87,12 @@ type Rule<C extends React.ComponentType<any>, P> =
         | Partial<React.ComponentPropsWithRef<C> & P>
         | ((ctx: StyleContext<P>) => Partial<React.ComponentPropsWithRef<C> & P>);
     }
-  | { kind: 'attrs'; attrs: Partial<React.ComponentPropsWithRef<C> & P> };
+  | { kind: 'attrs'; attrs: Partial<React.ComponentPropsWithRef<C> & P> }
+  | { kind: 'gesture'; config: GestureConfig };
 
 /** Every function a rule holds: a style function, a `when()` condition, an attrs function, a style inside attrs. */
 const functionsOf = (rule: Rule<any, any>): unknown[] => {
-  const attrs = rule.kind === 'style' ? undefined : (rule.attrs as any);
+  const attrs = 'attrs' in rule ? (rule.attrs as any) : undefined;
   const candidates = [
     rule.kind === 'style' ? rule.style : undefined,
     rule.kind === 'when' ? rule.condition : undefined,
@@ -167,6 +169,15 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     return this;
   }
 
+  /**
+   * Declares the gestures the element recognizes (pan, swipe, pinch, rotate, double tap, long press).
+   * Several calls merge, gesture by gesture (the last one wins). Needs the `gestures` module.
+   */
+  gesture(config: GestureConfig): this {
+    this.rules.push({ kind: 'gesture', config });
+    return this;
+  }
+
   /** "Clona + adiciona": copia as regras atuais sem alterar o original. */
   extend(): StylizedBuilder<C, P> {
     return new StylizedBuilder<C, P>(this.Base, [...this.rules]);
@@ -185,6 +196,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     const bpStyles: Record<string, StyleObject<C>[]> = {};
     const pseudoStyles: Partial<Record<PseudoName, StyleObject<C>[]>> = {};
     const mergedAttrs: Record<string, any> = {};
+    const gestureConfigs: GestureConfig[] = [];
 
     // Contexto reaproveitado entre as regras: só é refeito quando uma regra anterior adicionou props
     // (`attrsVersion`). As leituras de `props` ficam registradas em `reads` (ver `trackReads`).
@@ -194,6 +206,12 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
 
     for (let i = 0; i < this.rules.length; i++) {
       const rule = this.rules[i];
+
+      if (rule.kind === 'gesture') {
+        // gestures do not depend on the context: they are collected and handed to the adapter with the style
+        gestureConfigs.push(rule.config);
+        continue;
+      }
 
       if (ctxVersion !== attrsVersion) {
         const view = { ...mergedAttrs, ...props } as P;
@@ -298,9 +316,15 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         .sort((a, b) => a.min - b.min || (b.max ?? Infinity) - (a.max ?? Infinity) || a.name.localeCompare(b.name));
     }
 
+    const merged = resolveInlineKeyframes(flattenStyle(styles));
+    // the 5th argument is only passed when gestures exist, so adapters written before `.gesture()` see the same call
+    const gestures = gestureConfigs.length ? resolveGestures(mergeGestures(gestureConfigs)) : undefined;
+
     return {
       adapter,
-      compiled: adapter.compileStyle(resolveInlineKeyframes(flattenStyle(styles)), states, breakpoints, pseudos),
+      compiled: gestures
+        ? adapter.compileStyle(merged, states, breakpoints, pseudos, gestures)
+        : adapter.compileStyle(merged, states, breakpoints, pseudos),
       mergedAttrs,
       hasAttrs: attrsVersion > 0,
     };
@@ -314,6 +338,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     return this.rules.every((rule) => {
       if (rule.kind === 'style') return typeof rule.style !== 'function';
       if (rule.kind === 'attrs') return typeof (rule.attrs as any)?.style !== 'function';
+      if (rule.kind === 'gesture') return true;
       return (
         isStaticCondition(rule.condition) &&
         typeof rule.attrs !== 'function' &&

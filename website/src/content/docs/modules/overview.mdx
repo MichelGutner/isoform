@@ -5,7 +5,7 @@ description: Optional components drawn with UIKit/SwiftUI on iOS, Jetpack Compos
 
 import { Aside } from '@astrojs/starlight/components';
 
-Isoform ships optional components that apps keep rebuilding: media players, a PDF viewer, a bottom sheet, SVG, a camera, a date picker, an image pipeline and a modal. They are **off by default**; turn on only what you use in [`isoform.config.json`](/getting-started/configuration/#isoformconfigjson-and-optional-modules), and the rest never enters your app.
+Isoform ships optional components that apps keep rebuilding: media players, a PDF viewer, a bottom sheet, SVG, a camera, a date picker, an image pipeline, a modal and gestures. They are **off by default**; turn on only what you use in [`isoform.config.json`](/getting-started/configuration/#isoformconfigjson-and-optional-modules), and the rest never enters your app.
 
 | Module | Primitive | Web | iOS | Android |
 |---|---|---|---|---|
@@ -18,6 +18,7 @@ Isoform ships optional components that apps keep rebuilding: media players, a PD
 | [`datePicker`](/modules/date-picker/) | `engine('DatePicker')` | the browser's `<input type="date">` | the lib's SwiftUI picker | the lib's Compose picker (same design) |
 | [`image`](/modules/image/) | `engine('Image')` | `<img>` with blurhash, crossfade, tint, zoom | URLSession, ImageIO, CoreImage | OkHttp (React Native's client), `ImageDecoder` |
 | [`modal`](/modules/modal/) | `engine('Modal')` | native `<dialog>` | UIKit | Jetpack Compose |
+| [`gestures`](/modules/gestures/) | `.gesture()` on `engine('Box')` | Pointer Events | UIKit gesture recognizers | the lib's recognizer, no Compose |
 
 Media lists (`items`) for `Video`, `Audio` and `Pdf` are covered in [Playlists](/modules/playlists/).
 

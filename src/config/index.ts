@@ -199,9 +199,18 @@ export interface IsoModules {
    * Default `false`.
    */
   modal?: boolean | ModuleOptions;
+  /**
+   * `.gesture()`: pan, swipe, pinch, rotate, double tap and long press. iOS: UIKit
+   * gesture recognizers. Android: the lib's own recognizer on the view's touches.
+   * On both, the element follows the fingers on the UI thread (React Native's
+   * native driver), so a busy JS thread does not make the drag stutter. Web:
+   * Pointer Events. With it off, `.gesture()` does nothing (and warns in development).
+   * Default `false`.
+   */
+  gestures?: boolean | ModuleOptions;
 }
 
-/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'` | `'datePicker'` | `'image'` | `'modal'`). */
+/** Name of an optional module (`'video'` | `'audio'` | `'pdf'` | `'sheet'` | `'svg'` | `'camera'` | `'datePicker'` | `'image'` | `'modal'` | `'gestures'`). */
 export type ModuleName = keyof IsoModules;
 
 /** Whether a module setting (`true`, or `{ enabled: true }`) turns the module on. */
@@ -209,7 +218,7 @@ const isOn = (setting: boolean | ModuleOptions | undefined): boolean =>
   setting === true || (typeof setting === 'object' && setting !== null && setting.enabled === true);
 
 /** Default state of every optional module (all off). */
-export const DEFAULT_MODULES: Readonly<IsoModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false, datePicker: false, image: false, modal: false };
+export const DEFAULT_MODULES: Readonly<IsoModules> = { video: false, audio: false, pdf: false, sheet: false, svg: false, camera: false, datePicker: false, image: false, modal: false, gestures: false };
 let modules: IsoModules = { ...DEFAULT_MODULES };
 
 /** The adapter the bundler picked (through `providers/index(.native).ts`). */

@@ -20,6 +20,7 @@ const required = [
   'react-native.config.js',
   'src/adapters/react-native/image/native/IsoImageViewNativeComponent.ts',
   'src/adapters/react-native/modal/native/IsoModalViewNativeComponent.ts',
+  'src/adapters/react-native/gesture/native/IsoGestureViewNativeComponent.ts',
   'android/src/main/java/com/isoform/IsoformPackage.kt',
   'ios/image/IsoImage.swift',
 ];

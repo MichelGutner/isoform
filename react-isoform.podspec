@@ -24,6 +24,7 @@ camera = isoform_module.call("camera")
 date_picker = isoform_module.call("datePicker")
 image = isoform_module.call("image")
 modal = isoform_module.call("modal")
+gestures = isoform_module.call("gestures")
 # camera features: each one only with the module on and its option `true` (all on without the file)
 camera_setting = isoform_config.nil? ? nil : isoform_config.dig("modules", "camera")
 camera_feature = ->(name) { camera && (isoform_config.nil? || (camera_setting.is_a?(Hash) && camera_setting[name] == true)) }
@@ -32,7 +33,7 @@ camera_codes = camera_feature.call("codeScanner")
 # controles na tela de bloqueio: só com `audio.mediaSession: true` explícito (nunca por padrão)
 audio_setting = isoform_config.nil? ? nil : isoform_config.dig("modules", "audio")
 media_session = audio && audio_setting.is_a?(Hash) && audio_setting["mediaSession"] == true
-Pod::UI.puts "[isoform] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, datePicker: #{date_picker ? 'on' : 'off'}, image: #{image ? 'on' : 'off'}, modal: #{modal ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
+Pod::UI.puts "[isoform] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 'off'}, mediaSession: #{media_session ? 'on' : 'off'}, pdf: #{pdf ? 'on' : 'off'}, sheet: #{sheet ? 'on' : 'off'}, datePicker: #{date_picker ? 'on' : 'off'}, image: #{image ? 'on' : 'off'}, modal: #{modal ? 'on' : 'off'}, gestures: #{gestures ? 'on' : 'off'}, camera: #{camera ? 'on' : 'off'} (video: #{camera_video ? 'on' : 'off'}, codeScanner: #{camera_codes ? 'on' : 'off'})"
 
 Pod::Spec.new do |s|
   s.name         = "react-isoform"
@@ -62,6 +63,8 @@ Pod::Spec.new do |s|
   sources << (image ? "ios/image/**/*.{h,m,mm,swift}" : "ios/stubs/image/**/*.{h,m,mm}")
   # modal: UIKit presentation hosting the React children
   sources << (modal ? "ios/modal/**/*.{h,m,mm,swift}" : "ios/stubs/modal/**/*.{h,m,mm}")
+  # gestures: UIKit gesture recognizers on a Fabric view (the native driver moves it)
+  sources << (gestures ? "ios/gesture/**/*.{h,m,mm,swift}" : "ios/stubs/gesture/**/*.{h,m,mm}")
   sources << "ios/shared/**/*.swift" if video || audio
   # o áudio sempre usa `IsoNowPlaying`: a versão real (tela de bloqueio) ou a vazia
   sources << (media_session ? "ios/mediaSession/**/*.swift" : "ios/mediaSessionOff/**/*.swift") if audio
@@ -85,8 +88,8 @@ Pod::Spec.new do |s|
     :always_out_of_date => "1",
     :script => <<~SH
       CONFIG="${PODS_ROOT}/../../isoform.config.json"
-      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true,datePicker:true,image:true,modal:true,camera:true,cameraVideo:true,cameraCodes:true" else a = m["audio"]; c = m["camera"]; f = ->(k) { (on.call(c) && c.is_a?(Hash) && c[k] == true).to_s }; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s + ",datePicker:" + on.call(m["datePicker"]).to_s + ",image:" + on.call(m["image"]).to_s + ",modal:" + on.call(m["modal"]).to_s + ",camera:" + on.call(c).to_s + ",cameraVideo:" + f.call("video") + ",cameraCodes:" + f.call("codeScanner") end' "$CONFIG")
-      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet},datePicker:#{date_picker},image:#{image},modal:#{modal},camera:#{camera},cameraVideo:#{camera_video},cameraCodes:#{camera_codes}"
+      ACTUAL=$(/usr/bin/ruby -rjson -e 'p = ARGV[0]; on = ->(v) { v == true || (v.is_a?(Hash) && v["enabled"] == true) }; m = File.exist?(p) ? (JSON.parse(File.read(p))["modules"] || {}) : nil; if m.nil? then puts "video:true,audio:true,mediaSession:false,pdf:true,sheet:true,datePicker:true,image:true,modal:true,gestures:true,camera:true,cameraVideo:true,cameraCodes:true" else a = m["audio"]; c = m["camera"]; f = ->(k) { (on.call(c) && c.is_a?(Hash) && c[k] == true).to_s }; puts "video:" + on.call(m["video"]).to_s + ",audio:" + on.call(a).to_s + ",mediaSession:" + (on.call(a) && a.is_a?(Hash) && a["mediaSession"] == true).to_s + ",pdf:" + on.call(m["pdf"]).to_s + ",sheet:" + on.call(m["sheet"]).to_s + ",datePicker:" + on.call(m["datePicker"]).to_s + ",image:" + on.call(m["image"]).to_s + ",modal:" + on.call(m["modal"]).to_s + ",gestures:" + on.call(m["gestures"]).to_s + ",camera:" + on.call(c).to_s + ",cameraVideo:" + f.call("video") + ",cameraCodes:" + f.call("codeScanner") end' "$CONFIG")
+      EXPECTED="video:#{video},audio:#{audio},mediaSession:#{media_session},pdf:#{pdf},sheet:#{sheet},datePicker:#{date_picker},image:#{image},modal:#{modal},gestures:#{gestures},camera:#{camera},cameraVideo:#{camera_video},cameraCodes:#{camera_codes}"
       if [ "$ACTUAL" != "$EXPECTED" ]; then
         echo "error: [isoform] isoform.config.json mudou ($ACTUAL), mas o pod install foi feito com $EXPECTED. Rode: cd ios && pod install"
         exit 1

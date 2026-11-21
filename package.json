@@ -166,7 +166,8 @@
         "IsoCameraView": "IsoCameraView",
         "IsoDatePickerView": "IsoDatePickerView",
         "IsoImageView": "IsoImageView",
-        "IsoModalView": "IsoModalView"
+        "IsoModalView": "IsoModalView",
+        "IsoGestureView": "IsoGestureView"
       },
       "modulesProvider": {
         "IsoImageModule": "IsoImageModule"

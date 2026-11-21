@@ -39,6 +39,7 @@ def cameraEnabled = isoformModule("camera")
 def datePickerEnabled = isoformModule("datePicker")
 def imageEnabled = isoformModule("image")
 def modalEnabled = isoformModule("modal")
+def gesturesEnabled = isoformModule("gestures")
 // camera features: each one only with the module on and its option `true` (all on without the file)
 def cameraSetting = isoformConfig?.modules?.get("camera")
 def cameraFeature = { String name -> cameraEnabled && (isoformConfig == null || (cameraSetting instanceof Map && cameraSetting.get(name) == true)) }
@@ -50,7 +51,7 @@ def mediaEnabled = videoEnabled || audioEnabled
 // (permissões e serviço entram no manifest do app, então nunca ligam por padrão)
 def audioSetting = isoformConfig?.modules?.get("audio")
 def mediaSessionEnabled = audioEnabled && audioSetting instanceof Map && audioSetting.mediaSession == true
-logger.lifecycle("[isoform] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, image: ${imageEnabled ? "on" : "off"}, modal: ${modalEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${isoformConfig == null ? "sem isoform.config.json" : isoformConfigFile})")
+logger.lifecycle("[isoform] video: ${videoEnabled ? "on" : "off"}, audio: ${audioEnabled ? "on" : "off"}, mediaSession: ${mediaSessionEnabled ? "on" : "off"}, pdf: ${pdfEnabled ? "on" : "off"}, sheet: ${sheetEnabled ? "on" : "off"}, datePicker: ${datePickerEnabled ? "on" : "off"}, image: ${imageEnabled ? "on" : "off"}, modal: ${modalEnabled ? "on" : "off"}, gestures: ${gesturesEnabled ? "on" : "off"}, camera: ${cameraEnabled ? "on" : "off"} (video: ${cameraVideoEnabled ? "on" : "off"}, codeScanner: ${cameraCodesEnabled ? "on" : "off"}) (${isoformConfig == null ? "sem isoform.config.json" : isoformConfigFile})")
 
 apply plugin: "com.android.library"
 apply plugin: "org.jetbrains.kotlin.android"
@@ -127,6 +128,8 @@ android {
       if (imageEnabled) java.srcDirs += "src/image/java"
       // modal: Compose (scrim, card, springs) hosting the React children
       if (modalEnabled) java.srcDirs += "src/modal/java"
+      // gestures: the lib's recognizer on a React view (no Compose, no extra dependency)
+      if (gesturesEnabled) java.srcDirs += "src/gesture/java"
       // camera: CameraX + Compose; video and the code scanner add their code (or an empty
       // stand-in with the same API) only when their option is on
       if (cameraEnabled) {

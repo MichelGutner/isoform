@@ -60,6 +60,7 @@ configure({
     datePicker: true,
     image: true,
     modal: true,
+    gestures: true,
   },
 });
 

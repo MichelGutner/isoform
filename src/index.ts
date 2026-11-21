@@ -109,6 +109,32 @@ export type {
 } from './core/image';
 export type { ModalAnimation, ModalOwnProps, ModalPresentation } from './core/modal';
 export type {
+  GestureActionName,
+  GestureConfig,
+  GestureInterpolation,
+  GesturePhase,
+  GestureProps,
+  GestureRelease,
+  GestureStyleProp,
+  InterpolationSource,
+  LongPressOptions,
+  PanAxis,
+  PanBounds,
+  PanEvent,
+  PanOptions,
+  PanRelease,
+  PanSnapPoints,
+  SnapEvent,
+  PinchEvent,
+  PinchOptions,
+  RotateEvent,
+  RotateOptions,
+  SwipeDirection,
+  SwipeEvent,
+  SwipeOptions,
+  TapEvent,
+} from './core/gesture';
+export type {
   BottomSheetHandle,
   BottomSheetOwnProps,
   SheetDetent,
