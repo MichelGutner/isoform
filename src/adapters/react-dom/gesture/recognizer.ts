@@ -141,6 +141,9 @@ class Recognizer {
 
   down = (event: PointerEvent): void => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
+    // a pointer that went down again was released where we could not see it: it starts over
+    this.pointers.delete(event.pointerId);
+    if (!this.pointers.size) this.follows(true);
     this.pointers.set(event.pointerId, pointOf(event));
     if (this.pointers.size === 1) this.beginOne(event);
     if (this.pointers.size === 2) this.beginTwo();
@@ -165,7 +168,24 @@ class Recognizer {
     if (this.pointers.size === 2) this.endTwo(phase);
     if (event.pointerId === this.primary) this.endOne(event, phase);
     this.pointers.delete(event.pointerId);
+    if (!this.pointers.size) this.follows(false);
   };
+
+  /**
+   * While a pointer is down, its moves and its release are read on the window: a mouse that leaves the element
+   * before the drag starts (it is only captured then) would otherwise lift where the element never hears it, and
+   * the next press would look like a second finger. Listeners are added in the order the elements got the
+   * `pointerdown` (innermost first), so the innermost still sees each event first.
+   */
+  private following = false;
+  private follows(on: boolean): void {
+    if (on === this.following || typeof window === 'undefined') return;
+    this.following = on;
+    const toggle = on ? window.addEventListener.bind(window) : window.removeEventListener.bind(window);
+    toggle('pointermove', this.move);
+    toggle('pointerup', this.up);
+    toggle('pointercancel', this.up);
+  }
 
   /** A gesture of this element is running (it keeps the touch). */
   private owns(): boolean {
@@ -526,32 +546,40 @@ class Recognizer {
   dispose(): void {
     this.cancelLongPress();
     clearTimeout(this.wheelTimer);
+    this.follows(false);
   }
 }
 
 /** `backgroundColor` → `background-color` (for `transition`). */
 const toCss = (prop: string) => prop.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
-const POINTER_EVENTS = { pointerdown: 'down', pointermove: 'move', pointerup: 'up', pointercancel: 'up' } as const;
 const SAFARI_GESTURES = ['gesturestart', 'gesturechange', 'gestureend'] as const;
+
+/** A mouse drag must move the element, not select its text or drag its images out. */
+const preventNativeDrag = (event: Event): void => event.preventDefault();
 
 /** Starts recognizing on `el`; returns the function that stops it. */
 export function attachGestures(el: HTMLElement, read: () => GestureSource): () => void {
   const recognizer = new Recognizer(el, read);
   const spec = read().spec;
-  const previousTouchAction = el.style.touchAction;
-  el.style.touchAction = touchActionOf(spec);
-  const entries = Object.entries(POINTER_EVENTS) as Array<[keyof typeof POINTER_EVENTS, 'down' | 'move' | 'up']>;
-  for (const [type, method] of entries) el.addEventListener(type, recognizer[method]);
+  const style = el.style as CSSStyleDeclaration & Record<string, string>;
+  const previous = { touchAction: style.touchAction, userSelect: style.userSelect, webkitUserSelect: style.webkitUserSelect };
+  style.touchAction = touchActionOf(spec);
+  style.userSelect = 'none';
+  style.webkitUserSelect = 'none';
+  // only the press is heard on the element; moves and the release are read on the window while it is down
+  el.addEventListener('pointerdown', recognizer.down);
+  el.addEventListener('dragstart', preventNativeDrag);
   const twoFingers = !!(spec.pinch || spec.rotate);
   // not passive: a pinch on the trackpad must not zoom the page
   if (spec.pinch) el.addEventListener('wheel', recognizer.wheel, { passive: false });
   if (twoFingers) SAFARI_GESTURES.forEach((type) => el.addEventListener(type, recognizer.gesture));
   return () => {
-    for (const [type, method] of entries) el.removeEventListener(type, recognizer[method]);
+    el.removeEventListener('pointerdown', recognizer.down);
+    el.removeEventListener('dragstart', preventNativeDrag);
     el.removeEventListener('wheel', recognizer.wheel);
     SAFARI_GESTURES.forEach((type) => el.removeEventListener(type, recognizer.gesture));
-    el.style.touchAction = previousTouchAction;
+    Object.assign(style, previous);
     recognizer.dispose();
   };
 }

@@ -23,12 +23,23 @@ function pointer(el: Element, type: string, id: number, x: number, y: number, ti
   el.dispatchEvent(event);
 }
 
+/** Roots still mounted: unmounted after each test, so no recognizer keeps listening on the window. */
+const mounted: Array<() => void> = [];
+
 function mount(element: React.ReactElement) {
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root = createRoot(container);
   act(() => root.render(element));
-  return { el: container.firstElementChild as HTMLElement, unmount: () => act(() => root.unmount()) };
+  let alive = true;
+  const unmount = () => {
+    if (!alive) return;
+    alive = false;
+    act(() => root.unmount());
+    container.remove();
+  };
+  mounted.push(unmount);
+  return { el: container.firstElementChild as HTMLElement, unmount };
 }
 
 describe('.gesture() on the web', () => {
@@ -41,6 +52,7 @@ describe('.gesture() on the web', () => {
     configure({ modules: { gestures: true } });
   });
   afterEach(() => {
+    mounted.splice(0).forEach((unmount) => unmount());
     jest.useRealTimers();
     jest.restoreAllMocks();
   });
@@ -170,6 +182,29 @@ describe('.gesture() on the web', () => {
     pointer(el, 'pointermove', 1, 50, 0, 50);
     expect(el.style.opacity).toBe('0.5');
     expect(el.style.backgroundColor).toBe('rgb(128, 128, 128)');
+  });
+
+  it('follows a mouse that leaves the element and is released outside it (the next press starts clean)', () => {
+    const onPan = jest.fn();
+    const onPinch = jest.fn();
+    const Card = engine('Box').gesture({ pan: { release: 'stay' }, pinch: true });
+    const { el } = mount(<Card onPan={onPan} onPinch={onPinch} />);
+    expect(el.style.userSelect).toBe('none');
+
+    // the pointer jumps off the element before the drag starts, and lifts out there
+    pointer(el, 'pointerdown', 1, 0, 0, 0);
+    pointer(document.body, 'pointermove', 1, 80, 0, 20);
+    pointer(document.body, 'pointerup', 1, 90, 0, 40);
+    expect(onPan.mock.calls.map(([e]) => e.phase)).toEqual(['start', 'end']);
+    expect(el.style.translate).toBe('90px 0px');
+
+    // the next press is one pointer again, not a second finger
+    onPan.mockClear();
+    pointer(el, 'pointerdown', 1, 0, 0, 100);
+    pointer(document.body, 'pointermove', 1, 0, 40, 120);
+    pointer(document.body, 'pointerup', 1, 0, 40, 140);
+    expect(onPan.mock.calls.map(([e]) => e.phase)).toEqual(['start', 'end']);
+    expect(onPinch).not.toHaveBeenCalled();
   });
 
   it('lets the innermost element with .gesture() win', () => {
