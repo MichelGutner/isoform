@@ -122,6 +122,36 @@ describe('react-native · transition', () => {
     expect(mockRuns).toHaveLength(2);
   });
 
+  it('leaves the mounted transition alone during render and stops it after commit (no flash of an older value)', () => {
+    mount(<Fade />);
+    update(<Fade dim />); // 1 → 0.5
+    const first = mockRuns[0].value;
+    act(() => first.setValue(1)); // terminou: a view mostra 0.5
+    update(<Fade />); // 0.5 → 1 (ex.: o tema voltou)
+    // zerar o progresso montado mostraria o `from` dele (1) antes do commit: um quadro de cor antiga
+    expect(first.value).toBe(1);
+    expect(first.stopped).toBeGreaterThan(0);
+    expect(first.listeners).toHaveLength(0);
+    expect(mockRuns).toHaveLength(2);
+    expect(mockRuns[1].value).not.toBe(first);
+    expect(interp(style().opacity)).toEqual({ inputRange: [0, 1], outputRange: [0.5, 1] });
+  });
+
+  it('starts the transition once even when React renders twice before committing (StrictMode)', () => {
+    mount(
+      <React.StrictMode>
+        <Fade />
+      </React.StrictMode>,
+    );
+    update(
+      <React.StrictMode>
+        <Fade dim />
+      </React.StrictMode>,
+    );
+    expect(mockRuns).toHaveLength(1);
+    expect(interp(style().opacity)).toEqual({ inputRange: [0, 1], outputRange: [1, 0.5] });
+  });
+
   it('interpolates colors and resumes them mid-flight', () => {
     const Tint = engine<'Box', { on?: boolean }>('Box', { backgroundColor: '#000000', transition: 'background-color 1s' } as any).when(
       'props:on',

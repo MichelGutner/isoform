@@ -17,6 +17,10 @@ type TransformMap = Record<string, number | string>;
 interface Track {
   from: any;
   to: any;
+  /**
+   * Progresso da transição atual. Cada transição ganha um valor novo: o anterior continua ligado à
+   * view montada até o commit, e zerá-lo no render mostraria por um quadro a cor de duas trocas atrás.
+   */
   progress: Animated.Value;
   /** Último progresso conhecido (para retomar de onde parou se a transição for interrompida). */
   last: number;
@@ -24,6 +28,25 @@ interface Track {
   /** Nó animado (cacheado enquanto from/to não mudam). */
   node?: any;
   kind: 'value' | 'transform';
+  /** Transição decidida no render e ainda não iniciada (começa no efeito, depois do commit). */
+  pending: boolean;
+  /** Progressos de transições substituídas, parados depois do commit. */
+  retired: Animated.Value[];
+}
+
+/** Dá ao track um progresso novo começando em `start`; só ele atualiza `last`. */
+function freshProgress(track: Track, start: number): void {
+  const progress = new Animated.Value(start);
+  progress.addListener(({ value }) => {
+    if (track.progress === progress) track.last = value;
+  });
+  track.progress = progress;
+  track.last = start;
+}
+
+function retire(progress: Animated.Value): void {
+  progress.stopAnimation();
+  progress.removeAllListeners();
 }
 
 const toMap = (list: Array<{ fn: string; value: number | string }>): TransformMap => {
@@ -84,7 +107,6 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
   const Created = forwardRef<any, any>(({ __isoTransition: tr, style, ...rest }, ref) => {
     const spec = tr as ResolvedTransition;
     const store = useRef(new Map<string, Track>()).current;
-    const started: Track[] = [];
 
     const flat = flattenStyle(style);
     const animated: Record<string, any> = { ...flat };
@@ -102,17 +124,15 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
       let track = store.get(key);
 
       if (!track) {
-        const created: Track = {
+        const created = {
           from: target,
           to: target,
-          progress: new Animated.Value(1),
-          last: 1,
           timing,
           kind: isTransform ? 'transform' : 'value',
-        };
-        created.progress.addListener(({ value }) => {
-          created.last = value;
-        });
+          pending: false,
+          retired: [],
+        } as unknown as Track;
+        freshProgress(created, 1);
         store.set(key, created);
         track = created;
       } else if (!sameValue(track.to, target)) {
@@ -122,20 +142,27 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
         }
         track.from = currentValue(track, track.last);
         track.to = target;
-        track.last = 0;
         track.timing = timing;
         track.node = undefined;
-        track.progress.setValue(0); // também interrompe a transição anterior
-        started.push(track);
+        // o progresso anterior segue intacto (ainda está na view montada) e para depois do commit
+        track.retired.push(track.progress);
+        freshProgress(track, 0);
+        track.pending = true;
       }
 
       track.node ??= buildNode(track);
       animated[key] = track.node;
     }
 
-    // as animações começam depois do commit (efeito), não durante a renderização
+    // as animações começam depois do commit (efeito), não durante a renderização. `pending` fica no
+    // track (e não numa lista do render) para valer mesmo quando o React renderiza duas vezes e só
+    // comita a segunda (StrictMode, render concorrente).
     useEffect(() => {
-      for (const track of started) {
+      store.forEach((track) => {
+        track.retired.forEach(retire);
+        track.retired = [];
+        if (!track.pending) return;
+        track.pending = false;
         Animated.timing(track.progress, {
           toValue: 1,
           duration: track.timing.duration,
@@ -144,14 +171,14 @@ export function transitionHost(Component: React.ComponentType<any>): React.Compo
           useNativeDriver: spec.nativeDriver,
           isInteraction: false,
         }).start();
-      }
+      });
     });
 
     useEffect(
       () => () => {
         store.forEach((t) => {
-          t.progress.stopAnimation();
-          t.progress.removeAllListeners();
+          retire(t.progress);
+          t.retired.forEach(retire);
         });
       },
       [store],
