@@ -37,21 +37,21 @@ module.exports = [
   {
     name: 'web · initial load',
     path: 'dist/index.js',
-    limit: '16 kB', // 15.5 before the theme variables and the inline path (+0.5 kB); lower it when something shrinks
+    limit: '21 kB', // 16 before the gestures module (+4.9 kB: its web recognizer is not lazy yet); lower it when something shrinks
     ignore: external,
     modifyEsbuildConfig: initialLoad,
   },
   {
     name: 'web · everything (lazy chunks inlined)',
     path: 'dist/index.js',
-    limit: '44 kB',
+    limit: '48 kB', // 44 before the gestures module (+3.7 kB)
     ignore: external,
     modifyEsbuildConfig: quiet,
   },
   {
     name: 'react-native · JS bundle',
     path: 'dist/index.js',
-    limit: '24.5 kB', // 24 before the theme probe on every platform and the inline path; lower it when something shrinks
+    limit: '28.5 kB', // 24.5 before the gestures module (+3.7 kB); lower it when something shrinks
     ignore: external,
     modifyEsbuildConfig: native(initialLoad),
   },
