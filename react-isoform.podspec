@@ -36,6 +36,7 @@ Pod::UI.puts "[isoform] video: #{video ? 'on' : 'off'}, audio: #{audio ? 'on' : 
 
 Pod::Spec.new do |s|
   s.name         = "react-isoform"
+  s.module_name  = "isoform" # keeps the Swift header (`isoform-Swift.h`) and imports unchanged
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
