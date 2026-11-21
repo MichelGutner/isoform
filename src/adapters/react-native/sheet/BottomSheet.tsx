@@ -113,7 +113,7 @@ const NativeBottomSheet = forwardRef<BottomSheetHandle, Props>(
           onDetentChange?.({ index: nativeEvent.index });
         }}
       >
-        <View style={{ width, height }} collapsable={false}>
+        <View style={fits ? [styles.measured, { width }] : { width, height }} collapsable={false}>
           <View
             style={[fits ? null : styles.fill, contentStyle]}
             onLayout={fits ? (e) => setContent(Math.ceil(e.nativeEvent.layout.height)) : undefined}
@@ -145,4 +145,8 @@ const styles = StyleSheet.create({
   // iOS: the view itself takes no space; the children live in the SwiftUI sheet
   anchor: { position: 'absolute', width: 0, height: 0 },
   fill: { flex: 1 },
+  // `fit`: the content is measured to find the height, so it cannot be sized by its parent. The anchor is
+  // 0 high on iOS and a child in flow would be measured "at most 0": the items collapsed and only the
+  // padding was measured. An absolute child is measured by its own content.
+  measured: { position: 'absolute', top: 0, left: 0 },
 });
