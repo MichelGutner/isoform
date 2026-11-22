@@ -1,3 +1,17 @@
+## [0.2.0](https://github.com/MichelGutner/isoform/compare/v0.1.0...v0.2.0) (2026-11-22)
+
+### Features
+
+* animate SVG shapes with transition on iOS and Android ([#29](https://github.com/MichelGutner/isoform/issues/29)) ([12c777d](https://github.com/MichelGutner/isoform/commit/12c777d9add68185b5a4e260af65276f024eacdd))
+* gestures module, [secure] switch flash fix, sheet and showcase fixes ([#28](https://github.com/MichelGutner/isoform/issues/28)) ([16ac60c](https://github.com/MichelGutner/isoform/commit/16ac60ce4d21f7756e3ad88d63127cc5d4345c02))
+* per-request server [secure]s (runWithTheme), SVG transitions and tighter core types ([#30](https://github.com/MichelGutner/isoform/issues/30)) ([76b72ef](https://github.com/MichelGutner/isoform/commit/76b72ef1e5578b0151a78f5ac32aeeb7f1da3686))
+
+### Bug Fixes
+
+* hydrate runWithTheme renders with [secure]Variables on ([#31](https://github.com/MichelGutner/isoform/issues/31)) ([436bc2f](https://github.com/MichelGutner/isoform/commit/436bc2f11de43da1b9b649aac247180f553b6132))
+* name the podspec [secure]-isoform.podspec so iOS autolinking finds it ([#27](https://github.com/MichelGutner/isoform/issues/27)) ([6fe55be](https://github.com/MichelGutner/isoform/commit/6fe55bea0b76577ca3b08021ed741f308ab63556))
+* pin the changelog preset to 9.3.1 so semantic-release can render notes ([#32](https://github.com/MichelGutner/isoform/issues/32)) ([181b5b1](https://github.com/MichelGutner/isoform/commit/181b5b18ac53c2537c24a913af3c31c84ac32ecc))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
