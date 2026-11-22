@@ -181,9 +181,12 @@ export class AtomicSheet {
     return className;
   }
 
-  /** CSS acumulado, na ordem de rank — para SSR (`<style>{getStyleText()}</style>`). */
-  getText(): string {
-    return this.variables + this.text.map((rules) => (rules ?? []).join('')).join('');
+  /**
+   * CSS acumulado, na ordem de rank — para SSR (`<style>{getStyleText()}</style>`).
+   * `variables` replaces the stored theme rule (a server render with its own theme, see `runWithTheme`).
+   */
+  getText(variables: string = this.variables): string {
+    return variables + this.text.map((rules) => (rules ?? []).join('')).join('');
   }
 }
 

@@ -20,8 +20,8 @@ const requests = new AsyncLocalStorage<EngineTheme>();
  * - The theme is used as given: it is not merged with the global theme.
  * - To hydrate, send the same theme to the client and call `updateTheme(theme)` before `hydrateRoot`. Class
  *   names are content-hashed, so the client produces the same ones.
- * - With web `themeVariables` on, the styles of a request use its real values (the `:root` variables in
- *   `getStyleText()` carry the global theme).
+ * - With web `themeVariables` on, a request compiles to the same `var(--iso-…)` classes as the client, and
+ *   `getStyleText()` called inside the same `runWithTheme` returns a `:root` rule with that request's values.
  *
  * @param theme The complete theme of this request.
  * @param render Starts the render (`renderToString`, `renderToPipeableStream`…). Its result is returned.

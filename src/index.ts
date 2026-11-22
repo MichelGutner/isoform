@@ -4,7 +4,9 @@
 // Efeito colateral intencional: registra o adapter no import.
 import './providers/index';
 
-import { getProvider } from './config';
+import { getProvider, getThemeVariableKeys } from './config';
+import { scopedTheme } from './theme/store';
+import { themeCss, variablesOf } from './theme/variables';
 
 export { engine } from './core/engine';
 export type { Engine } from './core/engine';
@@ -167,8 +169,15 @@ export { useTheme, updateTheme, getTheme } from './theme';
 /**
  * SSR (web): CSS gerado até agora, para injetar num `<style>` do servidor.
  * Em plataformas que não geram CSS (mobile) retorna `''`.
+ *
+ * Called inside `runWithTheme()` (`react-isoform/server`) with `themeVariables` on, the `:root` rule holds the
+ * values of that request's theme instead of the global one.
  */
-export const getStyleText = (): string => getProvider().getStyleText?.() ?? '';
+export const getStyleText = (): string => {
+  const keys = getThemeVariableKeys();
+  const scoped = keys && scopedTheme();
+  return getProvider().getStyleText?.(scoped ? themeCss(variablesOf(scoped, keys)) : undefined) ?? '';
+};
 
 // EngineTheme é um tipo global (src/theme/theme.d.ts); o alias local evita o
 // erro do Babel "Export 'EngineTheme' is not defined" ao reexportar um global.

@@ -15,4 +15,6 @@ import { getStyleText } from 'react-isoform';
 <style data-isoform="ssr" dangerouslySetInnerHTML={{ __html: getStyleText() }} />;
 ```
 
+Called inside `runWithTheme()` (`react-isoform/server`) with `themeVariables` on, the `:root` rule holds that request's theme values.
+
 See [Server-side rendering](/guides/server-side-rendering/).

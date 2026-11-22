@@ -67,10 +67,12 @@ import { runWithTheme } from 'react-isoform/server';
 import { App } from './App';
 
 export function render(theme: EngineTheme) {
-  const html = runWithTheme(theme, () => renderToString(<App />));
-  const css = getStyleText();
-  // send `theme` to the client too (for example as JSON in the page)
-  return { html, css };
+  return runWithTheme(theme, () => {
+    const html = renderToString(<App />);
+    const css = getStyleText(); // inside runWithTheme: with themeVariables, the :root values are this request's
+    // send `theme` to the client too (for example as JSON in the page)
+    return { html, css };
+  });
 }
 ```
 
@@ -92,7 +94,7 @@ From there the client uses the global theme as usual (`updateTheme()` to switch)
 
 - `react-isoform/server` is Node only. Browser and React Native bundles do not import it.
 - The theme is used as given: it is not merged with the global one.
-- With `configure({ performance: { themeVariables } })`, a request rendered inside `runWithTheme` gets real values instead of `var(--iso-…)`, because the `:root` rule in `getStyleText()` carries the global theme.
+- With `configure({ performance: { themeVariables } })`, the request compiles to the same `var(--iso-…)` classes the client does, so hydration matches. Call `getStyleText()` **inside** `runWithTheme` (after the render, or in `onAllReady` when streaming): its `:root` rule then holds that request's token values. Outside `runWithTheme` it holds the global theme's.
 - The CSS is still collected once per process (see above): class names do not collide between themes, but `getStyleText()` contains the rules of every theme rendered so far.
 
 <Aside type="note">

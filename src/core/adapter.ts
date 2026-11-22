@@ -95,8 +95,12 @@ export interface PlatformAdapter {
    * `var(--iso-…)`; a platform without it keeps resolving tokens to values.
    */
   applyThemeVariables?(css: string): void;
-  /** Server-side rendering: the CSS generated so far (only platforms that generate CSS). */
-  getStyleText?(): string;
+  /**
+   * Server-side rendering: the CSS generated so far (only platforms that generate CSS).
+   * `themeCss` replaces the stored `:root{--iso-…}` rule: a server render with its own theme passes that
+   * theme's rule here, so the response carries the values of its own request.
+   */
+  getStyleText?(themeCss?: string): string;
   /** Optional: the image cache behind `prefetchImages` and `clearImageCache` (the `image` module). */
   readonly images?: ImageCacheApi;
 }

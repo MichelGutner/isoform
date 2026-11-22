@@ -150,5 +150,5 @@ export const reactDomAdapter: PlatformAdapter = {
 
   applyThemeVariables: (css) => sheet.setVariables(css),
 
-  getStyleText: () => sheet.getText(),
+  getStyleText: (themeCss) => sheet.getText(themeCss),
 };
