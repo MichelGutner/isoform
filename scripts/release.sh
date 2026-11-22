@@ -24,7 +24,7 @@ TOOLS=(
   -p semantic-release@25.0.9
   -p @semantic-release/changelog@7.0.0
   -p @semantic-release/git@11.0.1
-  -p conventional-changelog-conventionalcommits@10.4.1
+  -p conventional-changelog-conventionalcommits@9.3.1
 )
 
 command -v gh >/dev/null || fail "the GitHub CLI (gh) is not installed"
