@@ -54,7 +54,46 @@ The stylesheet is **one per process**. It is never cleared, so:
 
 - **The output grows.** The second request's `getStyleText()` already contains the rules of the first. This is correct (the same declaration is always the same class), but each response carries the CSS of every page rendered so far, not only its own. Keep the page weight in mind on servers that render many different pages.
 - **Read it after the render finishes.** The text is "what was generated so far". If you stream (`renderToPipeableStream`), read it once all the content you want has rendered, or rules for content that rendered later will be missing from the `<style>`.
-- **The theme is global too.** `updateTheme()` changes one store shared by every request in the process. Configure the theme once at startup. Do not call `updateTheme()` per request to personalize the page: concurrent requests would see each other's theme.
+- **The theme is global too.** `updateTheme()` changes one store shared by every request in the process. Do not call it per request to personalize the page: concurrent requests would see each other's theme. Use `runWithTheme()` (below).
+
+## A theme per request
+
+When requests render with different themes (per user, per tenant), start each render inside `runWithTheme()` from `react-isoform/server`. There is no provider and no wrapper component: styled components, `useTheme()` and `getTheme()` read that theme for the whole render, and the global store is never touched.
+
+```tsx title="entry-server.tsx"
+import { renderToString } from 'react-dom/server';
+import { getStyleText } from 'react-isoform';
+import { runWithTheme } from 'react-isoform/server';
+import { App } from './App';
+
+export function render(theme: EngineTheme) {
+  const html = runWithTheme(theme, () => renderToString(<App />));
+  const css = getStyleText();
+  // send `theme` to the client too (for example as JSON in the page)
+  return { html, css };
+}
+```
+
+Streaming works the same way: call `renderToPipeableStream` inside `runWithTheme`. The theme follows the render's async work (Node's `AsyncLocalStorage`), so content that resumes after a Suspense boundary still gets the theme of its request, even when other requests rendered in between.
+
+On the client, set the same theme before hydrating, so the classes match the server's (they are content-hashed):
+
+```tsx title="entry-client.tsx"
+import { hydrateRoot } from 'react-dom/client';
+import { updateTheme } from 'react-isoform';
+import { App } from './App';
+
+// the theme the server sent, e.g. <script id="theme" type="application/json">…</script>
+updateTheme(JSON.parse(document.getElementById('theme')!.textContent!));
+hydrateRoot(document.getElementById('root')!, <App />);
+```
+
+From there the client uses the global theme as usual (`updateTheme()` to switch).
+
+- `react-isoform/server` is Node only. Browser and React Native bundles do not import it.
+- The theme is used as given: it is not merged with the global one.
+- With `configure({ performance: { themeVariables } })`, a request rendered inside `runWithTheme` gets real values instead of `var(--iso-…)`, because the `:root` rule in `getStyleText()` carries the global theme.
+- The CSS is still collected once per process (see above): class names do not collide between themes, but `getStyleText()` contains the rules of every theme rendered so far.
 
 <Aside type="note">
 This page covers the plain `react-dom/server` flow. Framework integrations (Next.js, Remix and similar) follow the same rule (render, then read), but where to place the `<style>` depends on the framework's own SSR hooks.

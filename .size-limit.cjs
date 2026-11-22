@@ -37,7 +37,7 @@ module.exports = [
   {
     name: 'web · initial load',
     path: 'dist/index.js',
-    limit: '21 kB', // 16 before the gestures module (+4.9 kB: its web recognizer is not lazy yet); lower it when something shrinks
+    limit: '21.1 kB', // 16 before the gestures module (+4.9 kB: its web recognizer is not lazy yet); 21 before per-request server themes (+0.1 kB: the scoped cache path in the builder, `runWithTheme` itself is a separate entry); lower it when something shrinks
     ignore: external,
     modifyEsbuildConfig: initialLoad,
   },
