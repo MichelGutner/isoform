@@ -117,12 +117,6 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
   private cacheByTheme = new WeakMap<object, LRUCache<string, Computed>>();
 
   /**
-   * Cache of the server renders inside `runWithTheme()`, keyed by that theme. Separate from `cacheByTheme`:
-   * scoped styles always use real theme values (no CSS variables) and never change `themeDependent`.
-   */
-  private scopedCache = new WeakMap<object, LRUCache<string, Computed>>();
-
-  /**
    * Props que as regras já leram. Só elas entram no hash: o resto (`testID`, `onPress`…) não muda o estilo.
    * Cresce no primeiro cache miss que lê uma prop nova; nesse momento o cache é zerado (ver `learn`).
    */
@@ -410,32 +404,26 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
     return this.themeDependent ? (theme as object) : ANY_THEME;
   }
 
-  /**
-   * Estilo dinâmico: cache por tema, chaveado pelas props que as regras leem.
-   * `scoped`: the theme comes from `runWithTheme()` (server, per request). It is then cached apart, keyed by
-   * that theme, computed with real values (no CSS variables) and never changes `themeDependent`.
-   */
+  /** Estilo dinâmico: cache por tema, chaveado pelas props que as regras leem. */
   private resolveDynamic(
     adapter: PlatformAdapter,
     theme: EngineTheme,
     variableKeys: readonly string[] | null,
     platform: string,
     props: P,
-    scoped: boolean,
   ): Computed {
     const signature = variableKeys ? variableKeys.join(',') : '';
-    if (!scoped && signature !== this.variablesSignature) {
+    if (signature !== this.variablesSignature) {
       this.variablesSignature = signature;
       this.themeDependent = false;
       this.cacheByTheme = new WeakMap();
     }
 
-    const caches = () => (scoped ? this.scopedCache : this.cacheByTheme);
-    let key = scoped ? (theme as object) : this.cacheKey(theme);
-    let cache = caches().get(key);
+    let key = this.cacheKey(theme);
+    let cache = this.cacheByTheme.get(key);
     if (!cache) {
       cache = new LRUCache(CACHE_LIMIT);
-      caches().set(key, cache);
+      this.cacheByTheme.set(key, cache);
     }
 
     let hash = this.hashOf(platform, props);
@@ -451,7 +439,7 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
     try {
       // The rules see a view of the theme that reports what they read (`dependent`). With CSS variables
       // the listed tokens are `var(--iso-…)` and do not count; without them every theme read counts.
-      const seen = scoped ? theme : (themeView(theme as object, variableKeys ?? NO_VARIABLE_KEYS) as EngineTheme);
+      const seen = themeView(theme as object, variableKeys ?? NO_VARIABLE_KEYS) as EngineTheme;
       computed = this.computeFromRules(adapter, seen, platform, props, reads);
     } finally {
       endThemeReads(previousProbe);
@@ -459,7 +447,7 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
     }
 
     let stale = this.learn(reads);
-    if (!scoped && probe.dependent && !this.themeDependent) {
+    if (probe.dependent && !this.themeDependent) {
       // o estilo lê valores reais do tema: o que foi guardado como "vale para qualquer tema" não vale mais
       this.themeDependent = true;
       stale = true;
@@ -467,10 +455,9 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
     if (stale) {
       // as entradas antigas foram chaveadas com menos props (ou com menos tema) do que o estilo realmente usa
       this.cacheByTheme = new WeakMap();
-      this.scopedCache = new WeakMap();
-      key = scoped ? (theme as object) : this.cacheKey(theme);
+      key = this.cacheKey(theme);
       cache = new LRUCache(CACHE_LIMIT);
-      caches().set(key, cache);
+      this.cacheByTheme.set(key, cache);
       hash = this.hashOf(platform, props); // agora com as props novas
     }
     cache.set(hash, computed);
@@ -514,9 +501,9 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
       const { isStatic, ref: staticRef } = this.getStaticInfo();
       // tema como variáveis CSS (web, opt-in): só com um adapter que escreve as variáveis no `:root`
       const variableKeys = adapter.applyThemeVariables ? getThemeVariableKeys() : null;
-      // tema da requisição (servidor, `runWithTheme`) ou o global; a assinatura vem depois, quando já se sabe se o estilo depende do tema
-      const scoped = scopedTheme();
-      const theme = scoped ?? getTheme();
+      // tema da requisição (servidor, `runWithTheme`) ou o global; a assinatura vem depois, quando já se sabe se o estilo depende do tema.
+      // Both go through the same path (the same `var(--iso-…)` or values the client compiles), so the classes match.
+      const theme = scopedTheme() ?? getTheme();
 
       let result: Computed | undefined;
 
@@ -527,7 +514,7 @@ export class StylizedBuilder<C extends AnyComponent, P extends object> {
           staticResult = result;
         }
       } else {
-        result = this.resolveDynamic(adapter, theme, variableKeys, platform, props as P, !!scoped);
+        result = this.resolveDynamic(adapter, theme, variableKeys, platform, props as P);
       }
 
       const { style: userStyle, ...restProps } = props;

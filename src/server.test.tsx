@@ -8,6 +8,7 @@ import { renderToPipeableStream, renderToString } from 'react-dom/server';
 import { configure, registerBundledProvider, resetProvider } from './config';
 import { engine } from './core/engine';
 import { reactDomAdapter } from './adapters/react-dom/adapter';
+import { getStyleText } from './index';
 import { getTheme, updateTheme, useTheme } from './theme';
 import { runWithTheme } from './server';
 
@@ -112,13 +113,75 @@ describe('runWithTheme · per-request themes on the server', () => {
     expect(colorOf(html)).toBe('blue');
   });
 
-  it('uses real values inside runWithTheme when theme variables are on (the :root rule holds the global theme)', () => {
-    configure({ performance: { themeVariables: ['color'] } });
-    const html = runWithTheme(RED, () => renderToString(<Label>x</Label>));
-    expect(colorOf(html)).toBe('red');
-    // outside a scope the same component still uses the variable
-    const global = renderToString(<Label>y</Label>);
-    expect(colorOf(global)).toBe('var(--iso-color-text)');
-    configure({ performance: { themeVariables: [] } });
+  describe('with themeVariables', () => {
+    beforeEach(() => configure({ performance: { themeVariables: ['color'] } }));
+    afterEach(() => configure({ performance: { themeVariables: [] } }));
+
+    /** The value `--iso-color-text` has in the `:root` rule of `css`. */
+    const rootToken = (css: string) => /:root\{[^}]*--iso-color-text:([^;}]+)/.exec(css)?.[1];
+
+    it('compiles inside and outside runWithTheme to the same classes (var tokens), with the request values in :root', () => {
+      let scopedCss = '';
+      const scoped = runWithTheme(RED, () => {
+        const out = renderToString(<Label>x</Label>);
+        scopedCss = getStyleText();
+        return out;
+      });
+      const global = renderToString(<Label>y</Label>);
+
+      expect(colorOf(scoped)).toBe('var(--iso-color-text)');
+      expect(colorOf(global)).toBe('var(--iso-color-text)');
+      expect(/class="([^"]+)"/.exec(scoped)![1]).toBe(/class="([^"]+)"/.exec(global)![1]);
+      expect(rootToken(scopedCss)).toBe('red');
+      // outside a request the :root rule is the global theme's
+      expect(rootToken(getStyleText())).toBe('green');
+    });
+
+    it('gives each interleaved request its own :root values, and leaves the global theme alone', async () => {
+      const a = gate();
+      const b = gate();
+      const request = (t: any, until: Promise<void>) =>
+        runWithTheme(t, async () => {
+          const html = await stream(
+            <Suspense fallback={null}>
+              <Deferred until={until}>
+                <Label>hi</Label>
+              </Deferred>
+            </Suspense>,
+          );
+          return { html, css: getStyleText() }; // after the await: the theme followed the async work
+        });
+
+      const renderA = request(RED, a.promise);
+      const renderB = request(BLUE, b.promise);
+      updateTheme(GREEN);
+      b.open();
+      const resultB = await renderB;
+      a.open();
+      const resultA = await renderA;
+
+      expect(rootToken(resultA.css)).toBe('red');
+      expect(rootToken(resultB.css)).toBe('blue');
+      expect(colorOf(resultA.html)).toBe('var(--iso-color-text)');
+      expect((getTheme() as any).color.text).toBe('green');
+    });
+
+    it('keeps a style that reads a token and a real value correct for each request', () => {
+      const Mixed = engine('Box', ({ theme: t }: any) => ({ color: t.color.text, width: t.size }));
+      const wide = { color: { text: 'red' }, size: 40 } as any;
+      const narrow = { color: { text: 'blue' }, size: 10 } as any;
+      const width = (html: string) => {
+        const css = reactDomAdapter.getStyleText!();
+        const classes = /class="([^"]+)"/.exec(html)![1].split(' ');
+        return classes.map((cls) => new RegExp(`\\.${cls}\\{width:([^}]+)\\}`).exec(css)?.[1]).find(Boolean);
+      };
+      const first = runWithTheme(wide, () => renderToString(<Mixed />));
+      const second = runWithTheme(narrow, () => renderToString(<Mixed />));
+      const third = runWithTheme(wide, () => renderToString(<Mixed />));
+
+      expect(width(first)).toBe('40px');
+      expect(width(second)).toBe('10px');
+      expect(width(third)).toBe('40px');
+    });
   });
 });
