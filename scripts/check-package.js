@@ -17,6 +17,8 @@ const required = [
   'babel.js',
   'dist/jsx-runtime.js',
   'dist/jsx-dev-runtime.js',
+  'dist/server.js',
+  'dist/server.d.ts',
   'react-native.config.js',
   'src/adapters/react-native/image/native/IsoImageViewNativeComponent.ts',
   'src/adapters/react-native/modal/native/IsoModalViewNativeComponent.ts',

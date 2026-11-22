@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — a theme per server request
+- `react-isoform/server` exports `runWithTheme(theme, render)`: everything the render produces (styled components, `useTheme()`, `getTheme()` inside a rule) uses that theme, without a provider and without touching the global store. Before, the only theme was the global one, so two requests rendering with different themes at the same time could receive each other's (reproduced with two interleaved streaming renders). Node only (`AsyncLocalStorage`); browser and React Native bundles do not include it. On the client, call `updateTheme(sameTheme)` before `hydrateRoot`.
+
 ### Changed
 
 - Errors and development warnings are now written in English (they were Portuguese). The ones that need more than the text to fix carry a stable code, `ISO001` to `ISO012`, documented in [Troubleshooting](https://isoform-kappa.vercel.app/recipes/troubleshooting/). Code that matched the old Portuguese text must be updated. The accessibility labels of the video player are unchanged.

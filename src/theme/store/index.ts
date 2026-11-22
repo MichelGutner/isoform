@@ -39,13 +39,28 @@ const listeners = new Set<() => void>();
 const RECENT_THEMES = 8;
 const recentThemes: EngineTheme[] = [];
 
-const canonicalTheme = (theme: EngineTheme): EngineTheme => {
+export const canonicalTheme = (theme: EngineTheme): EngineTheme => {
   const seen = recentThemes.find((candidate) => deepEqual(candidate, theme));
   if (seen) return seen;
   recentThemes.push(theme);
   if (recentThemes.length > RECENT_THEMES) recentThemes.shift();
   return theme;
 };
+
+/**
+ * Where the theme of the current server request comes from (see `react-isoform/server`). Installed only by
+ * the server entry, so browser and React Native bundles never carry it: there it stays `null` and the
+ * global theme is the only one.
+ */
+let scopeSource: (() => EngineTheme | undefined) | null = null;
+
+/** Installs the per-request theme lookup (`AsyncLocalStorage` on the server). Internal. */
+export const setThemeScopeSource = (source: (() => EngineTheme | undefined) | null): void => {
+  scopeSource = source;
+};
+
+/** The theme of the running `runWithTheme()` call, or `null` (the global theme applies). */
+export const scopedTheme = (): EngineTheme | null => (scopeSource ? (scopeSource() ?? null) : null);
 
 /**
  * Theme store object that implements the external store interface.
@@ -75,6 +90,12 @@ export const themeStore = {
    * @returns The current theme object
    */
   getSnapshot: () => _currentTheme,
+
+  /**
+   * The theme React reads while rendering on the server and while hydrating: the theme of the running
+   * `runWithTheme()` call when there is one (server), the global theme otherwise.
+   */
+  getServerSnapshot: (): EngineTheme => scopedTheme() ?? _currentTheme,
 
   /**
    * Subscribes to theme changes.
@@ -243,15 +264,12 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
  *
  * @example Server-Side Rendering
  * ```tsx
- * // In SSR context, you might want to set a theme and get it immediately
- * import { updateTheme, getTheme } from 'react-isoform';
- * 
- * // Set initial theme based on user preferences
- * updateTheme({ colors: { primary: userPrefersDark ? '#fff' : '#000' } });
- * 
- * // Get the theme for rendering
- * const theme = getTheme();
- * const initialHtml = renderToString(<App theme={theme} />);
+ * // One theme per request: start the render inside `runWithTheme` (never `updateTheme` per request,
+ * // the global store is shared by every concurrent request).
+ * import { runWithTheme } from 'react-isoform/server';
+ *
+ * const html = runWithTheme(themeOf(request), () => renderToString(<App />));
+ * // inside that render, getTheme() returns themeOf(request)
  * ```
  *
  * @note
@@ -267,5 +285,5 @@ export const updateTheme = <T extends Partial<EngineTheme>>(
 export const getTheme = (): EngineTheme => {
   // inside a style rule, reading the theme this way makes the style depend on it, like `ctx.theme` does
   noteThemeRead();
-  return _currentTheme;
+  return scopedTheme() ?? _currentTheme;
 };

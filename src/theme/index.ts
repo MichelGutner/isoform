@@ -48,7 +48,8 @@ export const useTheme = () => {
   const theme = useSyncExternalStore(
     themeStore.subscribe,
     themeStore.getSnapshot,
-    themeStore.getSnapshot,
+    // on the server, the theme of the running `runWithTheme()` (per request)
+    themeStore.getServerSnapshot,
   ) as EngineTheme;
 
   return theme as EngineTheme;

@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { forwardRef, useSyncExternalStore } from 'react';
 import { getProvider, getThemeVariableKeys, isInlineEnabled } from '../config';
 import { LRUCache } from '../cache/lru';
 import { optimizedHash } from '../hash/optimizedHash';
 import { beginPropReads, createReads, endPropReads, trackReads, type PropReads } from '../hash/trackReads';
-import { getTheme, themeStore } from '../theme/store';
+import { getTheme, scopedTheme, themeStore } from '../theme/store';
 import { beginThemeReads, endThemeReads, themeView, type ThemeProbe } from '../theme/variables';
-import type { BreakpointStyle, PlatformAdapter, PseudoStyles, StateStyles } from './adapter';
+import type { AnyComponent, BreakpointStyle, FlatStyle, PlatformAdapter, PseudoStyles, StateStyles } from './adapter';
 import { getBreakpoints } from '../config';
 import { evaluateCondition, isPseudoCondition, isStaticCondition, parseBreakpoint, stateOf } from './conditions';
 import { warnOnce } from './dev';
@@ -15,22 +14,13 @@ import { flattenStyle } from './flatten';
 import { mergeGestures, resolveGestures, type GestureConfig } from './gesture';
 import { INLINE, isThemeFree, type InlineElement, type InlineFn } from './inline';
 import { keyframes } from './keyframes';
-import type {
-  Condition,
-  EngineComponent,
-  PseudoName,
-  StateName,
-  StyleContext,
-  StyleFn,
-  StyleObject,
-  StyleOrFn,
-} from './types';
+import type { Condition, EngineComponent, PseudoName, StateName, StyleContext, StyleOrFn } from './types';
 
 /** Entrada do cache: resultado já compilado para o adapter ativo. */
 interface Computed {
   adapter: PlatformAdapter;
   compiled: unknown;
-  mergedAttrs: Record<string, any>;
+  mergedAttrs: Record<string, unknown>;
   /** `false` when no rule added props, so the render can reuse the caller's props object as is. */
   hasAttrs: boolean;
 }
@@ -53,15 +43,16 @@ const noTheme = () => 0;
 const NO_VARIABLE_KEYS: readonly string[] = [];
 
 
-function resolveStyle<C extends React.ComponentType<any>, P>(
-  style: StyleOrFn<C, P>,
-  ctx: StyleContext<P>,
-): StyleObject<C> {
-  return typeof style === 'function' ? ((style as StyleFn<C, P>)(ctx) as StyleObject<C>) : style;
+/**
+ * A style rule's style, or the `style` inside attrs: an object (returned as is), or a function of the
+ * style context. The result only goes to `flattenStyle`, which takes any style shape.
+ */
+function resolveStyle<P>(style: unknown, ctx: StyleContext<P>): unknown {
+  return typeof style === 'function' ? style(ctx) : style;
 }
 
 /** `animationName: { from, to }` (keyframes inline) → nome registrado via `keyframes()`. */
-function resolveInlineKeyframes(style: Record<string, any>): Record<string, any> {
+function resolveInlineKeyframes(style: FlatStyle): FlatStyle {
   const name = style.animationName;
   if (name && typeof name === 'object') {
     const list = Array.isArray(name) ? name : [name];
@@ -78,7 +69,7 @@ function resolveInlineKeyframes(style: Record<string, any>): Record<string, any>
  * - when: atributos/estilos condicionais
  * - attrs: props fixas
  */
-type Rule<C extends React.ComponentType<any>, P> =
+type Rule<C extends AnyComponent, P> =
   | { kind: 'style'; style: StyleOrFn<C, P> }
   | {
       kind: 'when';
@@ -90,14 +81,25 @@ type Rule<C extends React.ComponentType<any>, P> =
   | { kind: 'attrs'; attrs: Partial<React.ComponentPropsWithRef<C> & P> }
   | { kind: 'gesture'; config: GestureConfig };
 
+/** `true` for an attrs object (`attrs({ style })`, `when(…, { style, ref })`), `false` for an attrs function. */
+const isAttrsObject = (attrs: unknown): attrs is Readonly<Record<string, unknown>> =>
+  !!attrs && typeof attrs === 'object';
+
+/** The `style` inside an attrs object; `undefined` for an attrs function. */
+const styleOf = (attrs: unknown): unknown => (isAttrsObject(attrs) ? attrs.style : undefined);
+
+/** A readable name for a component: its `displayName`, else its function/class name. */
+const componentName = (component: AnyComponent): string | undefined =>
+  component?.displayName || component?.name;
+
 /** Every function a rule holds: a style function, a `when()` condition, an attrs function, a style inside attrs. */
-const functionsOf = (rule: Rule<any, any>): unknown[] => {
-  const attrs = 'attrs' in rule ? (rule.attrs as any) : undefined;
+const functionsOf = <C extends AnyComponent, P>(rule: Rule<C, P>): unknown[] => {
+  const attrs = 'attrs' in rule ? rule.attrs : undefined;
   const candidates = [
     rule.kind === 'style' ? rule.style : undefined,
     rule.kind === 'when' ? rule.condition : undefined,
     attrs,
-    attrs?.style,
+    styleOf(attrs),
   ];
   return candidates.filter((candidate) => typeof candidate === 'function');
 };
@@ -108,11 +110,17 @@ const functionsOf = (rule: Rule<any, any>): unknown[] => {
  */
 export type BaseComponent<C> = C | string;
 
-export class StylizedBuilder<C extends React.ComponentType<any>, P extends object> {
+export class StylizedBuilder<C extends AnyComponent, P extends object> {
   private rules: Rule<C, P>[] = [];
 
   /** Cache por tema → (hash das props → resultado compilado). */
-  private cacheByTheme = new WeakMap<any, LRUCache<string, Computed>>();
+  private cacheByTheme = new WeakMap<object, LRUCache<string, Computed>>();
+
+  /**
+   * Cache of the server renders inside `runWithTheme()`, keyed by that theme. Separate from `cacheByTheme`:
+   * scoped styles always use real theme values (no CSS variables) and never change `themeDependent`.
+   */
+  private scopedCache = new WeakMap<object, LRUCache<string, Computed>>();
 
   /**
    * Props que as regras já leram. Só elas entram no hash: o resto (`testID`, `onPress`…) não muda o estilo.
@@ -191,11 +199,12 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     props: P,
     reads: PropReads | null,
   ): Computed {
-    const styles: StyleObject<C>[] = [];
-    const stateStyles: Partial<Record<StateName, StyleObject<C>[]>> = {};
-    const bpStyles: Record<string, StyleObject<C>[]> = {};
-    const pseudoStyles: Partial<Record<PseudoName, StyleObject<C>[]>> = {};
-    const mergedAttrs: Record<string, any> = {};
+    // resolved styles of every shape (objects, arrays, falsy values): `flattenStyle` merges them
+    const styles: unknown[] = [];
+    const stateStyles: Partial<Record<StateName, unknown[]>> = {};
+    const bpStyles: Record<string, unknown[]> = {};
+    const pseudoStyles: Partial<Record<PseudoName, unknown[]>> = {};
+    const mergedAttrs: Record<string, unknown> = {};
     const gestureConfigs: GestureConfig[] = [];
 
     // Contexto reaproveitado entre as regras: só é refeito quando uma regra anterior adicionou props
@@ -224,8 +233,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         // estados viram variantes compiladas pelo adapter (`:hover`, estado do Pressable…)
         const ruleAttrs = typeof rule.attrs === 'function' ? rule.attrs(ctx) : rule.attrs;
         if (ruleAttrs) {
-          const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
-          if (ruleStyle) (stateStyles[state] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
+          const { style: ruleStyle, ...restAttrs }: Readonly<Record<string, unknown>> = ruleAttrs;
+          if (ruleStyle) (stateStyles[state] ??= []).push(resolveStyle(ruleStyle, ctx));
           if (Object.keys(restAttrs).length) {
             warnOnce(`state-attrs:${state}`, `when('state:${state}') only accepts { style }; the other props were ignored.`);
           }
@@ -238,8 +247,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         const name = rule.condition;
         const ruleAttrs = typeof rule.attrs === 'function' ? rule.attrs(ctx) : rule.attrs;
         if (ruleAttrs) {
-          const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
-          if (ruleStyle) (pseudoStyles[name] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
+          const { style: ruleStyle, ...restAttrs }: Readonly<Record<string, unknown>> = ruleAttrs;
+          if (ruleStyle) (pseudoStyles[name] ??= []).push(resolveStyle(ruleStyle, ctx));
           if (Object.keys(restAttrs).length) {
             warnOnce(`pseudo-attrs:${name}`, `when('${name}') only accepts { style }; the other props were ignored.`);
           }
@@ -252,8 +261,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         const name = rule.condition as string;
         const ruleAttrs = typeof rule.attrs === 'function' ? rule.attrs(ctx) : rule.attrs;
         if (ruleAttrs) {
-          const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
-          if (ruleStyle) (bpStyles[name] ??= []).push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
+          const { style: ruleStyle, ...restAttrs }: Readonly<Record<string, unknown>> = ruleAttrs;
+          if (ruleStyle) (bpStyles[name] ??= []).push(resolveStyle(ruleStyle, ctx));
           if (Object.keys(restAttrs).length) {
             warnOnce(`bp-attrs:${name}`, `when('${name}') only accepts { style }; the other props were ignored.`);
           }
@@ -265,10 +274,10 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
         if (evaluateCondition(rule.condition, ctx)) {
           const ruleAttrs = typeof rule.attrs === 'function' ? rule.attrs(ctx) : rule.attrs;
           if (ruleAttrs) {
-            const { style: ruleStyle, ...restAttrs } = ruleAttrs as any;
+            const { style: ruleStyle, ...restAttrs }: Readonly<Record<string, unknown>> = ruleAttrs;
             Object.assign(mergedAttrs, restAttrs);
             attrsVersion++;
-            if (ruleStyle) styles.push(resolveStyle(ruleStyle as StyleOrFn<C, P>, ctx));
+            if (ruleStyle) styles.push(resolveStyle(ruleStyle, ctx));
           }
         }
       }
@@ -278,10 +287,10 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
       }
 
       if (rule.kind === 'attrs') {
-        const { style: attrStyle, ...restAttrs } = (rule?.attrs || {}) as any;
+        const { style: attrStyle, ...restAttrs }: Readonly<Record<string, unknown>> = rule.attrs || {};
         Object.assign(mergedAttrs, restAttrs);
         attrsVersion++;
-        if (attrStyle) styles.push(resolveStyle(attrStyle as StyleOrFn<C, P>, ctx));
+        if (attrStyle) styles.push(resolveStyle(attrStyle, ctx));
       }
     }
 
@@ -337,12 +346,12 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   private isStatic(): boolean {
     return this.rules.every((rule) => {
       if (rule.kind === 'style') return typeof rule.style !== 'function';
-      if (rule.kind === 'attrs') return typeof (rule.attrs as any)?.style !== 'function';
+      if (rule.kind === 'attrs') return typeof styleOf(rule.attrs) !== 'function';
       if (rule.kind === 'gesture') return true;
       return (
         isStaticCondition(rule.condition) &&
         typeof rule.attrs !== 'function' &&
-        typeof (rule.attrs as any)?.style !== 'function'
+        typeof styleOf(rule.attrs) !== 'function'
       );
     });
   }
@@ -350,7 +359,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   /** `ref` estático vindo de `when(...).attrs({ ref })` (independe de props/tema). */
   private findStaticRef(): unknown {
     for (const rule of this.rules) {
-      if (rule.kind === 'when' && (rule.attrs as any)?.ref) return (rule.attrs as any).ref;
+      if (rule.kind === 'when' && isAttrsObject(rule.attrs) && rule.attrs.ref) return rule.attrs.ref;
     }
     return undefined;
   }
@@ -393,7 +402,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   }
 
   private hashOf(platform: string, props: P): string {
-    return optimizedHash({ platform, props } as any, this.readAll ? null : this.readKeys);
+    return optimizedHash({ platform, props }, this.readAll ? null : this.readKeys);
   }
 
   /** Theme cache key: the theme itself, or `ANY_THEME` while the style never read a real theme value. */
@@ -401,26 +410,32 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     return this.themeDependent ? (theme as object) : ANY_THEME;
   }
 
-  /** Estilo dinâmico: cache por tema, chaveado pelas props que as regras leem. */
+  /**
+   * Estilo dinâmico: cache por tema, chaveado pelas props que as regras leem.
+   * `scoped`: the theme comes from `runWithTheme()` (server, per request). It is then cached apart, keyed by
+   * that theme, computed with real values (no CSS variables) and never changes `themeDependent`.
+   */
   private resolveDynamic(
     adapter: PlatformAdapter,
     theme: EngineTheme,
     variableKeys: readonly string[] | null,
     platform: string,
     props: P,
+    scoped: boolean,
   ): Computed {
     const signature = variableKeys ? variableKeys.join(',') : '';
-    if (signature !== this.variablesSignature) {
+    if (!scoped && signature !== this.variablesSignature) {
       this.variablesSignature = signature;
       this.themeDependent = false;
       this.cacheByTheme = new WeakMap();
     }
 
-    let key = this.cacheKey(theme);
-    let cache = this.cacheByTheme.get(key);
+    const caches = () => (scoped ? this.scopedCache : this.cacheByTheme);
+    let key = scoped ? (theme as object) : this.cacheKey(theme);
+    let cache = caches().get(key);
     if (!cache) {
       cache = new LRUCache(CACHE_LIMIT);
-      this.cacheByTheme.set(key, cache);
+      caches().set(key, cache);
     }
 
     let hash = this.hashOf(platform, props);
@@ -436,7 +451,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     try {
       // The rules see a view of the theme that reports what they read (`dependent`). With CSS variables
       // the listed tokens are `var(--iso-…)` and do not count; without them every theme read counts.
-      const seen = themeView(theme as object, variableKeys ?? NO_VARIABLE_KEYS) as EngineTheme;
+      const seen = scoped ? theme : (themeView(theme as object, variableKeys ?? NO_VARIABLE_KEYS) as EngineTheme);
       computed = this.computeFromRules(adapter, seen, platform, props, reads);
     } finally {
       endThemeReads(previousProbe);
@@ -444,7 +459,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     }
 
     let stale = this.learn(reads);
-    if (probe.dependent && !this.themeDependent) {
+    if (!scoped && probe.dependent && !this.themeDependent) {
       // o estilo lê valores reais do tema: o que foi guardado como "vale para qualquer tema" não vale mais
       this.themeDependent = true;
       stale = true;
@@ -452,9 +467,10 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     if (stale) {
       // as entradas antigas foram chaveadas com menos props (ou com menos tema) do que o estilo realmente usa
       this.cacheByTheme = new WeakMap();
-      key = this.cacheKey(theme);
+      this.scopedCache = new WeakMap();
+      key = scoped ? (theme as object) : this.cacheKey(theme);
       cache = new LRUCache(CACHE_LIMIT);
-      this.cacheByTheme.set(key, cache);
+      caches().set(key, cache);
       hash = this.hashOf(platform, props); // agora com as props novas
     }
     cache.set(hash, computed);
@@ -478,7 +494,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   private warnThrashing(): void {
     if (this.thrashWarned) return;
     this.thrashWarned = true;
-    const name = typeof this.Base === 'string' ? this.Base : (this.Base as any)?.displayName || (this.Base as any)?.name;
+    const name = typeof this.Base === 'string' ? this.Base : componentName(this.Base);
     warnOnce(
       `cache-thrash:${this.id}`,
       `the style of "${name ?? 'component'}" reads props with more than ${CACHE_LIMIT} value combinations and is recompiled on every render. ` +
@@ -492,14 +508,15 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
     let staticResult: Computed | undefined;
 
     /** What the component renders for `props`: no hooks, so the JSX runtime can call it too (see `inline`). */
-    const resolve = (props: any, ref: unknown): InlineElement => {
+    const resolve = (props: Readonly<Record<string, unknown>>, ref: unknown): InlineElement => {
       const adapter = getProvider();
       const platform = adapter.os();
       const { isStatic, ref: staticRef } = this.getStaticInfo();
       // tema como variáveis CSS (web, opt-in): só com um adapter que escreve as variáveis no `:root`
       const variableKeys = adapter.applyThemeVariables ? getThemeVariableKeys() : null;
-      // leitura direta do store; a assinatura vem depois, quando já se sabe se o estilo depende do tema
-      const theme = getTheme();
+      // tema da requisição (servidor, `runWithTheme`) ou o global; a assinatura vem depois, quando já se sabe se o estilo depende do tema
+      const scoped = scopedTheme();
+      const theme = scoped ?? getTheme();
 
       let result: Computed | undefined;
 
@@ -510,14 +527,14 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
           staticResult = result;
         }
       } else {
-        result = this.resolveDynamic(adapter, theme, variableKeys, platform, props as P);
+        result = this.resolveDynamic(adapter, theme, variableKeys, platform, props as P, !!scoped);
       }
 
-      const { style: userStyle, ...restProps } = props as any;
+      const { style: userStyle, ...restProps } = props;
 
-      const Component = primitive
-        ? (adapter.primitives[primitive] as React.ComponentType<any> | undefined)
-        : (this.Base as React.ComponentType<any>);
+      const Base = this.Base;
+      // a primitive the active provider does not have is a missing key: `undefined`, checked below
+      const Component: AnyComponent | undefined = typeof Base === 'string' ? adapter.primitives[Base] : Base;
 
       if (!Component) {
         throw new Error(
@@ -540,7 +557,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
       return { type: Final, props: element };
     };
 
-    const StylizedComponent: any = forwardRef<unknown, any>((props, ref) => {
+    const StylizedComponent: React.ForwardRefExoticComponent<Record<string, unknown>> & { [INLINE]?: InlineFn } =
+      forwardRef<unknown, Record<string, unknown>>((props, ref) => {
       const { type, props: element } = resolve(props, ref);
       // Only a style that read a real theme value re-renders on a theme switch; for the others the
       // snapshot is constant. Always exactly one hook.
@@ -563,9 +581,8 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
 
     StylizedComponent[INLINE] = inline;
 
-    const base: any = this.Base;
     StylizedComponent.displayName = `Stylized(${
-      typeof base === 'string' ? base : base?.displayName || base?.name || 'Component'
+      typeof this.Base === 'string' ? this.Base : componentName(this.Base) || 'Component'
     })`;
 
     // Sem `memo` de propósito. Medido numa lista de 500 linhas (cada linha repassa `children` novos),
@@ -575,7 +592,7 @@ export class StylizedBuilder<C extends React.ComponentType<any>, P extends objec
   }
 }
 
-export function stylized<C extends React.ComponentType<any>>(
+export function stylized<C extends AnyComponent>(
   component: BaseComponent<C>,
 ): StylizedBuilder<C, {}> {
   return new StylizedBuilder<C, {}>(component);

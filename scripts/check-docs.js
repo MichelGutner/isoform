@@ -82,7 +82,7 @@ fs.writeFileSync(
       strict: true,
       jsx: 'react-jsx',
       baseUrl: '..',
-      paths: { 'react-isoform': ['src/index.ts'] },
+      paths: { 'react-isoform': ['src/index.ts'], 'react-isoform/server': ['src/server.ts'] },
       types: ['react', 'node'],
       typeRoots: ['../node_modules/@types'],
       lib: ['esnext', 'dom'],

@@ -1,11 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType } from 'react';
 import type { ResolvedGestures } from './gesture';
 import type { ImageCacheApi } from './image';
 import type { PseudoName, StateName } from './types';
 
+/**
+ * A merged style as the core hands it to an adapter: one flat object, property name → value.
+ * The values are whatever the app wrote (numbers, strings, theme tokens, `transform` arrays…),
+ * so they are `unknown`: an adapter checks each one before using it.
+ */
+export type FlatStyle = Record<string, unknown>;
+
+/**
+ * Any React component, whatever its props: a styled component's base, a platform primitive. Only the
+ * component's own props type knows what it accepts, so a slot that holds any of them needs `any`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyComponent = ComponentType<any>;
+
 /** Styles per pseudo-element (`'::before'`…), already merged into flat objects. */
-export type PseudoStyles = Partial<Record<PseudoName, Record<string, any>>>;
+export type PseudoStyles = Partial<Record<PseudoName, FlatStyle>>;
 
 /** A style variant for a width range, already merged into a flat object. Sorted by ascending `min`. */
 export interface BreakpointStyle {
@@ -18,11 +31,11 @@ export interface BreakpointStyle {
   /** Global position of the range (keeps CSS rule order stable across components; ranges with `max` come later). */
   order: number;
   /** The style applied inside the range. */
-  style: Record<string, any>;
+  style: FlatStyle;
 }
 
 /** Styles per interaction state (`'hover'`, `'pressed'`…), already merged into flat objects. */
-export type StateStyles = Partial<Record<StateName, Record<string, any>>>;
+export type StateStyles = Partial<Record<StateName, FlatStyle>>;
 
 /** Input of {@link PlatformAdapter.applyProps}, built by the core on every render. */
 export interface ApplyPropsInput {
@@ -30,8 +43,11 @@ export interface ApplyPropsInput {
   primitive?: string;
   /** The result of {@link PlatformAdapter.compileStyle} (already cached by the core). */
   compiled: unknown;
-  /** Props from `attrs`/`when` merged with the user's props, WITHOUT `style`. */
-  props: Record<string, any>;
+  /**
+   * Props from `attrs`/`when` merged with the user's props, WITHOUT `style`. A copy made for this render:
+   * the adapter may change it and return it. The values come from the app, so they are `unknown`.
+   */
+  props: Record<string, unknown>;
   /** The `style` prop the user passed when rendering the component. */
   userStyle: unknown;
 }
@@ -47,7 +63,7 @@ export interface PlatformAdapter {
   /** The current OS (`'ios'`, `'android'`, `'web'`…); drives `when('platform:ios' | 'platform:android' | 'platform:web' | 'platform:native')`. */
   os(): string;
   /** Neutral primitive name (`'Box'`) → the platform's real component (`View`, a `<div>`…). */
-  readonly primitives: Record<string, ComponentType<any>>;
+  readonly primitives: Record<string, AnyComponent>;
   /**
    * Turns the merged style (a flat object) into the platform's final form
    * (React Native style objects, atomic CSS classes…). Runs once per
@@ -56,7 +72,7 @@ export interface PlatformAdapter {
    * without gesture support can ignore it.
    */
   compileStyle(
-    style: Record<string, any>,
+    style: FlatStyle,
     states?: StateStyles,
     breakpoints?: BreakpointStyle[],
     pseudos?: PseudoStyles,
@@ -66,13 +82,13 @@ export interface PlatformAdapter {
    * Builds the final props of the underlying component. Runs on every render,
    * so it must be cheap (the heavy work belongs in `compileStyle`).
    */
-  applyProps(input: ApplyPropsInput): Record<string, any>;
+  applyProps(input: ApplyPropsInput): Record<string, unknown>;
   /**
    * Optional: swaps the underlying component based on the compiled style (e.g.
    * an animated host on native when there is an `animation`). Must return the
    * SAME reference for the same input, or React remounts the tree.
    */
-  resolveComponent?(component: ComponentType<any>, compiled: unknown): ComponentType<any>;
+  resolveComponent?(component: AnyComponent, compiled: unknown): AnyComponent;
   /**
    * Optional, CSS platforms only: receives the `:root{--iso-…}` rule that carries the theme values, on every
    * theme change. Its presence is what lets `configure({ performance: { themeVariables } })` turn tokens into

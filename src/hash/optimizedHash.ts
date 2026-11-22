@@ -48,7 +48,7 @@ function tokenOf(value: unknown): string {
  * no longer fragments the cache. With `keys = null` (a rule enumerated all the props) every prop counts.
  */
 export function optimizedHash<P extends object>(
-  ctx: BaseStyleContext<P>,
+  ctx: Pick<BaseStyleContext<P>, 'platform' | 'props'>,
   keys: ReadonlySet<string> | null = null,
 ): string {
   let hash = `${ctx?.platform ?? 'default'}`;

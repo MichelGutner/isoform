@@ -131,8 +131,9 @@ export function applyWebProps({
   compiled,
   props,
   userStyle,
-}: ApplyPropsInput): Record<string, any> {
-  const out = props;
+}: ApplyPropsInput): Record<string, unknown> {
+  // RN-style props translated to DOM ones in place: each branch knows the shape of the prop it reads
+  const out: Record<string, any> = props;
   const classes: string[] = [];
   const canon = primitive ? CANONICAL[primitive] : undefined;
 

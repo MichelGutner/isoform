@@ -28,7 +28,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tspc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc -p tsconfig.typetests.json",
     "lint": "eslint src metro.js babel.js react-native.config.js scripts",
     "lint:fix": "eslint src metro.js babel.js react-native.config.js scripts --fix",
     "test": "jest",
@@ -107,6 +107,10 @@
       "types": "./dist/jsx-dev-runtime.d.ts",
       "react-native": "./dist/jsx-dev-runtime.js",
       "default": "./dist/jsx-dev-runtime.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
     },
     "./package.json": "./package.json",
     "./metro": "./metro.js",

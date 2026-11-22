@@ -43,7 +43,17 @@ return <Text style={{ color: theme.color.primary }}>Hi</Text>;
 
 ## `getTheme()`
 
-Returns the current theme outside React (event handlers, utilities).
+Returns the current theme outside React (event handlers, utilities). Inside a server render started with `runWithTheme()`, it returns that request's theme.
+
+## `runWithTheme(theme, render)`
+
+```ts
+import { runWithTheme } from 'react-isoform/server';
+
+function runWithTheme<R>(theme: EngineTheme, render: () => R): R;
+```
+
+Server only (Node). Renders with `theme` instead of the global theme, per request, without a provider. See [Server-side rendering](/guides/server-side-rendering/#a-theme-per-request).
 
 ## `EngineTheme`
 

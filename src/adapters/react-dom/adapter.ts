@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { PlatformAdapter } from '../../core/adapter';
+import type { FlatStyle, PlatformAdapter } from '../../core/adapter';
 import { warnOnce } from '../../core/dev';
 import { getKeyframes, keyframeNamesIn } from '../../core/keyframes';
 import { sheet, toKebab } from './css/sheet';
@@ -30,7 +29,7 @@ const GESTURE_PRIMITIVES = new Set(['Box', 'View']);
 /** Seletores válidos de quadro: `from`, `to`, `50%`, `12.5%` (e listas separadas por vírgula). */
 const FRAME_SELECTOR = /^(from|to|\d+(\.\d+)?%)$/;
 
-function declarations(style: Record<string, any>): string {
+function declarations(style: FlatStyle): string {
   const decls = normalizeWebStyle(style);
   return Object.keys(decls)
     .map((prop) => `${toKebab(prop)}:${decls[prop]}`)
@@ -58,7 +57,7 @@ function ensureKeyframes(name: string): void {
 
 function addClasses(
   classes: string[],
-  style: Record<string, any>,
+  style: FlatStyle,
   variant?: { state?: string; pseudo?: string; bp?: { min: number; max?: number; order: number } },
 ): void {
   const decls = normalizeWebStyle(style);
