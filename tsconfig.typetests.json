@@ -1,0 +1,7 @@
+{
+  "//": "Type tests (*.types.test.ts/tsx): ts-jest only transpiles (isolatedModules), so `yarn typecheck` compiles them here; an unused @ts-expect-error fails too.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "incremental": false },
+  "include": ["src/**/*.d.ts", "src/**/*.types.test.ts", "src/**/*.types.test.tsx"],
+  "exclude": []
+}

@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
- * Teste de TIPOS: o que importa aqui é compilar (ts-jest falha o suite se não).
+ * Teste de TIPOS: o que importa aqui é compilar. O ts-jest só transpila: quem checa é `yarn typecheck`
+ * (tsconfig.typetests.json), onde um `@ts-expect-error` que sobra também é erro.
  * Garante que literais de estilo não são alargados para `string` em nenhuma
  * forma de uso de `engine()`, e que valores inválidos continuam sendo erro.
  */
@@ -27,8 +27,8 @@ describe('engine() typing', () => {
   it('still rejects invalid literal values', () => {
     // @ts-expect-error 'diagonal' não é um flexDirection válido
     engine('Box', () => ({ flexDirection: 'diagonal' }));
-    // @ts-expect-error 'shout' não é um textTransform válido
-    engine('Text', () => ({ textTransform: 'shout' }));
+    // @ts-expect-error 'middle' não é um textAlign válido (o `textTransform` do CSS aceita qualquer string)
+    engine('Text', () => ({ textAlign: 'middle' }));
     // @ts-expect-error valor inválido também no estilo estático
     engine('Box', { position: 'sticky-ish' });
     expect(true).toBe(true);

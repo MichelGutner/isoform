@@ -14,7 +14,7 @@ const recorded = (fn: () => void) => {
 };
 
 const hash = (props: Record<string, unknown>, platform = 'ios', keys: ReadonlySet<string> | null = null) =>
-  optimizedHash({ theme: {} as any, platform, props }, keys);
+  optimizedHash({ platform, props }, keys);
 
 describe('optimizedHash', () => {
   describe('all props (no keys read yet)', () => {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ComponentType, ForwardRefExoticComponent, RefAttributes } from 'react';
-import { StylizedBuilder } from './builder';
+import type { AnyComponent } from './adapter';
+import { StylizedBuilder, type BaseComponent } from './builder';
 import type { IsoPrimitiveHandles, IsoPrimitives } from './primitives';
 import { makeProxy } from './proxy';
 import type { EngineComponent, StyleOrFn } from './types';
@@ -12,10 +12,10 @@ type PrimitiveComponent<K extends keyof IsoPrimitives> = K extends keyof IsoPrim
   : ComponentType<IsoPrimitives[K]>;
 
 type ExtractComponent<T> = T extends { __engine: true; __component: infer C }
-  ? C extends ComponentType<any>
+  ? C extends AnyComponent
     ? C
     : never
-  : T extends ComponentType<any>
+  : T extends AnyComponent
     ? T
     : never;
 
@@ -53,7 +53,7 @@ export interface Engine {
    * @param style An optional initial style: an object, or a function of `{ theme, props, platform }`.
    * @typeParam P Custom props of the new component.
    */
-  <C extends ComponentType<any>, P extends object = {}>(
+  <C extends AnyComponent, P extends object = {}>(
     component: C,
     style?: StyleOrFn<C, P>,
   ): EngineComponent<C, P>;
@@ -77,8 +77,9 @@ export interface Engine {
  *   .when('props:disabled', { style: { opacity: 0.5 } })
  *   .when('platform:web', { style: { cursor: 'pointer' } });
  */
-export const engine = ((component: any, style?: any) => {
-  const builder = new StylizedBuilder<any, any>(component);
-  const proxy = makeProxy(builder.build() as any, builder as any) as any;
-  return style ? proxy.style(style) : proxy;
+export const engine = ((component: BaseComponent<AnyComponent>, style?: StyleOrFn<AnyComponent, object>) => {
+  const builder = new StylizedBuilder<AnyComponent, object>(component);
+  // the rules are read live at render time, so adding the first style before `build()` is the same as after
+  if (style) builder.style(style);
+  return makeProxy(builder.build(), builder);
 }) as Engine;
