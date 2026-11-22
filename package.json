@@ -28,7 +28,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tspc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc -p tsconfig.typetests.json",
     "lint": "eslint src metro.js babel.js react-native.config.js scripts",
     "lint:fix": "eslint src metro.js babel.js react-native.config.js scripts --fix",
     "test": "jest",

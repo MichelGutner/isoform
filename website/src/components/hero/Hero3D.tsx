@@ -254,7 +254,7 @@ function BrowserWindow({ live, onPress }: DeviceProps) {
             <Dot style={{ backgroundColor: '#fbbf24' }} />
             <Dot style={{ backgroundColor: '#4ade80' }} />
             <Layer style={{ position: 'relative', marginLeft: 14, flex: 1, maxWidth: 190, height: 16, borderRadius: 8, backgroundColor: 'rgba(255,255,255,.08)', justifyContent: 'center', paddingInline: 9 }}>
-              <BadgeText style={{ fontWeight: '500', letterSpacing: 0 }}>isoform.dev/app</BadgeText>
+              <BadgeText style={{ fontWeight: '500', letterSpacing: 0 }}>example.com/app</BadgeText>
             </Layer>
           </Layer>
           <Scanline style={{ top: 30 }} />

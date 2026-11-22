@@ -1,7 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as RN from 'react-native';
-import React, { type ComponentType } from 'react';
-import type { BreakpointStyle, PlatformAdapter, PseudoStyles, StateStyles } from '../../core/adapter';
+import React from 'react';
+import type {
+  AnyComponent,
+  BreakpointStyle,
+  FlatStyle,
+  PlatformAdapter,
+  PseudoStyles,
+  StateStyles,
+} from '../../core/adapter';
 import { warnOnce } from '../../core/dev';
 import { getConfig } from '../../config';
 import { getKeyframes } from '../../core/keyframes';
@@ -24,7 +30,7 @@ import { GestureView } from './gesture/GestureView';
 import type { ResolvedGestures } from '../../core/gesture';
 
 /** Nome isoform → nome do componente no `react-native`. */
-const PRIMITIVES: Record<string, string> = {
+const PRIMITIVES: Record<string, keyof typeof RN> = {
   // universais
   Box: 'View',
   Text: 'Text',
@@ -52,11 +58,11 @@ const PRIMITIVES: Record<string, string> = {
  * Getters preguiçosos: alguns exports do RN (ex.: `SafeAreaView`) avisam de
  * deprecação ao serem lidos, então só tocamos no que for realmente usado.
  */
-const primitives: Record<string, ComponentType<any>> = {};
+const primitives: Record<string, AnyComponent> = {};
 for (const name of Object.keys(PRIMITIVES)) {
   Object.defineProperty(primitives, name, {
     enumerable: true,
-    get: () => (RN as any)[PRIMITIVES[name]],
+    get: () => RN[PRIMITIVES[name]],
   });
 }
 
@@ -73,13 +79,13 @@ const GESTURE_PRIMITIVES = new Set(['Box', 'View']);
 
 /** Saída de `compileStyle` no mobile. */
 export interface NativeCompiled {
-  base: Record<string, any>;
-  pressed?: Record<string, any>;
-  focus?: Record<string, any>;
+  base: Record<string, unknown>;
+  pressed?: Record<string, unknown>;
+  focus?: Record<string, unknown>;
   animation?: NativeAnimation;
   transition?: ResolvedTransition;
   /** Largura mínima → estilo, em ordem crescente (os maiores vencem). */
-  breakpoints?: Array<{ min: number; max?: number; style: Record<string, any> }>;
+  breakpoints?: Array<{ min: number; max?: number; style: Record<string, unknown> }>;
   pseudos?: NativePseudos;
   /** `hostFlags(this)`, computed once at compile time (it was recomputed twice per render). */
   hostFlags?: StyleHostFlags;
@@ -158,7 +164,7 @@ function framesFor(name: string): Frame[] | undefined {
 
 const bezier = (x1: number, y1: number, x2: number, y2: number) => RN.Easing.bezier(x1, y1, x2, y2);
 
-function buildAnimation(animationProps: Record<string, any>, base: Record<string, any>): NativeAnimation | undefined {
+function buildAnimation(animationProps: Record<string, unknown>, base: Record<string, unknown>): NativeAnimation | undefined {
   const timing = parseAnimation(animationProps);
   if (!timing) return undefined;
   const frames = framesFor(timing.name);
@@ -179,7 +185,7 @@ function buildAnimation(animationProps: Record<string, any>, base: Record<string
   };
 }
 
-function buildTransition(transitionProps: Record<string, any>): ResolvedTransition | undefined {
+function buildTransition(transitionProps: Record<string, unknown>): ResolvedTransition | undefined {
   const spec = parseTransition(transitionProps);
   if (!spec) return undefined;
   const resolve = (t: { duration: number; delay: number; easing: string }) => ({
@@ -212,7 +218,7 @@ function hostFlags(c: NativeCompiled): StyleHostFlags | undefined {
  * `::placeholder`/`::selection` viram props do `Input`; `::first-letter` separa a
  * primeira letra de um `Text` com texto simples.
  */
-function applyPseudos(out: Record<string, any>, p: NativePseudos, primitive?: string): void {
+function applyPseudos(out: Record<string, unknown>, p: NativePseudos, primitive?: string): void {
   if (primitive && INPUT.has(primitive)) {
     if (p.placeholderColor) out.placeholderTextColor ??= p.placeholderColor;
     if (p.selectionColor) out.selectionColor ??= p.selectionColor;
@@ -261,22 +267,22 @@ export const reactNativeAdapter: PlatformAdapter = {
   images: nativeImageCache,
 
   compileStyle(
-    style,
+    style: FlatStyle,
     states?: StateStyles,
     breakpoints?: BreakpointStyle[],
     pseudos?: PseudoStyles,
     gestures?: ResolvedGestures,
   ): NativeCompiled {
     // `animation*` e `transition*` saem do estilo e viram execução com `Animated`
-    let animationProps: Record<string, any> | undefined;
-    let transitionProps: Record<string, any> | undefined;
+    let animationProps: Record<string, unknown> | undefined;
+    let transitionProps: Record<string, unknown> | undefined;
     let rest = style;
     const hasAnimation = ANIMATION_KEYS.some((k) => k in style);
     const hasTransition = TRANSITION_KEYS.some((k) => k in style);
     if (hasAnimation || hasTransition) {
       rest = { ...style };
       const take = (keys: readonly string[]) => {
-        const taken: Record<string, any> = {};
+        const taken: Record<string, unknown> = {};
         for (const k of keys) {
           if (k in rest) {
             taken[k] = rest[k];
@@ -291,7 +297,7 @@ export const reactNativeAdapter: PlatformAdapter = {
 
     // `transition` declarada num estado ou breakpoint (ex.: `.when('breakpoints:lg', { style: { transition } })`)
     // também vale: no mobile ela passa a valer para o elemento, se o base não declarar a sua.
-    const withoutTransition = (st: Record<string, any>) => {
+    const withoutTransition = (st: Record<string, unknown>) => {
       if (!TRANSITION_KEYS.some((k) => k in st)) return st;
       const copy = { ...st };
       for (const k of TRANSITION_KEYS) {
@@ -377,8 +383,8 @@ export const reactNativeAdapter: PlatformAdapter = {
      * focus < pressed < estilo do usuário. Sem nada extra, devolve o próprio
      * `base` (mesma referência, cacheada pelo builder).
      */
-    const build = (width?: number, isPressed = false, isFocused = false): any => {
-      const parts: any[] = [c.base];
+    const build = (width?: number, isPressed = false, isFocused = false): unknown => {
+      const parts: unknown[] = [c.base];
       if (c.breakpoints && width !== undefined) {
         for (const b of c.breakpoints) if (width >= b.min && (b.max === undefined || width < b.max)) parts.push(b.style);
       }
